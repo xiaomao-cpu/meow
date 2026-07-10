@@ -271,7 +271,7 @@ function toggleAudio() {
 }
 
 function updateAudioButton() {
-    els.audio.textContent = isBgmOn ? "關閉音樂" : "開啟音樂";
+    els.audio.textContent = isBgmOn ? "關閉 BGM" : "開啟 BGM";
     els.audio.setAttribute("aria-pressed", isBgmOn ? "true" : "false");
 }
 
