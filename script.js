@@ -583,11 +583,20 @@ function renderResult(highestId, scores, targetIds) {
     const copyText = `LINE 暱稱：${lineNickname}\n遊玩時間：${playDate}\n\n我在《向生而死》心測中測到了「${character.name}」\n匹配度：${matchPercent}%\n\n${character.resultText}\n\n你會走向哪一個角色？`;
     els.copy.dataset.copyText = copyText;
 
-    // 格式化使用者的回答選項 (排除 Q0 性別題，其餘格式化為 Q1: A, Q2: C, Q3: A/B 格式)
-    const formattedAnswers = Object.entries(userAnswers)
-        .filter(([qId]) => qId !== "0")
-        .map(([qId, val]) => `Q${qId}: ${Array.isArray(val) ? val.join('/') : val}`)
-        .join(', ');
+    // 取得選項完整中文內容的輔助函數
+    function getAnswerText(questionId, val) {
+        const question = getQuestion(questionId);
+        if (!question || val === undefined || val === null) return "";
+        if (Array.isArray(val)) {
+            return val.map(v => {
+                const opt = question.options.find(o => o.val === v);
+                return opt ? opt.text : v;
+            }).join(" ｜ ");
+        } else {
+            const opt = question.options.find(o => o.val === val);
+            return opt ? opt.text : val;
+        }
+    }
 
     // 發送結果至 Google 試算表後台
     if (GOOGLE_SHEETS_WEB_APP_URL) {
@@ -595,7 +604,12 @@ function renderResult(highestId, scores, targetIds) {
             nickname: lineNickname,
             playDate: playDate,
             gender: gender === "M" ? "男" : "女",
-            answers: formattedAnswers,
+            q1: getAnswerText(1, userAnswers[1]),
+            q2: getAnswerText(2, userAnswers[2]),
+            q3_q4: gender === "M" ? getAnswerText(3, userAnswers[3]) : getAnswerText(4, userAnswers[4]),
+            q5: getAnswerText(5, userAnswers[5]),
+            q6: getAnswerText(6, userAnswers[6]),
+            q7_q8: gender === "M" ? getAnswerText(8, userAnswers[8]) : getAnswerText(7, userAnswers[7]),
             character: character.name,
             matchPercent: matchPercent + "%"
         };
