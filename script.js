@@ -1,5 +1,5 @@
 let quizConfig = null;
-const GOOGLE_SHEETS_WEB_APP_URL = ""; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
+const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzdz1SwXUhPmBFnp-ydULxRle9ufSgHaRGYQ-ohmj58DPBOikSwiBx7VdLxJhCaQvbZ/exec"; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
 let currentPath = [];
 let currentStep = 0;
 let gender = null;
