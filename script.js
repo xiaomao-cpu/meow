@@ -246,7 +246,6 @@ function showScreen(name) {
 function startBgm() {
     bgm.currentTime = 0;
     isBgmOn = true;
-    els.audio.classList.remove("hidden");
     updateAudioButton();
     bgm.play().catch(error => {
         isBgmOn = false;
@@ -494,8 +493,8 @@ function calculateAndShowResult() {
     const targetIds = quizConfig.targetCharacters[gender];
 
     const highestId = targetIds.reduce((bestId, characterId) => {
-        const pctBest = Math.max(0, scores[bestId] / quizConfig.maxScores[bestId]);
-        const pctCurr = Math.max(0, scores[characterId] / quizConfig.maxScores[characterId]);
+        const pctBest = scores[bestId] / quizConfig.maxScores[bestId];
+        const pctCurr = scores[characterId] / quizConfig.maxScores[characterId];
         return pctCurr > pctBest ? characterId : bestId;
     }, targetIds[0]);
 
@@ -615,7 +614,6 @@ function restartQuiz() {
     bgm.currentTime = 0;
     isBgmOn = false;
     updateAudioButton();
-    els.audio.classList.add("hidden");
     els.copyStatus.textContent = "";
     showScreen("home");
 }
