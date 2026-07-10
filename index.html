@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>向生而死</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button id="audio-toggle" class="audio-toggle hidden" type="button" aria-pressed="false">開啟音樂</button>
+
+    <main id="app" class="app-shell">
+        <section id="home-screen" class="screen home-screen">
+            <div class="cover-mark">向生而死</div>
+            <h1>向生而死</h1>
+            <p class="subtitle">「犯下罪孽的你，渴望光明的你，哪個才是真正的你？<br>如若你心中尚存一息善念，那麼你不配踏足於此。」</p>
+            <button id="start-button" class="primary-button" type="button">開始測驗</button>
+        </section>
+
+        <section id="quiz-screen" class="screen quiz-screen hidden">
+            <div class="progress-wrap" aria-hidden="true">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="question-count" class="question-count"></div>
+            <h2 id="question-text" class="question-text"></h2>
+            <div id="options" class="options"></div>
+            <div class="nav-row">
+                <button id="prev-button" class="secondary-button" type="button">上一題</button>
+                <button id="next-button" class="secondary-button hidden" type="button">下一題</button>
+            </div>
+        </section>
+
+        <section id="result-screen" class="screen result-screen hidden">
+            <div id="result-content"></div>
+            <div class="result-actions">
+                <button id="copy-button" class="primary-button" type="button">一鍵複製結果</button>
+                <button id="restart-button" class="secondary-button" type="button">重新測驗</button>
+            </div>
+            <p id="copy-status" class="copy-status" role="status"></p>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
