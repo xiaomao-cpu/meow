@@ -31,7 +31,7 @@ const els = {
     resultContent: document.getElementById("result-content")
 };
 
-const bgm = new Audio("assets/兀兀 - 未必要活在振奮里.mp3");
+const bgm = new Audio("assets/bgm.mp3");
 bgm.loop = true;
 
 const introQuestions = [
