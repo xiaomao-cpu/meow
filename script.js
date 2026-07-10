@@ -540,8 +540,8 @@ function escapeHtml(value) {
 
 function sanitizeUrl(url) {
     const str = String(url);
-    if (/^[\w./\- %()\u4e00-\u9fff\u3000-\u303f]+$/u.test(str)) return str;
-    return "";
+    if (/['"\\()]/.test(str)) return "";
+    return str;
 }
 
 function renderResult(highestId, scores, targetIds) {
