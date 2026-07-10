@@ -406,6 +406,11 @@ function nextQuestion() {
     }
     const question = currentPath[currentStep];
     if (question.type === "multi") {
+        if (multiSelectState.length === 0) {
+            els.next.classList.add("shake");
+            setTimeout(() => els.next.classList.remove("shake"), 400);
+            return;
+        }
         userAnswers[question.id] = [...multiSelectState];
     }
     saveState();
@@ -525,6 +530,12 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
+function sanitizeUrl(url) {
+    const str = String(url);
+    if (/^[\w./\- %()\u4e00-\u9fff\u3000-\u303f]+$/u.test(str)) return str;
+    return "";
+}
+
 function renderResult(highestId, scores, targetIds) {
     const character = quizConfig.characters[highestId];
     const maxScore = quizConfig.maxScores[highestId];
@@ -543,7 +554,7 @@ function renderResult(highestId, scores, targetIds) {
         return `
             <div class="score-row">
                 <div class="score-head">
-                    <span>${quizConfig.characters[id].name}</span>
+                    <span>${escapeHtml(quizConfig.characters[id].name)}</span>
                     <span>${pct}%</span>
                 </div>
                 <div class="score-track">
@@ -559,10 +570,10 @@ function renderResult(highestId, scores, targetIds) {
     els.copy.dataset.copyText = copyText;
 
     els.resultContent.innerHTML = `
-        <article class="story-card" style="--result-image: url('${character.image}');">
+        <article class="story-card" style="--result-image: url('${sanitizeUrl(character.image)}');">
             <div class="story-content">
                 <div class="story-label">最契合角色</div>
-                <h2 class="story-name">${character.name}</h2>
+                <h2 class="story-name">${escapeHtml(character.name)}</h2>
                 <div class="story-match">匹配度 ${matchPercent}%</div>
             </div>
         </article>
@@ -571,7 +582,7 @@ function renderResult(highestId, scores, targetIds) {
                 <span>LINE 暱稱｜${escapeHtml(lineNickname)}</span>
                 <span>遊玩時間｜${escapeHtml(playDate)}</span>
             </div>
-            <p class="result-analysis">${character.resultText}</p>
+            <p class="result-analysis">${escapeHtml(character.resultText)}</p>
             <h3 class="panel-title">角色相性排行</h3>
             <div class="score-list">${scoreRows}</div>
         </section>

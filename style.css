@@ -39,6 +39,29 @@ button {
     display: none !important;
 }
 
+@keyframes screen-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+
+.shake {
+    animation: shake 0.4s ease;
+}
+
 .app-shell {
     width: min(100%, 560px);
     min-height: calc(100vh - 28px);
@@ -61,14 +84,9 @@ button {
     background: var(--paper);
     box-shadow: 0 18px 50px var(--shadow);
     backdrop-filter: blur(12px);
-}
-
-.home-screen,
-.quiz-screen,
-.result-screen {
     position: relative;
     overflow: hidden;
-    background: var(--paper);
+    animation: screen-in 0.4s ease both;
 }
 
 .home-screen::before,
