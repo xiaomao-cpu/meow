@@ -317,7 +317,7 @@ function renderIntroQuestion() {
     els.progress.style.width = `${(currentIntroStep / introQuestions.length) * 100}%`;
     els.prev.classList.toggle("hidden", currentIntroStep === 0 && historyStack.length === 0);
     els.next.classList.remove("hidden");
-    els.next.textContent = currentIntroStep === introQuestions.length - 1 ? "接入頻道" : "下一題";
+    els.next.textContent = currentIntroStep === introQuestions.length - 1 ? "下一步" : "下一題";
     els.options.innerHTML = `
         <label class="input-card" for="intro-${question.id}">
             <span class="input-label">${question.label}</span>
