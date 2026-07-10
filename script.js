@@ -1,4 +1,5 @@
 let quizConfig = null;
+const GOOGLE_SHEETS_WEB_APP_URL = ""; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
 let currentPath = [];
 let currentStep = 0;
 let gender = null;
@@ -581,6 +582,26 @@ function renderResult(highestId, scores, targetIds) {
     const playDate = userMeta.playDate || "未填";
     const copyText = `LINE 暱稱：${lineNickname}\n遊玩時間：${playDate}\n\n我在《向生而死》心測中測到了「${character.name}」\n匹配度：${matchPercent}%\n\n${character.resultText}\n\n你會走向哪一個角色？`;
     els.copy.dataset.copyText = copyText;
+
+    // 發送結果至 Google 試算表後台
+    if (GOOGLE_SHEETS_WEB_APP_URL) {
+        const payload = {
+            nickname: lineNickname,
+            playDate: playDate,
+            gender: gender === "M" ? "男" : "女",
+            character: character.name,
+            matchPercent: matchPercent + "%",
+            timestamp: new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" })
+        };
+        fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        }).catch(err => console.error("後台傳送失敗:", err));
+    }
 
     els.resultContent.innerHTML = `
         <article class="story-card" style="--result-image: url('${sanitizeUrl(character.image)}');">
