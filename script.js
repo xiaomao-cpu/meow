@@ -478,6 +478,7 @@ function calculateAndShowResult() {
     );
     const answers = normalizeAnswers(userAnswers);
     const rules = quizConfig.scoring[gender];
+    const disqualifiedCharacters = new Set();
 
     rules.forEach(rule => {
         const answer = answers[rule.questionId];
@@ -486,8 +487,16 @@ function calculateAndShowResult() {
             : answer === rule.value;
         if (!matched) return;
         Object.entries(rule.scores).forEach(([characterId, delta]) => {
-            scores[characterId] += delta;
+            if (delta < 0) {
+                disqualifiedCharacters.add(characterId);
+            } else {
+                scores[characterId] += delta;
+            }
         });
+    });
+
+    disqualifiedCharacters.forEach(characterId => {
+        scores[characterId] = 0;
     });
 
     const targetIds = quizConfig.targetCharacters[gender];
