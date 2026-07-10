@@ -44,6 +44,7 @@ button {
         opacity: 0;
         transform: translateY(12px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -51,11 +52,27 @@ button {
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(4px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-6px);
+    }
+
+    40% {
+        transform: translateX(6px);
+    }
+
+    60% {
+        transform: translateX(-4px);
+    }
+
+    80% {
+        transform: translateX(4px);
+    }
 }
 
 .shake {
@@ -105,9 +122,9 @@ button {
     pointer-events: none;
 }
 
-.home-screen > *,
-.quiz-screen > *,
-.result-screen > * {
+.home-screen>*,
+.quiz-screen>*,
+.result-screen>* {
     position: relative;
     z-index: 1;
 }
@@ -331,7 +348,7 @@ h1 {
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.64)),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.64)),
         var(--result-image) center top / cover no-repeat;
 }
 
