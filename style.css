@@ -407,12 +407,28 @@ h1 {
 
 .score-list {
     display: grid;
+    gap: 12px;
+}
+
+.score-head-wrap {
+    display: flex;
+    align-items: center;
     gap: 10px;
 }
 
-.score-row {
+.score-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid rgba(23, 18, 15, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.score-info {
+    flex: 1;
     display: grid;
-    gap: 5px;
+    gap: 4px;
 }
 
 .score-head {

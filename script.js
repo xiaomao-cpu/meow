@@ -561,12 +561,17 @@ function renderResult(highestId, scores, targetIds) {
         const direction = pct < 0 ? "negative" : "positive";
         return `
             <div class="score-row">
-                <div class="score-head">
-                    <span>${escapeHtml(quizConfig.characters[id].name)}</span>
-                    <span>${pct}%</span>
-                </div>
-                <div class="score-track">
-                    <div class="score-fill ${direction}" style="width: ${barWidth}%;"></div>
+                <div class="score-head-wrap">
+                    <img class="score-avatar" src="${sanitizeUrl(quizConfig.characters[id].image)}" alt="" loading="lazy">
+                    <div class="score-info">
+                        <div class="score-head">
+                            <span>${escapeHtml(quizConfig.characters[id].name)}</span>
+                            <span>${pct}%</span>
+                        </div>
+                        <div class="score-track">
+                            <div class="score-fill ${direction}" style="width: ${barWidth}%;"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
