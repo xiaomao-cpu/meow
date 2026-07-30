@@ -3,7 +3,7 @@
 :root {
     --ink: #17120f;
     --muted: #62564e;
-    --paper: rgba(255, 250, 244, 0.88);
+    --paper: rgba(255, 250, 244, 0.95);
     --paper-solid: #fffaf4;
     --line: rgba(23, 18, 15, 0.16);
     --shadow: rgba(18, 10, 6, 0.24);
@@ -273,7 +273,7 @@ h1 {
     padding: 18px;
     border: 1px solid rgba(23, 18, 15, 0.13);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.48);
+    background: rgba(255, 255, 255, 0.72);
     box-shadow: 0 8px 18px rgba(18, 10, 6, 0.08);
 }
 
@@ -290,7 +290,7 @@ h1 {
     border: 1px solid rgba(23, 18, 15, 0.18);
     border-radius: 8px;
     color: var(--ink);
-    background: rgba(255, 255, 255, 0.58);
+    background: rgba(255, 255, 255, 0.82);
     font: inherit;
     font-size: 19px;
     outline: none;
@@ -328,7 +328,7 @@ h1 {
     font-size: 18px;
     line-height: 1.6;
     border-color: rgba(23, 18, 15, 0.13);
-    background: rgba(255, 255, 255, 0.48);
+    background: rgba(255, 255, 255, 0.72);
     box-shadow: 0 8px 18px rgba(18, 10, 6, 0.08);
 }
 
