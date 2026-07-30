@@ -600,6 +600,13 @@ function renderResult(highestId, scores, targetIds) {
 
     // 發送結果至 Google 試算表後台
     if (GOOGLE_SHEETS_WEB_APP_URL) {
+        // 整理除了最高分以外的其他角色分數（例：默 80%、明昔 60%）
+        const otherScoresStr = rankedIds.slice(1).map(id => {
+            const charName = quizConfig.characters[id].name;
+            const pct = Math.round((scores[id] / quizConfig.maxScores[id]) * 100);
+            return `${charName} ${pct}%`;
+        }).join("、");
+
         const payload = {
             nickname: lineNickname,
             playDate: playDate,
@@ -611,7 +618,8 @@ function renderResult(highestId, scores, targetIds) {
             q6: getAnswerText(6, userAnswers[6]),
             q7_q8: gender === "M" ? getAnswerText(8, userAnswers[8]) : getAnswerText(7, userAnswers[7]),
             character: character.name,
-            matchPercent: matchPercent + "%"
+            matchPercent: matchPercent + "%",
+            otherScores: otherScoresStr
         };
         fetch(GOOGLE_SHEETS_WEB_APP_URL, {
             method: "POST",
