@@ -783,22 +783,26 @@ function createFeatherPhotonEffect(e) {
     document.body.appendChild(ring);
     setTimeout(() => ring.remove(), 600);
 
-    // 2. 白色光子微粒 (7 顆)
-    const photonCount = 7;
+    // 2. 隨羽毛一起向下飄落的閃耀白色光子微粒 (14 顆)
+    const photonCount = 14;
     for (let i = 0; i < photonCount; i++) {
         const photon = document.createElement("div");
-        photon.className = "white-photon";
-        const angle = (i * (360 / photonCount) + Math.random() * 25) * (Math.PI / 180);
-        const dist = 20 + Math.random() * 35;
-        const dx = Math.cos(angle) * dist + "px";
-        const dy = Math.sin(angle) * dist + "px";
+        photon.className = "falling-photon";
+
+        const pdx = (Math.random() - 0.5) * 80 + "px";
+        const pdy = (80 + Math.random() * 110) + "px";
+        const psize = (3 + Math.random() * 5) + "px";
+        const delay = (Math.random() * 0.4) + "s";
 
         photon.style.left = x + "px";
         photon.style.top = y + "px";
-        photon.style.setProperty("--dx", dx);
-        photon.style.setProperty("--dy", dy);
+        photon.style.setProperty("--p-dx", pdx);
+        photon.style.setProperty("--p-dy", pdy);
+        photon.style.setProperty("--p-size", psize);
+        photon.style.animationDelay = delay;
+
         document.body.appendChild(photon);
-        setTimeout(() => photon.remove(), 650);
+        setTimeout(() => photon.remove(), 2400);
     }
 
     // 3. 飄落使用者圖片同款真實純白羽毛 (2 根隨機圖片)
