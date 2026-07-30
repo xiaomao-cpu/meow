@@ -805,7 +805,7 @@ function createFeatherPhotonEffect(e) {
         photon.style.setProperty("--p-size", psize);
 
         document.body.appendChild(photon);
-        setTimeout(() => photon.remove(), 1200);
+        setTimeout(() => photon.remove(), 1850);
     }
 
     // 3. 向外擴散直落的高清純白羽毛 (6 款 SVG 向量，100% 必定顯示)
@@ -833,7 +833,7 @@ function createFeatherPhotonEffect(e) {
         feather.style.setProperty("--rot", rotVal);
         document.body.appendChild(feather);
 
-        setTimeout(() => feather.remove(), 1200);
+        setTimeout(() => feather.remove(), 1850);
     }
 }
 
