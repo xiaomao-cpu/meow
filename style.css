@@ -672,10 +672,11 @@ h1 {
 }
 
 .secret-header h2 {
-    font-size: 36px;
+    font-size: clamp(18px, 4.5vw, 36px);
     color: var(--accent);
-    letter-spacing: 4px;
+    letter-spacing: clamp(1px, 0.5vw, 4px);
     text-shadow: 0 2px 10px rgba(123, 36, 52, 0.25);
+    white-space: nowrap;
 }
 
 .secret-key-tag {
