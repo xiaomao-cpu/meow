@@ -194,7 +194,7 @@ const FALLBACK_QUIZ_CONFIG = {
       { "questionId": 6, "value": "C", "scores": { "6": 1, "7": 1 } },
       { "questionId": 7, "value": "A", "scores": { "4": 1, "7": 1 } },
       { "questionId": 7, "value": "B", "scores": { "4": 1 } },
-      { "questionId": 7, "value": "C", "scores": { "4": 1 } },
+      { "questionId": 7, "value": "C", "scores": { "4": 1, "7": 1 } },
       { "questionId": 7, "value": "D", "scores": { "7": 1 } },
       { "questionId": 7, "value": "E", "scores": { "5": 1 } },
       { "questionId": 7, "value": "F", "scores": { "6": 1 } },
