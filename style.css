@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Long+Cang&family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@600;900&display=swap');
+
 :root {
     --ink: #17120f;
     --muted: #62564e;
@@ -10,6 +12,7 @@
     --deep: #241413;
     --gold: #b68b4a;
     --quiz-panel-image: url("assets/心测选项背景.jpg");
+    --font-handwritten: "Long Cang", "Ma Shan Zheng", "STKaiti", "KaiTi", cursive, serif;
 }
 
 * {
@@ -25,7 +28,7 @@ body {
     margin: 0;
     padding: 14px;
     color: var(--ink);
-    font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+    font-family: var(--font-handwritten);
     background:
         linear-gradient(rgba(26, 18, 16, 0.38), rgba(26, 18, 16, 0.5)),
         url("assets/劇本封面.JPG") center / cover fixed;
@@ -146,9 +149,11 @@ button {
 h1 {
     margin: 6px 0 16px;
     text-align: center;
-    font-size: 34px;
-    line-height: 1.15;
-    letter-spacing: 0;
+    font-size: 38px;
+    line-height: 1.25;
+    font-family: var(--font-handwritten);
+    letter-spacing: 2px;
+    font-weight: 700;
 }
 
 .subtitle {
