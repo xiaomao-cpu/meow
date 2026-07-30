@@ -623,15 +623,11 @@ h1 {
 
 @keyframes straight-fall-down {
     0% {
-        transform: translate(0, 0) rotate(0deg) scale(0.6);
-        opacity: 0;
-    }
-    12% {
-        transform: translate(0, 18px) rotate(calc(var(--rot, 0deg) * 0.3)) scale(1.0);
-        opacity: 0.95;
+        transform: translate(0, 0) rotate(0deg) scale(0.85);
+        opacity: 1;
     }
     100% {
-        transform: translate(0, 140px) rotate(var(--rot, 0deg)) scale(0.5);
+        transform: translate(0, 150px) rotate(var(--rot, 0deg)) scale(0.5);
         opacity: 0;
     }
 }
