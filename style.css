@@ -602,7 +602,7 @@ h1 {
 
 @keyframes photon-straight-fall {
     0% {
-        transform: translate(var(--p-dx), 0) scale(1.3);
+        transform: translate(0, 0) scale(1.3);
         opacity: 1;
     }
     100% {
@@ -615,22 +615,26 @@ h1 {
     position: fixed;
     display: block;
     visibility: visible;
-    width: 28px;
-    height: auto;
-    max-height: 28px;
-    margin-left: -14px;
-    margin-top: -14px;
+    width: 32px;
+    height: 32px;
+    margin-left: -16px;
+    margin-top: -16px;
     pointer-events: none;
     z-index: 9999;
     opacity: 0.98;
-    object-fit: contain;
-    filter: drop-shadow(0 3px 10px rgba(255, 255, 255, 0.95));
-    animation: feather-straight-fall 1.1s linear forwards;
+    filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.95));
+    animation: feather-straight-fall 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.floating-feather svg {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 @keyframes feather-straight-fall {
     0% {
-        transform: translate(var(--f-dx), 0) rotate(0deg) scale(0.8);
+        transform: translate(0, 0) rotate(0deg) scale(0.8);
         opacity: 1;
     }
     100% {
