@@ -1006,7 +1006,7 @@ h1 {
 }
 
 .greeting-text {
-    font-family: var(--font-cursive);
+    font-family: var(--font-handwritten);
     font-size: 28px;
     color: var(--ink);
     line-height: 1.7;
