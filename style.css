@@ -12,7 +12,8 @@
     --deep: #241413;
     --gold: #b68b4a;
     --quiz-panel-image: url("assets/心测选项背景.jpg");
-    --font-handwritten: "Zhi Mang Xing", "Long Cang", "Ma Shan Zheng", "BiauKai", "BiauKaiTC", "DFKai-SB", "STKaiti", "KaiTi", "Kaiti TC", cursive, serif;
+    --font-handwritten: "BiauKai", "BiauKaiTC", "DFKai-SB", "STKaiti", "KaiTi", "Kaiti TC", "Noto Serif TC", serif;
+    --font-cursive: "Zhi Mang Xing", "Long Cang", "Ma Shan Zheng", "BiauKai", "BiauKaiTC", "DFKai-SB", cursive, serif;
 }
 
 * {
@@ -744,7 +745,7 @@ h1 {
 }
 
 .polaroid-note {
-    font-family: var(--font-handwritten);
+    font-family: var(--font-cursive);
     font-size: 22px;
     font-weight: 500;
     color: #1c0d0d;
@@ -1005,7 +1006,7 @@ h1 {
 }
 
 .greeting-text {
-    font-family: var(--font-handwritten);
+    font-family: var(--font-cursive);
     font-size: 28px;
     color: var(--ink);
     line-height: 1.7;
@@ -1081,7 +1082,7 @@ h1 {
 }
 
 .lightbox-note {
-    font-family: var(--font-handwritten);
+    font-family: var(--font-cursive);
     font-size: 26px;
     margin-top: 18px;
     text-align: center;
