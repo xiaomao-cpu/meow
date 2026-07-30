@@ -578,9 +578,23 @@ function renderResult(highestId, scores, targetIds) {
         `;
     }).join("");
 
+    // 整理其他角色的分數資訊
+    const otherRanked = rankedIds.slice(1);
+    const formatScore = (id) => {
+        if (!id) return "";
+        const charName = quizConfig.characters[id].name;
+        const pct = Math.round((scores[id] / quizConfig.maxScores[id]) * 100);
+        return `${charName} ${pct}%`;
+    };
+
+    const other1 = formatScore(otherRanked[0]);
+    const other2 = formatScore(otherRanked[1]);
+    const other3 = formatScore(otherRanked[2]);
+    const otherScoresStr = [other1, other2, other3].filter(Boolean).join("、");
+
     const lineNickname = userMeta.lineNickname || "未填";
     const playDate = userMeta.playDate || "未填";
-    const copyText = `LINE 暱稱：${lineNickname}\n遊玩時間：${playDate}\n\n我在《向生而死》心測中測到了「${character.name}」\n匹配度：${matchPercent}%\n\n${character.resultText}\n\n你會走向哪一個角色？`;
+    const copyText = `LINE 暱稱：${lineNickname}\n遊玩時間：${playDate}\n\n我在《向生而死》心測中測到了「${character.name}」\n匹配度：${matchPercent}%\n其他角色：${otherScoresStr}\n\n${character.resultText}\n\n你會走向哪一個角色？`;
     els.copy.dataset.copyText = copyText;
 
     // 取得選項完整中文內容的輔助函數
@@ -600,13 +614,6 @@ function renderResult(highestId, scores, targetIds) {
 
     // 發送結果至 Google 試算表後台
     if (GOOGLE_SHEETS_WEB_APP_URL) {
-        // 整理除了最高分以外的其他角色分數（例：默 80%、明昔 60%）
-        const otherScoresStr = rankedIds.slice(1).map(id => {
-            const charName = quizConfig.characters[id].name;
-            const pct = Math.round((scores[id] / quizConfig.maxScores[id]) * 100);
-            return `${charName} ${pct}%`;
-        }).join("、");
-
         const payload = {
             nickname: lineNickname,
             playDate: playDate,
@@ -619,6 +626,9 @@ function renderResult(highestId, scores, targetIds) {
             q7_q8: gender === "M" ? getAnswerText(8, userAnswers[8]) : getAnswerText(7, userAnswers[7]),
             character: character.name,
             matchPercent: matchPercent + "%",
+            other1: other1,
+            other2: other2,
+            other3: other3,
             otherScores: otherScoresStr
         };
         fetch(GOOGLE_SHEETS_WEB_APP_URL, {
