@@ -783,29 +783,27 @@ function createFeatherPhotonEffect(e) {
     document.body.appendChild(ring);
     setTimeout(() => ring.remove(), 600);
 
-    // 2. 隨羽毛一同直接向下掉落的閃耀白色光子微粒 (12 顆)
+    // 2. 零停頓直接勻速向下掉落的閃耀白色光子微粒 (12 顆)
     const photonCount = 12;
     for (let i = 0; i < photonCount; i++) {
         const photon = document.createElement("div");
         photon.className = "falling-photon";
 
         const pdx = (Math.random() - 0.5) * 50 + "px";
-        const pdy = (70 + Math.random() * 80) + "px";
+        const pdy = (75 + Math.random() * 85) + "px";
         const psize = (1.5 + Math.random() * 2.2) + "px";
-        const delay = (Math.random() * 0.15) + "s";
 
         photon.style.left = x + "px";
         photon.style.top = y + "px";
         photon.style.setProperty("--p-dx", pdx);
         photon.style.setProperty("--p-dy", pdy);
         photon.style.setProperty("--p-size", psize);
-        photon.style.animationDelay = delay;
 
         document.body.appendChild(photon);
-        setTimeout(() => photon.remove(), 1550);
+        setTimeout(() => photon.remove(), 1200);
     }
 
-    // 3. 直接向下掉落並淡出消失的羽毛 (3 根精緻小羽毛)
+    // 3. 零停頓直接勻速向下掉落的羽毛 (3 根精緻小羽毛)
     const featherImages = [
         "assets/feather1.png",
         "assets/feather2.png",
@@ -822,17 +820,16 @@ function createFeatherPhotonEffect(e) {
         feather.src = featherImages[Math.floor(Math.random() * featherImages.length)];
         feather.alt = "feather";
 
-        const fdx = (Math.random() - 0.5) * 45 + "px";
+        const fdx = (Math.random() - 0.5) * 40 + "px";
         const rotVal = (f % 2 === 0 ? 1 : -1) * (30 + Math.random() * 30) + "deg";
 
         feather.style.left = x + "px";
         feather.style.top = y + "px";
         feather.style.setProperty("--f-dx", fdx);
         feather.style.setProperty("--rot", rotVal);
-        feather.style.animationDelay = (f * 0.1) + "s";
         document.body.appendChild(feather);
 
-        setTimeout(() => feather.remove(), 1550);
+        setTimeout(() => feather.remove(), 1200);
     }
 }
 
