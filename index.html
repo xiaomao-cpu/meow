@@ -99,6 +99,17 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260731_47"></script>
+    <!-- 照片放大瀏覽 Modal -->
+    <div id="photo-lightbox-modal" class="modal-overlay hidden" style="z-index: 10000; cursor: pointer;">
+        <div class="lightbox-card" onclick="event.stopPropagation()">
+            <button id="lightbox-close" class="lightbox-close-btn" type="button" aria-label="關閉">&times;</button>
+            <div class="lightbox-img-wrap">
+                <img id="lightbox-img" src="" alt="放大相片" />
+            </div>
+            <div id="lightbox-note" class="polaroid-note lightbox-note"></div>
+        </div>
+    </div>
+
+    <script src="script.js?v=20260731_48"></script>
 </body>
 </html>

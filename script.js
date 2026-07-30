@@ -996,7 +996,7 @@ function openSecretPanScreen(key) {
     }
 }
 
-// 點擊拍立得卡片：移至最上層
+// 點擊拍立得卡片：移至最上層並開啟放大瀏覽
 window.bringPolaroidToFront = function(card) {
     const allCards = document.querySelectorAll(".polaroid-card");
     let maxZ = 0;
@@ -1007,7 +1007,39 @@ window.bringPolaroidToFront = function(card) {
     });
     card.classList.add("on-top");
     card.style.zIndex = maxZ + 1;
+
+    // 擷取相片與留言，開啟放大檢視 Modal
+    const imgEl = card.querySelector("img");
+    const noteEl = card.querySelector(".polaroid-note");
+    const imgSrc = imgEl ? imgEl.src : "";
+    const noteText = noteEl ? noteEl.textContent.trim() : "";
+
+    if (imgSrc) {
+        openPhotoLightbox(imgSrc, noteText);
+    }
 };
+
+function openPhotoLightbox(imgSrc, noteText) {
+    const modal = document.getElementById("photo-lightbox-modal");
+    const imgEl = document.getElementById("lightbox-img");
+    const noteEl = document.getElementById("lightbox-note");
+    if (!modal || !imgEl || !noteEl) return;
+
+    imgEl.src = imgSrc;
+    if (noteText) {
+        noteEl.textContent = noteText;
+        noteEl.style.display = "block";
+    } else {
+        noteEl.textContent = "";
+        noteEl.style.display = "none";
+    }
+    modal.classList.remove("hidden");
+}
+
+function closePhotoLightbox() {
+    const modal = document.getElementById("photo-lightbox-modal");
+    if (modal) modal.classList.add("hidden");
+}
 
 function openYouquanAdminModal() {
     const modal = document.getElementById("youquan-admin-modal");
@@ -1267,5 +1299,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (urlMsgLabel) urlMsgLabel.style.display = hasUrl ? "" : "none";
         if (urlMsgInput) urlMsgInput.style.display = hasUrl ? "" : "none";
     });
+
+    // 照片放大瀏覽 Lightbox 關閉監聽
+    const lightboxModal = document.getElementById("photo-lightbox-modal");
+    if (lightboxModal) {
+        lightboxModal.addEventListener("click", (e) => {
+            if (e.target === lightboxModal) closePhotoLightbox();
+        });
+    }
+    const lightboxClose = document.getElementById("lightbox-close");
+    if (lightboxClose) {
+        lightboxClose.addEventListener("click", closePhotoLightbox);
+    }
 
 });
