@@ -783,16 +783,16 @@ function createFeatherPhotonEffect(e) {
     document.body.appendChild(ring);
     setTimeout(() => ring.remove(), 600);
 
-    // 2. 隨羽毛一起向下飄落的閃耀白色光子微粒 (14 顆)
-    const photonCount = 14;
+    // 2. 隨羽毛一同直接向下掉落的閃耀白色光子微粒 (12 顆)
+    const photonCount = 12;
     for (let i = 0; i < photonCount; i++) {
         const photon = document.createElement("div");
         photon.className = "falling-photon";
 
-        const pdx = (Math.random() - 0.5) * 80 + "px";
-        const pdy = (80 + Math.random() * 110) + "px";
-        const psize = (3 + Math.random() * 5) + "px";
-        const delay = (Math.random() * 0.4) + "s";
+        const pdx = (Math.random() - 0.5) * 50 + "px";
+        const pdy = (70 + Math.random() * 80) + "px";
+        const psize = (3 + Math.random() * 4.5) + "px";
+        const delay = (Math.random() * 0.15) + "s";
 
         photon.style.left = x + "px";
         photon.style.top = y + "px";
@@ -802,10 +802,10 @@ function createFeatherPhotonEffect(e) {
         photon.style.animationDelay = delay;
 
         document.body.appendChild(photon);
-        setTimeout(() => photon.remove(), 2400);
+        setTimeout(() => photon.remove(), 1550);
     }
 
-    // 3. 飄落 6 款使用者圖片同款真實純白羽毛 (3 根精緻小羽毛)
+    // 3. 直接向下掉落並淡出消失的羽毛 (3 根精緻小羽毛)
     const featherImages = [
         "assets/feather1.png",
         "assets/feather2.png",
@@ -822,17 +822,17 @@ function createFeatherPhotonEffect(e) {
         feather.src = featherImages[Math.floor(Math.random() * featherImages.length)];
         feather.alt = "feather";
 
-        const swayVal = (f % 2 === 0 ? 1 : -1) * (24 + Math.random() * 20);
-        const rotVal = (f % 2 === 0 ? 1 : -1) * (45 + Math.random() * 45);
+        const fdx = (Math.random() - 0.5) * 45 + "px";
+        const rotVal = (f % 2 === 0 ? 1 : -1) * (30 + Math.random() * 30) + "deg";
 
         feather.style.left = x + "px";
         feather.style.top = y + "px";
-        feather.style.setProperty("--sway", swayVal + "px");
-        feather.style.setProperty("--rot", rotVal + "deg");
-        feather.style.animationDelay = (f * 0.15) + "s";
+        feather.style.setProperty("--f-dx", fdx);
+        feather.style.setProperty("--rot", rotVal);
+        feather.style.animationDelay = (f * 0.1) + "s";
         document.body.appendChild(feather);
 
-        setTimeout(() => feather.remove(), 2400);
+        setTimeout(() => feather.remove(), 1550);
     }
 }
 
