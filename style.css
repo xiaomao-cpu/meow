@@ -139,8 +139,12 @@ button {
     letter-spacing: 0;
 }
 
+.home-screen {
+    padding: 34px 28px 28px;
+}
+
 h1 {
-    margin: 0;
+    margin: 6px 0 16px;
     text-align: center;
     font-size: 34px;
     line-height: 1.15;
@@ -148,7 +152,7 @@ h1 {
 }
 
 .subtitle {
-    margin: 20px 0 28px;
+    margin: 18px 0 24px;
     text-align: center;
     color: var(--deep);
     font-size: 15px;
