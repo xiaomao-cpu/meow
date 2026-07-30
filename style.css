@@ -588,13 +588,13 @@ h1 {
 
 .falling-photon {
     position: fixed;
-    width: var(--p-size, 5px);
-    height: var(--p-size, 5px);
-    margin-left: calc(var(--p-size, 5px) * -0.5);
-    margin-top: calc(var(--p-size, 5px) * -0.5);
+    width: var(--p-size, 3px);
+    height: var(--p-size, 3px);
+    margin-left: calc(var(--p-size, 3px) * -0.5);
+    margin-top: calc(var(--p-size, 3px) * -0.5);
     border-radius: 50%;
     background: #ffffff;
-    box-shadow: 0 0 12px #ffffff, 0 0 24px rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 6px #ffffff, 0 0 14px rgba(255, 255, 255, 0.9);
     pointer-events: none;
     z-index: 9999;
     animation: photon-straight-fall 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;

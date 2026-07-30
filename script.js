@@ -791,7 +791,7 @@ function createFeatherPhotonEffect(e) {
 
         const pdx = (Math.random() - 0.5) * 50 + "px";
         const pdy = (70 + Math.random() * 80) + "px";
-        const psize = (3 + Math.random() * 4.5) + "px";
+        const psize = (1.5 + Math.random() * 2.2) + "px";
         const delay = (Math.random() * 0.15) + "s";
 
         photon.style.left = x + "px";
