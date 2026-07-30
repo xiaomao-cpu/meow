@@ -916,25 +916,43 @@ function openSecretPanScreen(key) {
 
     const wallEl = document.getElementById("polaroid-wall");
     if (wallEl) {
-        // 計算散落位置：左右交錯、垂直錯位，允許自然交疊
-        const CARD_W = 200; // px
-        const ROW_H = 180;  // 每張卡垂直間距
+        const n = memories.length;
+
+        // 估算卡片高度（含圖片區 + 留言區 + padding）
+        const CARD_H = 260;
+        // 最低需曝出的像素（確保底下的照片不被完全蓋住）
+        const MIN_PEEK = 65;
+        // 不重疊時的行高：卡片高 + 舒適間距
+        const ROW_H_MAX = CARD_H + 35;
+
+        // ≤5 張：不重疊；>5 張：每多一張就壓縮 30px，直到 MIN_PEEK 為止
+        let rowH;
+        if (n <= 5) {
+            rowH = ROW_H_MAX;
+        } else {
+            rowH = Math.max(MIN_PEEK, ROW_H_MAX - (n - 5) * 30);
+        }
+
+        // 確定性偽隨機（根據 index 計算，每次結果相同）
+        const rand = (seed) => (((seed * 1664525 + 1013904223) & 0x7fffffff) / 0x7fffffff);
 
         const positions = memories.map((_, i) => {
             const isLeft = i % 2 === 0;
-            // 左側：2%~34%，右側：48%~68%（百分比）
-            const leftBase = isLeft
-                ? 2 + (i % 4) * 8
-                : 48 + (i % 3) * 7;
-            const topBase = i * ROW_H + (i % 3) * 24;
-            return { left: leftBase, top: topBase };
+            const r = rand(i * 13 + 7);        // 0~1 確定性偽隨機
+            const leftPct = isLeft
+                ? 2 + r * 20        // 左側：2%~22%
+                : 50 + r * 16;      // 右側：50%~66%
+            const topPx = i * rowH + rand(i * 31 + 17) * 20; // 垂直加微小抖動
+            return { left: leftPct, top: Math.round(topPx) };
         });
 
-        const totalH = positions[positions.length - 1]?.top + 320 || 520;
+        const totalH = (positions[n - 1]?.top ?? 0) + CARD_H + 80;
         wallEl.style.minHeight = totalH + "px";
 
         wallEl.innerHTML = memories.map((item, index) => {
-            const rot = ((index % 5) - 2) * (2 + (index % 4));
+            // 凌亂旋轉：-8deg ~ +8deg，確定性
+            const rotSeed = rand(index * 17 + 5);
+            const rot = Math.round((rotSeed * 16 - 8) * 10) / 10;
             const { left, top } = positions[index];
             return `
                 <div class="polaroid-card"
