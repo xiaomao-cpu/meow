@@ -764,3 +764,69 @@ function normalizeAnswers(answers) {
         Object.entries(answers).map(([key, value]) => [Number(key), value])
     );
 }
+
+// ── 羽毛與白色光子點擊特效 ─────────────────────────
+function createFeatherPhotonEffect(e) {
+    let x = e.clientX;
+    let y = e.clientY;
+    if (x === undefined && e.touches && e.touches[0]) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+    }
+    if (x === undefined || y === undefined || x === null || y === null) return;
+
+    // 1. 白色光子圓環
+    const ring = document.createElement("div");
+    ring.className = "photon-ring";
+    ring.style.left = x + "px";
+    ring.style.top = y + "px";
+    document.body.appendChild(ring);
+    setTimeout(() => ring.remove(), 600);
+
+    // 2. 白色光子微粒 (7 顆)
+    const photonCount = 7;
+    for (let i = 0; i < photonCount; i++) {
+        const photon = document.createElement("div");
+        photon.className = "white-photon";
+        const angle = (i * (360 / photonCount) + Math.random() * 25) * (Math.PI / 180);
+        const dist = 20 + Math.random() * 35;
+        const dx = Math.cos(angle) * dist + "px";
+        const dy = Math.sin(angle) * dist + "px";
+
+        photon.style.left = x + "px";
+        photon.style.top = y + "px";
+        photon.style.setProperty("--dx", dx);
+        photon.style.setProperty("--dy", dy);
+        document.body.appendChild(photon);
+        setTimeout(() => photon.remove(), 650);
+    }
+
+    // 3. 飄落白色羽毛 (2 根)
+    const featherCount = 2;
+    const featherSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20.5 3.5C18 3.5 13 6 10 11C8.5 13.5 7.5 16.5 6 19.5L4.5 21L6 20C7 18 8 16 9.5 14.5C12 12 16.5 8.5 20.5 3.5Z" fill="white" opacity="0.95"/>
+        <path d="M20.5 3.5C16 7 12 11 8.5 16" stroke="#fffaf4" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M14 9.5L16.5 11.5M11.5 13L13.5 15.5" stroke="white" stroke-width="0.8" opacity="0.8"/>
+    </svg>`;
+
+    for (let f = 0; f < featherCount; f++) {
+        const feather = document.createElement("div");
+        feather.className = "floating-feather";
+        feather.innerHTML = featherSvg;
+
+        const fdx = (Math.random() - 0.5) * 60 + "px";
+        const fdy = (Math.random() * 50 + 40) + "px";
+        const frot = (Math.random() - 0.5) * 120 + "deg";
+
+        feather.style.left = x + "px";
+        feather.style.top = y + "px";
+        feather.style.setProperty("--fdx", fdx);
+        feather.style.setProperty("--fdy", fdy);
+        feather.style.setProperty("--frot", frot);
+        document.body.appendChild(feather);
+
+        setTimeout(() => feather.remove(), 1250);
+    }
+}
+
+window.addEventListener("pointerdown", createFeatherPhotonEffect);

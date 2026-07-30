@@ -558,3 +558,83 @@ h1 {
         padding: 56px 44px 44px;
     }
 }
+
+/* ── 羽毛與白色光子點擊特效 ────────────────────── */
+.photon-ring {
+    position: fixed;
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+    margin-top: -11px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 250, 244, 0.95);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 250, 244, 0) 70%);
+    box-shadow: 0 0 22px rgba(255, 255, 255, 0.9);
+    pointer-events: none;
+    z-index: 9999;
+    animation: photon-ring-expand 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes photon-ring-expand {
+    0% {
+        transform: scale(0.2);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(3.6);
+        opacity: 0;
+    }
+}
+
+.white-photon {
+    position: fixed;
+    width: 5px;
+    height: 5px;
+    margin-left: -2.5px;
+    margin-top: -2.5px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 10px #ffffff, 0 0 20px rgba(255, 250, 244, 0.95);
+    pointer-events: none;
+    z-index: 9999;
+    animation: photon-float 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes photon-float {
+    0% {
+        transform: translate(0, 0) scale(1.3);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) scale(0.2);
+        opacity: 0;
+    }
+}
+
+.floating-feather {
+    position: fixed;
+    width: 26px;
+    height: 26px;
+    margin-left: -13px;
+    margin-top: -13px;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.95;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+    animation: feather-drift 1.25s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes feather-drift {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(0.6);
+        opacity: 0.95;
+    }
+    50% {
+        transform: translate(var(--fdx), calc(var(--fdy) * 0.5)) rotate(var(--frot)) scale(1.1);
+        opacity: 0.85;
+    }
+    100% {
+        transform: translate(calc(var(--fdx) * 1.4), var(--fdy)) rotate(calc(var(--frot) * 1.8)) scale(0.6);
+        opacity: 0;
+    }
+}
