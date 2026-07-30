@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@600;700;900&family=Zhi+Mang+Xing&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@600;700;900&family=Zhi+Mang+Xing&display=swap');
 
 :root {
     --ink: #17120f;
@@ -13,7 +13,7 @@
     --gold: #b68b4a;
     --quiz-panel-image: url("assets/心测选项背景.jpg");
     --font-handwritten: "BiauKai", "BiauKaiTC", "DFKai-SB", "STKaiti", "KaiTi", "Kaiti TC", "Noto Serif TC", serif;
-    --font-cursive: "Long Cang", "Liu Jian Mao Cao", "Zhi Mang Xing", cursive, serif;
+    --font-cursive: "LXGW WenKai TC", "Klee One", "Long Cang", "Liu Jian Mao Cao", "Zhi Mang Xing", cursive, serif;
 }
 
 * {
@@ -746,10 +746,10 @@ h1 {
 
 .polaroid-note {
     font-family: var(--font-cursive);
-    font-size: 23px;
-    font-weight: 400;
+    font-size: 21px;
+    font-weight: 300;
     color: #1c0d0d;
-    line-height: 1.4;
+    line-height: 1.45;
     margin-top: 12px;
     text-align: left;
     white-space: pre-line;
@@ -1083,9 +1083,11 @@ h1 {
 
 .lightbox-note {
     font-family: var(--font-cursive);
-    font-size: 26px;
+    font-size: 24px;
+    font-weight: 300;
     margin-top: 18px;
     text-align: center;
     line-height: 1.5;
     color: #1a0e0d;
+    letter-spacing: 1px;
 }
