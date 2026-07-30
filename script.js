@@ -223,13 +223,21 @@ async function init() {
     els.next.addEventListener("click", nextQuestion);
     els.audio.addEventListener("click", toggleAudio);
 
-    // 方案 B：讀取網址參數 (例如 ?dm=F 或 ?dm=M)
+    // 1. 優先讀取網址參數 (例如 ?dm=F 或 ?dm=M)
     const urlParams = new URLSearchParams(window.location.search);
     const dmParam = urlParams.get("dm");
     if (dmParam && (dmParam.toUpperCase() === "F" || dmParam.toUpperCase() === "FEMALE")) {
         setDmGender("F");
     } else if (dmParam && (dmParam.toUpperCase() === "M" || dmParam.toUpperCase() === "MALE")) {
         setDmGender("M");
+    } else {
+        // 2. 若無網址參數，讀取裝置記憶體 (localStorage)
+        try {
+            const savedDm = localStorage.getItem("youquan_dm_gender");
+            if (savedDm === "F" || savedDm === "M") {
+                setDmGender(savedDm);
+            }
+        } catch (e) {}
     }
 
     document.querySelectorAll(".dm-btn").forEach(btn => {
@@ -259,6 +267,9 @@ async function init() {
 
 function setDmGender(g) {
     dmGender = g;
+    try {
+        localStorage.setItem("youquan_dm_gender", g);
+    } catch (e) {}
     document.querySelectorAll(".dm-btn").forEach(b => {
         b.classList.toggle("active", b.dataset.dm === g);
     });
