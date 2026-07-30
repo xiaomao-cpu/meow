@@ -621,16 +621,16 @@ h1 {
 
 .floating-feather {
     position: fixed;
-    width: 44px;
+    width: 28px;
     height: auto;
-    max-height: 44px;
-    margin-left: -22px;
-    margin-top: -22px;
+    max-height: 28px;
+    margin-left: -14px;
+    margin-top: -14px;
     pointer-events: none;
     z-index: 9999;
     opacity: 0.98;
     object-fit: contain;
-    filter: drop-shadow(0 4px 14px rgba(255, 255, 255, 0.95));
+    filter: drop-shadow(0 3px 10px rgba(255, 255, 255, 0.95));
     animation: feather-natural-fall 2.2s cubic-bezier(0.37, 0, 0.63, 1) forwards;
 }
 

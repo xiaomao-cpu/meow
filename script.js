@@ -805,27 +805,31 @@ function createFeatherPhotonEffect(e) {
         setTimeout(() => photon.remove(), 2400);
     }
 
-    // 3. 飄落使用者圖片同款真實純白羽毛 (2 根隨機圖片)
+    // 3. 飄落 6 款使用者圖片同款真實純白羽毛 (3 根精緻小羽毛)
     const featherImages = [
         "assets/feather1.png",
         "assets/feather2.png",
-        "assets/feather3.png"
+        "assets/feather3.png",
+        "assets/feather4.png",
+        "assets/feather5.png",
+        "assets/feather6.png"
     ];
 
-    for (let f = 0; f < 2; f++) {
+    const featherCount = 3;
+    for (let f = 0; f < featherCount; f++) {
         const feather = document.createElement("img");
         feather.className = "floating-feather";
         feather.src = featherImages[Math.floor(Math.random() * featherImages.length)];
         feather.alt = "feather";
 
-        const swayVal = (f % 2 === 0 ? 1 : -1) * (28 + Math.random() * 22);
-        const rotVal = (f % 2 === 0 ? 1 : -1) * (50 + Math.random() * 50);
+        const swayVal = (f % 2 === 0 ? 1 : -1) * (24 + Math.random() * 20);
+        const rotVal = (f % 2 === 0 ? 1 : -1) * (45 + Math.random() * 45);
 
         feather.style.left = x + "px";
         feather.style.top = y + "px";
         feather.style.setProperty("--sway", swayVal + "px");
         feather.style.setProperty("--rot", rotVal + "deg");
-        feather.style.animationDelay = (f * 0.18) + "s";
+        feather.style.animationDelay = (f * 0.15) + "s";
         document.body.appendChild(feather);
 
         setTimeout(() => feather.remove(), 2400);
