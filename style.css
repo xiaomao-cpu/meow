@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Long+Cang&family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@600;700;900&family=Zhi+Mang+Xing&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@600;700;900&family=Zhi+Mang+Xing&display=swap');
 
 :root {
     --ink: #17120f;
@@ -13,7 +13,7 @@
     --gold: #b68b4a;
     --quiz-panel-image: url("assets/心测选项背景.jpg");
     --font-handwritten: "BiauKai", "BiauKaiTC", "DFKai-SB", "STKaiti", "KaiTi", "Kaiti TC", "Noto Serif TC", serif;
-    --font-cursive: "Zhi Mang Xing", "Long Cang", "Ma Shan Zheng", "BiauKai", "BiauKaiTC", "DFKai-SB", cursive, serif;
+    --font-cursive: "Long Cang", "Liu Jian Mao Cao", "Zhi Mang Xing", cursive, serif;
 }
 
 * {
@@ -746,14 +746,14 @@ h1 {
 
 .polaroid-note {
     font-family: var(--font-cursive);
-    font-size: 22px;
-    font-weight: 500;
+    font-size: 23px;
+    font-weight: 400;
     color: #1c0d0d;
     line-height: 1.4;
     margin-top: 12px;
     text-align: left;
     white-space: pre-line;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
 }
 
 @media (max-width: 520px) {
