@@ -240,13 +240,7 @@ async function init() {
         } catch (e) {}
     }
 
-    document.querySelectorAll(".dm-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            setDmGender(btn.dataset.dm);
-        });
-    });
-
-    // 方案 A：首頁標題連點 3 下暗號，開關 DM 秘道設定區塊
+    // 首頁標題「向生而死」連點 3 下直接切換 DM 模式並跳出提示
     let clickCount = 0;
     let clickTimer = null;
     const titleEl = document.getElementById("main-title");
@@ -255,14 +249,36 @@ async function init() {
             clickCount++;
             clearTimeout(clickTimer);
             if (clickCount >= 3) {
-                const dmSettingEl = document.querySelector(".dm-setting");
-                if (dmSettingEl) dmSettingEl.classList.toggle("hidden");
+                const nextDm = dmGender === "M" ? "F" : "M";
+                setDmGender(nextDm);
+                if (nextDm === "F") {
+                    showToast("✨ 已切換為：女 DM 模式 ♀（已自動避開「畔」）");
+                } else {
+                    showToast("✨ 已切換為：男 DM 模式 ♂（全角色正常模式）");
+                }
                 clickCount = 0;
             } else {
-                clickTimer = setTimeout(() => { clickCount = 0; }, 800);
+                clickTimer = setTimeout(() => { clickCount = 0; }, 700);
             }
         });
     }
+}
+
+let toastTimer = null;
+function showToast(message) {
+    let toastEl = document.getElementById("toast-notice");
+    if (!toastEl) {
+        toastEl = document.createElement("div");
+        toastEl.id = "toast-notice";
+        toastEl.className = "toast-notice";
+        document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = message;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        toastEl.classList.remove("show");
+    }, 2800);
 }
 
 function setDmGender(g) {
@@ -270,9 +286,6 @@ function setDmGender(g) {
     try {
         localStorage.setItem("youquan_dm_gender", g);
     } catch (e) {}
-    document.querySelectorAll(".dm-btn").forEach(b => {
-        b.classList.toggle("active", b.dataset.dm === g);
-    });
 }
 
 function startQuiz() {
