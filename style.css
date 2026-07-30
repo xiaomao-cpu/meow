@@ -613,28 +613,36 @@ h1 {
 
 .floating-feather {
     position: fixed;
-    width: 26px;
-    height: 26px;
-    margin-left: -13px;
-    margin-top: -13px;
+    width: 38px;
+    height: 38px;
+    margin-left: -19px;
+    margin-top: -19px;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.95;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
-    animation: feather-drift 1.25s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    opacity: 0.98;
+    filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.85));
+    animation: feather-natural-fall 2.2s cubic-bezier(0.37, 0, 0.63, 1) forwards;
 }
 
-@keyframes feather-drift {
+@keyframes feather-natural-fall {
     0% {
         transform: translate(0, 0) rotate(0deg) scale(0.6);
-        opacity: 0.95;
+        opacity: 1;
+    }
+    25% {
+        transform: translate(calc(var(--sway) * 1.2), 35px) rotate(calc(var(--rot) * 0.7)) scale(1.05);
+        opacity: 0.92;
     }
     50% {
-        transform: translate(var(--fdx), calc(var(--fdy) * 0.5)) rotate(var(--frot)) scale(1.1);
-        opacity: 0.85;
+        transform: translate(calc(var(--sway) * -0.8), 85px) rotate(calc(var(--rot) * -0.8)) scale(1.1);
+        opacity: 0.82;
+    }
+    75% {
+        transform: translate(calc(var(--sway) * 0.9), 140px) rotate(calc(var(--rot) * 1.2)) scale(0.92);
+        opacity: 0.55;
     }
     100% {
-        transform: translate(calc(var(--fdx) * 1.4), var(--fdy)) rotate(calc(var(--frot) * 1.8)) scale(0.6);
+        transform: translate(calc(var(--sway) * 0.3), 190px) rotate(calc(var(--rot) * 1.6)) scale(0.65);
         opacity: 0;
     }
 }

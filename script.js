@@ -803,10 +803,20 @@ function createFeatherPhotonEffect(e) {
 
     // 3. 飄落白色羽毛 (2 根)
     const featherCount = 2;
-    const featherSvg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20.5 3.5C18 3.5 13 6 10 11C8.5 13.5 7.5 16.5 6 19.5L4.5 21L6 20C7 18 8 16 9.5 14.5C12 12 16.5 8.5 20.5 3.5Z" fill="white" opacity="0.95"/>
-        <path d="M20.5 3.5C16 7 12 11 8.5 16" stroke="#fffaf4" stroke-width="1.2" stroke-linecap="round"/>
-        <path d="M14 9.5L16.5 11.5M11.5 13L13.5 15.5" stroke="white" stroke-width="0.8" opacity="0.8"/>
+    const featherSvg = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="fgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+                <stop offset="70%" stop-color="#fff9f2" stop-opacity="0.92"/>
+                <stop offset="100%" stop-color="#f2eaee" stop-opacity="0.8"/>
+            </linearGradient>
+        </defs>
+        <path d="M15 85 Q 40 55 85 15" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+        <path d="M15 85 Q 40 55 85 15" stroke="#e8dfd1" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M85 15 C 70 20 50 30 38 48 C 30 60 25 72 20 80 C 26 77 34 68 44 57 C 56 43 72 28 85 15 Z" fill="url(#fgrad)"/>
+        <path d="M85 15 C 75 12 58 18 42 32 C 28 45 20 58 15 72 C 20 68 30 62 43 50 C 58 36 74 22 85 15 Z" fill="url(#fgrad)"/>
+        <path d="M72 24 L 62 20 M 60 34 L 50 28 M 48 45 L 38 38 M 36 56 L 28 48" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
+        <path d="M78 20 L 70 28 M 65 30 L 56 38 M 52 42 L 42 50 M 40 54 L 30 62" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
     </svg>`;
 
     for (let f = 0; f < featherCount; f++) {
@@ -814,18 +824,17 @@ function createFeatherPhotonEffect(e) {
         feather.className = "floating-feather";
         feather.innerHTML = featherSvg;
 
-        const fdx = (Math.random() - 0.5) * 60 + "px";
-        const fdy = (Math.random() * 50 + 40) + "px";
-        const frot = (Math.random() - 0.5) * 120 + "deg";
+        const swayVal = (f % 2 === 0 ? 1 : -1) * (25 + Math.random() * 20);
+        const rotVal = (f % 2 === 0 ? 1 : -1) * (45 + Math.random() * 45);
 
         feather.style.left = x + "px";
         feather.style.top = y + "px";
-        feather.style.setProperty("--fdx", fdx);
-        feather.style.setProperty("--fdy", fdy);
-        feather.style.setProperty("--frot", frot);
+        feather.style.setProperty("--sway", swayVal + "px");
+        feather.style.setProperty("--rot", rotVal + "deg");
+        feather.style.animationDelay = (f * 0.18) + "s";
         document.body.appendChild(feather);
 
-        setTimeout(() => feather.remove(), 1250);
+        setTimeout(() => feather.remove(), 2400);
     }
 }
 
