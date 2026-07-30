@@ -179,12 +179,12 @@ const FALLBACK_QUIZ_CONFIG = {
       { "questionId": 2, "value": "C", "scores": { "4": 1 } },
       { "questionId": 2, "value": "D", "scores": { "7": 1 } },
       { "questionId": 4, "value": "C", "scores": { "4": -1 } },
-      { "questionId": 4, "value": "F", "scores": { "4": -5 } },
+      { "questionId": 4, "value": "F", "scores": { "4": -1 } },
       { "questionId": 4, "value": "A", "scores": { "5": -1, "6": -1 } },
       { "questionId": 4, "value": "B", "scores": { "5": -1 } },
       { "questionId": 4, "value": "E", "scores": { "5": -1 } },
       { "questionId": 4, "value": "G", "scores": { "6": -1 } },
-      { "questionId": 4, "value": "H", "scores": { "4": -5, "6": -1 } },
+      { "questionId": 4, "value": "H", "scores": { "6": -1 } },
       { "questionId": 4, "value": "I", "scores": { "6": -1, "7": -1 } },
       { "questionId": 4, "value": "J", "scores": { "6": -1 } },
       { "questionId": 4, "value": "D", "scores": { "7": -1 } },
@@ -223,12 +223,44 @@ async function init() {
     els.next.addEventListener("click", nextQuestion);
     els.audio.addEventListener("click", toggleAudio);
 
+    // 方案 B：讀取網址參數 (例如 ?dm=F 或 ?dm=M)
+    const urlParams = new URLSearchParams(window.location.search);
+    const dmParam = urlParams.get("dm");
+    if (dmParam && (dmParam.toUpperCase() === "F" || dmParam.toUpperCase() === "FEMALE")) {
+        setDmGender("F");
+    } else if (dmParam && (dmParam.toUpperCase() === "M" || dmParam.toUpperCase() === "MALE")) {
+        setDmGender("M");
+    }
+
     document.querySelectorAll(".dm-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-            document.querySelectorAll(".dm-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            dmGender = btn.dataset.dm;
+            setDmGender(btn.dataset.dm);
         });
+    });
+
+    // 方案 A：首頁標題連點 3 下暗號，開關 DM 秘道設定區塊
+    let clickCount = 0;
+    let clickTimer = null;
+    const titleEl = document.getElementById("main-title");
+    if (titleEl) {
+        titleEl.addEventListener("click", () => {
+            clickCount++;
+            clearTimeout(clickTimer);
+            if (clickCount >= 3) {
+                const dmSettingEl = document.querySelector(".dm-setting");
+                if (dmSettingEl) dmSettingEl.classList.toggle("hidden");
+                clickCount = 0;
+            } else {
+                clickTimer = setTimeout(() => { clickCount = 0; }, 800);
+            }
+        });
+    }
+}
+
+function setDmGender(g) {
+    dmGender = g;
+    document.querySelectorAll(".dm-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.dm === g);
     });
 }
 
