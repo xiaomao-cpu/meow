@@ -622,14 +622,13 @@ function renderResult(highestId, scores, targetIds) {
             otherScores: otherScoresStr
         };
 
-        // 使用 URLSearchParams 以完美相容 Apps Script 的 e.parameter 與 e.postData
-        const formData = new URLSearchParams();
-        Object.entries(payload).forEach(([k, v]) => formData.append(k, v));
-
         fetch(GOOGLE_SHEETS_WEB_APP_URL, {
             method: "POST",
             mode: "no-cors",
-            body: formData
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(payload)
         }).catch(err => console.error("後台傳送失敗:", err));
     }
 
