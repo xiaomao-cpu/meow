@@ -489,6 +489,28 @@ function nextIntroQuestion() {
     const input = els.options.querySelector(".text-input");
     const error = els.options.querySelector("#intro-error");
     let value = input ? input.value.trim() : "";
+
+    if (question.id === "lineNickname") {
+        if (value.includes("畔")) {
+            userMeta.lineNickname = value;
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlKey = urlParams.get("key") || urlParams.get("pan");
+            if (urlKey) {
+                openSecretPanScreen(urlKey);
+            } else {
+                const keyModal = document.getElementById("secret-key-modal");
+                if (keyModal) keyModal.classList.remove("hidden");
+            }
+            return;
+        }
+
+        if (value.includes("游泉") || value.toLowerCase() === "admin") {
+            userMeta.lineNickname = value;
+            openYouquanAdminModal();
+            return;
+        }
+    }
+
     if (question.id === "playDate") {
         value = formatDateInput(value);
         if (input) input.value = value;
