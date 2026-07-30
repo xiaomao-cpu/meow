@@ -893,3 +893,29 @@ h1 {
     border-top: 1px solid var(--line);
     padding-top: 16px;
 }
+
+.admin-photo-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: rgba(255, 250, 244, 0.6);
+    border-radius: 8px;
+    border: 1px solid var(--line);
+}
+
+.greeting-card {
+    max-width: 360px;
+    text-align: center;
+    background: var(--paper-solid);
+    border: 2px solid var(--gold);
+}
+
+.greeting-text {
+    font-family: var(--font-handwritten);
+    font-size: 28px;
+    color: var(--ink);
+    line-height: 1.7;
+    margin-bottom: 20px;
+}

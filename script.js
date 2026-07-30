@@ -924,13 +924,19 @@ function openSecretPanScreen(key) {
                     <div class="polaroid-img-wrap">
                         <img src="${sanitizeUrl(item.img)}" alt="memory" loading="lazy" />
                     </div>
-                    <div class="polaroid-note">${escapeHtml(item.text)}</div>
+                    ${item.text ? `<div class="polaroid-note">${escapeHtml(item.text)}</div>` : ""}
                 </div>
             `;
         }).join("");
     }
 
     showScreen("secret-pan");
+
+    // 展示歡迎問候彈窗
+    const greetingModal = document.getElementById("greeting-modal");
+    if (greetingModal) {
+        greetingModal.classList.remove("hidden");
+    }
 }
 
 function openYouquanAdminModal() {
@@ -978,9 +984,15 @@ let uploadedBase64Images = [];
 function handleAdminPhotoUpload(e) {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-    uploadedBase64Images = [];
+    uploadedBase64Images = new Array(files.length).fill(null);
     const preview = document.getElementById("admin-photo-preview");
     if (preview) preview.innerHTML = "<p style='font-size:13px;color:var(--muted);'>載入中…</p>";
+
+    // 隱藏 URL 留言欄（文件上傳模式用遊算独立留言）
+    const urlMsgLabel = document.getElementById("admin-url-msg-label");
+    const urlMsgInput = document.getElementById("admin-message-input");
+    if (urlMsgLabel) urlMsgLabel.style.display = "none";
+    if (urlMsgInput) urlMsgInput.style.display = "none";
 
     let loaded = 0;
     files.forEach((file, idx) => {
@@ -990,9 +1002,19 @@ function handleAdminPhotoUpload(e) {
             loaded++;
             if (loaded === files.length) {
                 if (preview) {
-                    preview.innerHTML = uploadedBase64Images.map(src =>
-                        `<img src="${src}" alt="preview" style="width:70px;height:70px;object-fit:cover;border-radius:4px;margin:4px;border:1.5px solid var(--line);" />`
-                    ).join("");
+                    // 每張照片配独立留言輸入框
+                    preview.innerHTML = uploadedBase64Images.map((src, i) => `
+                        <div class="admin-photo-item" data-idx="${i}">
+                            <img src="${src}" alt="photo ${i+1}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1.5px solid var(--line);flex-shrink:0;" />
+                            <textarea
+                                class="admin-per-photo-msg modal-textarea"
+                                data-idx="${i}"
+                                rows="2"
+                                placeholder="第 ${i+1} 張照片的悄悄話（可留空）..."
+                                style="flex:1;min-width:0;margin:0;font-size:15px;"
+                            ></textarea>
+                        </div>
+                    `).join("");
                 }
             }
         };
@@ -1007,43 +1029,49 @@ function saveAdminMemory() {
 
     const key = (keyInput ? keyInput.value : "").trim().toLowerCase();
     const url = (urlInput ? urlInput.value : "").trim();
-    const msg = (msgInput ? msgInput.value : "").trim();
+    const urlMsg = (msgInput ? msgInput.value : "").trim();
 
     if (!key) {
         alert("請輸入玩家專屬密語或房號！");
         return;
     }
 
-    // 支援多張照片：base64 上傳優先，或單張 URL
-    const imagesToSave = uploadedBase64Images.length > 0
-        ? uploadedBase64Images
-        : url ? [url] : [];
+    const allData = getMemoriesData();
+    if (!allData[key]) allData[key] = [];
 
-    if (imagesToSave.length === 0) {
+    if (uploadedBase64Images.length > 0) {
+        // 文件上傳模式：讀取每張照片配独立的留言輸入框
+        const perPhotoItems = document.querySelectorAll(".admin-per-photo-msg");
+        uploadedBase64Images.forEach((img, i) => {
+            const msgEl = perPhotoItems[i];
+            const msg = msgEl ? msgEl.value.trim() : "";
+            allData[key].push({ img, text: msg });
+        });
+        saveMemoriesData(allData);
+
+        document.getElementById("admin-photo-file").value = "";
+        uploadedBase64Images = [];
+        document.getElementById("admin-photo-preview").innerHTML = "";
+
+        alert(`成功儲存 ${allData[key].length} 張照片給「${key}」！`);
+    } else if (url) {
+        // URL 模式：單張照片 + 留言
+        allData[key].push({ img: url, text: urlMsg });
+        saveMemoriesData(allData);
+
+        if (urlInput) urlInput.value = "";
+        if (msgInput) msgInput.value = "";
+        const urlMsgLabel = document.getElementById("admin-url-msg-label");
+        const urlMsgInputEl = document.getElementById("admin-message-input");
+        if (urlMsgLabel) urlMsgLabel.style.display = "none";
+        if (urlMsgInputEl) urlMsgInputEl.style.display = "none";
+
+        alert(`成功儲存 1 張照片給「${key}」！`);
+    } else {
         alert("請上傳至少一張圖片，或貼上圖片網址！");
         return;
     }
 
-    const allData = getMemoriesData();
-    if (!allData[key]) allData[key] = [];
-
-    // 每張照片分別儲存為獨立的拍立得卡片
-    imagesToSave.forEach(img => {
-        allData[key].push({
-            img: img,
-            text: msg || "向生而死，陪伴是你我唯一的承諾。"
-        });
-    });
-
-    saveMemoriesData(allData);
-
-    if (urlInput) urlInput.value = "";
-    if (msgInput) msgInput.value = "";
-    document.getElementById("admin-photo-file").value = "";
-    uploadedBase64Images = [];
-    document.getElementById("admin-photo-preview").innerHTML = "";
-
-    alert(`成功儲存 ${imagesToSave.length} 張照片給「${key}」！`);
     renderAdminSavedList();
 }
 
@@ -1095,5 +1123,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const adminPhotoFile = document.getElementById("admin-photo-file");
     if (adminPhotoFile) adminPhotoFile.addEventListener("change", handleAdminPhotoUpload);
+
+    // 問候彈窗關閉
+    const greetingClose = document.getElementById("greeting-close");
+    if (greetingClose) greetingClose.addEventListener("click", () => {
+        const modal = document.getElementById("greeting-modal");
+        if (modal) modal.classList.add("hidden");
+    });
+
+    // URL 輸入時顯示留言欄
+    const adminPhotoUrl = document.getElementById("admin-photo-url");
+    if (adminPhotoUrl) adminPhotoUrl.addEventListener("input", () => {
+        const hasUrl = adminPhotoUrl.value.trim().length > 0;
+        const urlMsgLabel = document.getElementById("admin-url-msg-label");
+        const urlMsgInput = document.getElementById("admin-message-input");
+        if (urlMsgLabel) urlMsgLabel.style.display = hasUrl ? "" : "none";
+        if (urlMsgInput) urlMsgInput.style.display = hasUrl ? "" : "none";
+    });
 
 });
