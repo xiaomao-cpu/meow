@@ -13,6 +13,7 @@ let multiSelectState = [];
 let isBgmOn = false;
 let isIntroActive = false;
 let currentIntroStep = 0;
+let dmGender = "M"; // 預設游泉為男 DM
 
 const els = {
     home: document.getElementById("home-screen"),
@@ -221,6 +222,14 @@ async function init() {
     els.prev.addEventListener("click", prevQuestion);
     els.next.addEventListener("click", nextQuestion);
     els.audio.addEventListener("click", toggleAudio);
+
+    document.querySelectorAll(".dm-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".dm-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            dmGender = btn.dataset.dm;
+        });
+    });
 }
 
 function startQuiz() {
@@ -490,7 +499,11 @@ function calculateAndShowResult() {
         });
     });
 
-    const targetIds = quizConfig.targetCharacters[gender];
+    let targetIds = [...quizConfig.targetCharacters[gender]];
+    // 當游泉由女 DM 演繹且玩家為女性時，自動為女玩家剔除 畔（女生版） (id: "4")
+    if (gender === "F" && dmGender === "F") {
+        targetIds = targetIds.filter(id => id !== "4");
+    }
 
     const highestId = targetIds.reduce((bestId, characterId) => {
         const pctBest = scores[bestId] / quizConfig.maxScores[bestId];
