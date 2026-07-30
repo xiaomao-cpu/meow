@@ -613,6 +613,8 @@ h1 {
 
 .floating-feather {
     position: fixed;
+    display: block;
+    visibility: visible;
     width: 28px;
     height: auto;
     max-height: 28px;
