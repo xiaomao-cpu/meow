@@ -559,3 +559,53 @@ h1 {
         padding: 56px 44px 44px;
     }
 }
+
+/* ── 點擊與觸控紅金靈魂星火特效 ────────────────────── */
+.click-ripple {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border-radius: 50%;
+    border: 2px solid rgba(182, 139, 74, 0.85);
+    background: radial-gradient(circle, rgba(123, 36, 52, 0.45) 0%, rgba(182, 139, 74, 0) 75%);
+    box-shadow: 0 0 16px rgba(123, 36, 52, 0.7);
+    pointer-events: none;
+    z-index: 9999;
+    animation: ripple-expand 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes ripple-expand {
+    0% {
+        transform: scale(0.3);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(3.2);
+        opacity: 0;
+    }
+}
+
+.click-spark {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    margin-left: -3px;
+    margin-top: -3px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    animation: spark-fly 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes spark-fly {
+    0% {
+        transform: translate(0, 0) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--dx), var(--dy)) scale(0);
+        opacity: 0;
+    }
+}

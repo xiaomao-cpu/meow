@@ -764,3 +764,48 @@ function normalizeAnswers(answers) {
         Object.entries(answers).map(([key, value]) => [Number(key), value])
     );
 }
+
+// ── 全站點擊／觸控靈魂星火特效 ─────────────────────────
+function createClickEffect(e) {
+    let x = e.clientX;
+    let y = e.clientY;
+    if (x === undefined && e.touches && e.touches[0]) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+    }
+    if (x === undefined || y === undefined || x === null || y === null) return;
+
+    // 建立靈魂漣漪圓環
+    const ripple = document.createElement("div");
+    ripple.className = "click-ripple";
+    ripple.style.left = x + "px";
+    ripple.style.top = y + "px";
+    document.body.appendChild(ripple);
+
+    // 建立 8 顆爆散星火粒子
+    const sparkCount = 8;
+    const colors = ["#7b2434", "#b68b4a", "#fffaf4", "#d4af37"];
+    for (let i = 0; i < sparkCount; i++) {
+        const spark = document.createElement("div");
+        spark.className = "click-spark";
+        const angle = (i * (360 / sparkCount) + Math.random() * 20) * (Math.PI / 180);
+        const distance = 25 + Math.random() * 35;
+        const dx = Math.cos(angle) * distance + "px";
+        const dy = Math.sin(angle) * distance + "px";
+
+        spark.style.left = x + "px";
+        spark.style.top = y + "px";
+        spark.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        spark.style.setProperty("--dx", dx);
+        spark.style.setProperty("--dy", dy);
+        spark.style.boxShadow = `0 0 8px ${spark.style.backgroundColor}`;
+
+        document.body.appendChild(spark);
+
+        setTimeout(() => spark.remove(), 550);
+    }
+
+    setTimeout(() => ripple.remove(), 550);
+}
+
+window.addEventListener("pointerdown", createClickEffect);
