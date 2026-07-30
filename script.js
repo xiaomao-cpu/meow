@@ -818,22 +818,24 @@ function createFeatherPhotonEffect(e) {
         `<svg viewBox="0 0 100 100" fill="none"><path d="M20 80 Q 50 50 80 20" stroke="#ffffff" stroke-width="3"/><path d="M80 20 C 65 25 45 35 30 55 C 22 65 18 75 15 80 C 22 75 30 65 42 52 C 55 38 70 25 80 20 Z" fill="#ffffff" opacity="0.95"/></svg>`
     ];
 
+    // 3. 柔和輕盈直落的高清純白羽毛 (3 根精緻小羽毛，告別噴射感)
     const featherCount = 3;
     for (let f = 0; f < featherCount; f++) {
         const feather = document.createElement("div");
         feather.className = "floating-feather";
         feather.innerHTML = SVG_FEATHERS[Math.floor(Math.random() * SVG_FEATHERS.length)];
 
-        const fdx = (Math.random() - 0.5) * 80 + "px";
-        const rotVal = (f % 2 === 0 ? 1 : -1) * (30 + Math.random() * 30) + "deg";
+        const offsetX = (Math.random() - 0.5) * 36;
+        const fdx = (Math.random() - 0.5) * 40 + "px";
+        const rotVal = (f % 2 === 0 ? 1 : -1) * (25 + Math.random() * 25) + "deg";
 
-        feather.style.left = x + "px";
+        feather.style.left = (x + offsetX) + "px";
         feather.style.top = y + "px";
         feather.style.setProperty("--f-dx", fdx);
         feather.style.setProperty("--rot", rotVal);
         document.body.appendChild(feather);
 
-        setTimeout(() => feather.remove(), 1850);
+        setTimeout(() => feather.remove(), 1900);
     }
 }
 

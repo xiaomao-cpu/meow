@@ -615,15 +615,15 @@ h1 {
     position: fixed;
     display: block;
     visibility: visible;
-    width: 32px;
-    height: 32px;
-    margin-left: -16px;
-    margin-top: -16px;
+    width: 28px;
+    height: 28px;
+    margin-left: -14px;
+    margin-top: -14px;
     pointer-events: none;
     z-index: 9999;
     opacity: 0.98;
     filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.95));
-    animation: feather-straight-fall 1.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: feather-straight-fall 1.85s cubic-bezier(0.35, 0, 0.25, 1) forwards;
 }
 
 .floating-feather svg {
@@ -634,11 +634,15 @@ h1 {
 
 @keyframes feather-straight-fall {
     0% {
-        transform: translate(0, 0) rotate(0deg) scale(0.8);
-        opacity: 1;
+        transform: translate(0, 0) rotate(0deg) scale(0.6);
+        opacity: 0;
+    }
+    18% {
+        transform: translate(calc(var(--f-dx) * 0.2), 22px) rotate(calc(var(--rot) * 0.2)) scale(0.95);
+        opacity: 0.95;
     }
     100% {
-        transform: translate(var(--f-dx), 150px) rotate(var(--rot)) scale(0.5);
+        transform: translate(var(--f-dx), 135px) rotate(var(--rot)) scale(0.55);
         opacity: 0;
     }
 }
