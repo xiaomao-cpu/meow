@@ -307,6 +307,8 @@ function showScreen(name) {
     els.home.classList.toggle("hidden", name !== "home");
     els.quiz.classList.toggle("hidden", name !== "quiz");
     els.result.classList.toggle("hidden", name !== "result");
+    const secretPanScreen = document.getElementById("secret-pan-screen");
+    if (secretPanScreen) secretPanScreen.classList.toggle("hidden", name !== "secret-pan");
 }
 
 function startBgm() {
@@ -705,7 +707,8 @@ function renderResult(highestId, scores, targetIds) {
         }).catch(err => console.error("後台傳送失敗:", err));
     }
 
-    els.resultContent.innerHTML = `
+    // Secret Pan & Youquan Logic
+els.resultContent.innerHTML = `
         <article class="story-card" style="--result-image: url('${sanitizeUrl(character.image)}');">
             <div class="story-content">
                 <div class="story-label">最契合角色</div>
@@ -836,3 +839,223 @@ function createFeatherPhotonEffect(e) {
 }
 
 window.addEventListener("pointerdown", createFeatherPhotonEffect);
+
+
+// ── 隱藏彩蛋：游泉與畔 宿命記憶牆與管理後台 ──────────────────
+const MEMORY_STORAGE_KEY = "youquan_pan_memories";
+
+const DEFAULT_PAN_MEMORIES = [
+    {
+        img: "assets/畔（男）.jpg",
+        text: "「向生而死，為你而活。\n無論身處何種輪迴，我都將在此等你。」"
+    },
+    {
+        img: "assets/畔（女）.jpg",
+        text: "「微光散盡之處，便是我們的重逢之地。\n別害怕，牽緊我的手。」"
+    },
+    {
+        img: "assets/劇本封面.JPG",
+        text: "「如果罪孽是宿命，\n那麼陪伴你是我唯一不悔的誓言。」"
+    }
+];
+
+function getMemoriesData() {
+    try {
+        const data = localStorage.getItem(MEMORY_STORAGE_KEY);
+        return data ? JSON.parse(data) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveMemoriesData(data) {
+    try {
+        localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+        console.error("記憶牆儲存失敗", e);
+    }
+}
+
+let activeSecretKey = "";
+
+function openSecretPanScreen(key) {
+    activeSecretKey = (key || "").trim().toLowerCase();
+    const allData = getMemoriesData();
+    let memories = allData[activeSecretKey];
+
+    if (!memories || memories.length === 0) {
+        memories = DEFAULT_PAN_MEMORIES;
+    }
+
+    const keyTagEl = document.getElementById("secret-key-tag");
+    if (keyTagEl) {
+        keyTagEl.textContent = activeSecretKey ? `「專屬密語房號：${activeSecretKey}」` : "「預設記憶典藏」";
+    }
+
+    const wallEl = document.getElementById("polaroid-wall");
+    if (wallEl) {
+        wallEl.innerHTML = memories.map((item, index) => {
+            const rot = ((index % 3) - 1) * (3 + (index * 2) % 5);
+            return `
+                <div class="polaroid-card" style="--rot: ${rot}deg;">
+                    <div class="polaroid-tape"></div>
+                    <div class="polaroid-img-wrap">
+                        <img src="${sanitizeUrl(item.img)}" alt="memory" loading="lazy" />
+                    </div>
+                    <div class="polaroid-note">${escapeHtml(item.text)}</div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    showScreen("secret-pan");
+}
+
+function openYouquanAdminModal() {
+    const modal = document.getElementById("youquan-admin-modal");
+    if (modal) modal.classList.remove("hidden");
+    renderAdminSavedList();
+}
+
+function closeYouquanAdminModal() {
+    const modal = document.getElementById("youquan-admin-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function renderAdminSavedList() {
+    const listEl = document.getElementById("admin-saved-list");
+    if (!listEl) return;
+    const allData = getMemoriesData();
+    const keys = Object.keys(allData);
+
+    if (keys.length === 0) {
+        listEl.innerHTML = `<p style="font-size: 14px; color: var(--muted); text-align: center;">尚未設定任何專屬密語卡片</p>`;
+        return;
+    }
+
+    listEl.innerHTML = keys.map(k => `
+        <div style="background: rgba(255,250,244,0.6); padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>房號/密語：${escapeHtml(k)}</strong>
+                <span style="font-size: 13px; color: var(--muted); margin-left: 8px;">(${allData[k].length} 張照片)</span>
+            </div>
+            <button type="button" onclick="deleteAdminKey('${escapeHtml(k)}')" style="background: none; border: none; color: #7b2434; cursor: pointer; font-size: 14px;">刪除</button>
+        </div>
+    `).join("");
+}
+
+window.deleteAdminKey = function(key) {
+    const allData = getMemoriesData();
+    delete allData[key];
+    saveMemoriesData(allData);
+    renderAdminSavedList();
+};
+
+let uploadedBase64Image = "";
+
+function handleAdminPhotoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        uploadedBase64Image = evt.target.result;
+        const preview = document.getElementById("admin-photo-preview");
+        if (preview) {
+            preview.innerHTML = `<img src="${uploadedBase64Image}" alt="preview" />`;
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function saveAdminMemory() {
+    const keyInput = document.getElementById("admin-key-input");
+    const urlInput = document.getElementById("admin-photo-url");
+    const msgInput = document.getElementById("admin-message-input");
+
+    const key = (keyInput ? keyInput.value : "").trim().toLowerCase();
+    const url = (urlInput ? urlInput.value : "").trim();
+    const msg = (msgInput ? msgInput.value : "").trim();
+
+    const img = uploadedBase64Image || url;
+
+    if (!key) {
+        alert("請輸入玩家專屬密語或房號！");
+        return;
+    }
+    if (!img) {
+        alert("請上傳圖片或貼上圖片網址！");
+        return;
+    }
+
+    const allData = getMemoriesData();
+    if (!allData[key]) {
+        allData[key] = [];
+    }
+
+    allData[key].push({
+        img: img,
+        text: msg || "向生而死，陪伴是你我唯一的承諾。"
+    });
+
+    saveMemoriesData(allData);
+
+    if (urlInput) urlInput.value = "";
+    if (msgInput) msgInput.value = "";
+    document.getElementById("admin-photo-file").value = "";
+    uploadedBase64Image = "";
+    document.getElementById("admin-photo-preview").innerHTML = "";
+
+    alert(`成功儲存給「${key}」的卡片！`);
+    renderAdminSavedList();
+}
+
+function clearAdminKeyData() {
+    const keyInput = document.getElementById("admin-key-input");
+    const key = (keyInput ? keyInput.value : "").trim().toLowerCase();
+    if (!key) {
+        alert("請輸入要清空的密語/房號！");
+        return;
+    }
+    if (confirm(`確定要清空密語「${key}」的所有照片嗎？`)) {
+        window.deleteAdminKey(key);
+        alert(`已清空「${key}」的資料！`);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // Secret & Admin Event Listeners
+    const secretBack = document.getElementById("secret-back-button");
+    if (secretBack) secretBack.addEventListener("click", () => showScreen("home"));
+
+    const secretAdminTrigger = document.getElementById("secret-admin-trigger");
+    if (secretAdminTrigger) secretAdminTrigger.addEventListener("click", openYouquanAdminModal);
+
+    const secretKeySubmit = document.getElementById("secret-key-submit");
+    if (secretKeySubmit) secretKeySubmit.addEventListener("click", () => {
+        const keyInput = document.getElementById("secret-key-input");
+        const key = keyInput ? keyInput.value : "";
+        const modal = document.getElementById("secret-key-modal");
+        if (modal) modal.classList.add("hidden");
+        openSecretPanScreen(key);
+    });
+
+    const secretKeyCancel = document.getElementById("secret-key-cancel");
+    if (secretKeyCancel) secretKeyCancel.addEventListener("click", () => {
+        const modal = document.getElementById("secret-key-modal");
+        if (modal) modal.classList.add("hidden");
+    });
+
+    const adminClose = document.getElementById("admin-close-button");
+    if (adminClose) adminClose.addEventListener("click", closeYouquanAdminModal);
+
+    const adminSave = document.getElementById("admin-save-button");
+    if (adminSave) adminSave.addEventListener("click", saveAdminMemory);
+
+    const adminClear = document.getElementById("admin-clear-button");
+    if (adminClear) adminClear.addEventListener("click", clearAdminKeyData);
+
+    const adminPhotoFile = document.getElementById("admin-photo-file");
+    if (adminPhotoFile) adminPhotoFile.addEventListener("change", handleAdminPhotoUpload);
+
+});
