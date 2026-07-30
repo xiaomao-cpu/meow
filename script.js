@@ -909,11 +909,6 @@ function openSecretPanScreen(key) {
         memories = DEFAULT_PAN_MEMORIES;
     }
 
-    const keyTagEl = document.getElementById("secret-key-tag");
-    if (keyTagEl) {
-        keyTagEl.textContent = activeSecretKey ? `「專屬密語房號：${activeSecretKey}」` : "「預設記憶典藏」";
-    }
-
     const wallEl = document.getElementById("polaroid-wall");
     if (wallEl) {
         const n = memories.length;
@@ -922,8 +917,8 @@ function openSecretPanScreen(key) {
         const CARD_H = 260;
         // 最低需曝出的像素（確保底下的照片不被完全蓋住）
         const MIN_PEEK = 65;
-        // 不重疊時的行高：卡片高 + 舒適間距
-        const ROW_H_MAX = CARD_H + 35;
+        // 不重疊時的行高：縮短間距讓照片更緊湊
+        const ROW_H_MAX = CARD_H - 60;
 
         // ≤5 張：不重疊；>5 張：每多一張就壓縮 30px，直到 MIN_PEEK 為止
         let rowH;
@@ -950,9 +945,9 @@ function openSecretPanScreen(key) {
         wallEl.style.minHeight = totalH + "px";
 
         wallEl.innerHTML = memories.map((item, index) => {
-            // 凌亂旋轉：-8deg ~ +8deg，確定性
+            // 凌亂旋轉：-14deg ~ +14deg，確定性
             const rotSeed = rand(index * 17 + 5);
-            const rot = Math.round((rotSeed * 16 - 8) * 10) / 10;
+            const rot = Math.round((rotSeed * 28 - 14) * 10) / 10;
             const { left, top } = positions[index];
             return `
                 <div class="polaroid-card"
