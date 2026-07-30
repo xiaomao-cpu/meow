@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=Noto+Serif+TC:wght@600;900&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-tc-webfont@1.0.0/style.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&display=swap');
 
 :root {
     --ink: #17120f;
@@ -12,7 +13,7 @@
     --deep: #241413;
     --gold: #b68b4a;
     --quiz-panel-image: url("assets/心测选项背景.jpg");
-    --font-handwritten: "ZCOOL KuaiLe", "STKaiti", "KaiTi", cursive, sans-serif;
+    --font-handwritten: "LXGW WenKai TC", "STKaiti", "KaiTi", "BiauKai", serif;
 }
 
 * {
