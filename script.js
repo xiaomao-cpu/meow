@@ -916,10 +916,30 @@ function openSecretPanScreen(key) {
 
     const wallEl = document.getElementById("polaroid-wall");
     if (wallEl) {
+        // 計算散落位置：左右交錯、垂直錯位，允許自然交疊
+        const CARD_W = 200; // px
+        const ROW_H = 180;  // 每張卡垂直間距
+
+        const positions = memories.map((_, i) => {
+            const isLeft = i % 2 === 0;
+            // 左側：2%~34%，右側：48%~68%（百分比）
+            const leftBase = isLeft
+                ? 2 + (i % 4) * 8
+                : 48 + (i % 3) * 7;
+            const topBase = i * ROW_H + (i % 3) * 24;
+            return { left: leftBase, top: topBase };
+        });
+
+        const totalH = positions[positions.length - 1]?.top + 320 || 520;
+        wallEl.style.minHeight = totalH + "px";
+
         wallEl.innerHTML = memories.map((item, index) => {
-            const rot = ((index % 3) - 1) * (3 + (index * 2) % 5);
+            const rot = ((index % 5) - 2) * (2 + (index % 4));
+            const { left, top } = positions[index];
             return `
-                <div class="polaroid-card" style="--rot: ${rot}deg;">
+                <div class="polaroid-card"
+                     style="--rot: ${rot}deg; left: ${left}%; top: ${top}px; z-index: ${index + 1};"
+                     onclick="bringPolaroidToFront(this)">
                     <div class="polaroid-tape"></div>
                     <div class="polaroid-img-wrap">
                         <img src="${sanitizeUrl(item.img)}" alt="memory" loading="lazy" />
@@ -932,12 +952,49 @@ function openSecretPanScreen(key) {
 
     showScreen("secret-pan");
 
-    // 展示歡迎問候彈窗
+    // 歡迎問候彈窗：點空白處或 5 秒後自動關閉
     const greetingModal = document.getElementById("greeting-modal");
     if (greetingModal) {
         greetingModal.classList.remove("hidden");
+
+        let greetingClosed = false;
+        function closeGreeting() {
+            if (greetingClosed) return;
+            greetingClosed = true;
+            greetingModal.classList.add("hidden");
+        }
+
+        // 5 秒自動關閉
+        const timer = setTimeout(closeGreeting, 5000);
+
+        // 點擊遮罩（空白處）關閉
+        function onOverlayClick(e) {
+            if (e.target === greetingModal) {
+                clearTimeout(timer);
+                closeGreeting();
+                greetingModal.removeEventListener("click", onOverlayClick);
+            }
+        }
+        greetingModal.addEventListener("click", onOverlayClick);
+
+        // 按鈕也能關閉
+        const btn = document.getElementById("greeting-close");
+        if (btn) btn.onclick = () => { clearTimeout(timer); closeGreeting(); };
     }
 }
+
+// 點擊拍立得卡片：移至最上層
+window.bringPolaroidToFront = function(card) {
+    const allCards = document.querySelectorAll(".polaroid-card");
+    let maxZ = 0;
+    allCards.forEach(c => {
+        const z = parseInt(c.style.zIndex) || 0;
+        if (z > maxZ) maxZ = z;
+        c.classList.remove("on-top");
+    });
+    card.classList.add("on-top");
+    card.style.zIndex = maxZ + 1;
+};
 
 function openYouquanAdminModal() {
     const modal = document.getElementById("youquan-admin-modal");
