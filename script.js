@@ -973,20 +973,31 @@ window.deleteAdminKey = function(key) {
     renderAdminSavedList();
 };
 
-let uploadedBase64Image = "";
+let uploadedBase64Images = [];
 
 function handleAdminPhotoUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        uploadedBase64Image = evt.target.result;
-        const preview = document.getElementById("admin-photo-preview");
-        if (preview) {
-            preview.innerHTML = `<img src="${uploadedBase64Image}" alt="preview" />`;
-        }
-    };
-    reader.readAsDataURL(file);
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    uploadedBase64Images = [];
+    const preview = document.getElementById("admin-photo-preview");
+    if (preview) preview.innerHTML = "<p style='font-size:13px;color:var(--muted);'>載入中…</p>";
+
+    let loaded = 0;
+    files.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            uploadedBase64Images[idx] = evt.target.result;
+            loaded++;
+            if (loaded === files.length) {
+                if (preview) {
+                    preview.innerHTML = uploadedBase64Images.map(src =>
+                        `<img src="${src}" alt="preview" style="width:70px;height:70px;object-fit:cover;border-radius:4px;margin:4px;border:1.5px solid var(--line);" />`
+                    ).join("");
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    });
 }
 
 function saveAdminMemory() {
@@ -998,25 +1009,30 @@ function saveAdminMemory() {
     const url = (urlInput ? urlInput.value : "").trim();
     const msg = (msgInput ? msgInput.value : "").trim();
 
-    const img = uploadedBase64Image || url;
-
     if (!key) {
         alert("請輸入玩家專屬密語或房號！");
         return;
     }
-    if (!img) {
-        alert("請上傳圖片或貼上圖片網址！");
+
+    // 支援多張照片：base64 上傳優先，或單張 URL
+    const imagesToSave = uploadedBase64Images.length > 0
+        ? uploadedBase64Images
+        : url ? [url] : [];
+
+    if (imagesToSave.length === 0) {
+        alert("請上傳至少一張圖片，或貼上圖片網址！");
         return;
     }
 
     const allData = getMemoriesData();
-    if (!allData[key]) {
-        allData[key] = [];
-    }
+    if (!allData[key]) allData[key] = [];
 
-    allData[key].push({
-        img: img,
-        text: msg || "向生而死，陪伴是你我唯一的承諾。"
+    // 每張照片分別儲存為獨立的拍立得卡片
+    imagesToSave.forEach(img => {
+        allData[key].push({
+            img: img,
+            text: msg || "向生而死，陪伴是你我唯一的承諾。"
+        });
     });
 
     saveMemoriesData(allData);
@@ -1024,10 +1040,10 @@ function saveAdminMemory() {
     if (urlInput) urlInput.value = "";
     if (msgInput) msgInput.value = "";
     document.getElementById("admin-photo-file").value = "";
-    uploadedBase64Image = "";
+    uploadedBase64Images = [];
     document.getElementById("admin-photo-preview").innerHTML = "";
 
-    alert(`成功儲存給「${key}」的卡片！`);
+    alert(`成功儲存 ${imagesToSave.length} 張照片給「${key}」！`);
     renderAdminSavedList();
 }
 
