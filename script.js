@@ -1014,22 +1014,79 @@ function renderAdminSavedList() {
     const keys = Object.keys(allData);
 
     if (keys.length === 0) {
-        listEl.innerHTML = `<p style="font-size: 14px; color: var(--muted); text-align: center;">尚未設定任何專屬密語卡片</p>`;
+        listEl.innerHTML = `<p style="font-size:14px;color:var(--muted);text-align:center;">尚未設定任何專屬密語卡片</p>`;
         return;
     }
 
-    listEl.innerHTML = keys.map(k => `
-        <div style="background: rgba(255,250,244,0.6); padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <strong>房號/密語：${escapeHtml(k)}</strong>
-                <span style="font-size: 13px; color: var(--muted); margin-left: 8px;">(${allData[k].length} 張照片)</span>
-            </div>
-            <button type="button" onclick="deleteAdminKey('${escapeHtml(k)}')" style="background: none; border: none; color: #7b2434; cursor: pointer; font-size: 14px;">刪除</button>
-        </div>
-    `).join("");
+    listEl.innerHTML = `<p style="font-size:13px;color:var(--muted);margin-bottom:10px;">點擊「儲存」更新文字，點擊「刪除」移除單張照片</p>` +
+        keys.map(k => {
+            const cards = allData[k];
+            const cardItems = cards.map((card, idx) => {
+                const imgSrc = card.img && card.img.startsWith("data:")
+                    ? card.img
+                    : sanitizeUrl(card.img);
+                const safeTxt = (card.text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                return `
+                    <div class="edit-card-item">
+                        <img src="${imgSrc}" alt="card ${idx + 1}" />
+                        <div class="edit-card-controls">
+                            <textarea
+                                id="ecm-${k}-${idx}"
+                                class="modal-textarea"
+                                rows="2"
+                                placeholder="悄悄話（可留空）"
+                                style="font-size:13px;margin:0;"
+                            >${safeTxt}</textarea>
+                            <div class="edit-card-actions">
+                                <button type="button" class="btn-sm" onclick="saveCardEdit('${k}',${idx})">💾 儲存</button>
+                                <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})">🗑 刪除</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            return `
+                <div class="edit-key-section">
+                    <div class="edit-key-title">
+                        <span>🔑 房號 / 密語：<strong>${escapeHtml(k)}</strong>
+                            <span style="font-size:12px;font-weight:400;color:var(--muted);margin-left:6px;">(${cards.length} 張)</span>
+                        </span>
+                        <button type="button" class="btn-sm btn-sm-danger" onclick="deleteAdminKey('${escapeHtml(k)}')">清空全部</button>
+                    </div>
+                    ${cardItems}
+                </div>
+            `;
+        }).join("");
 }
 
+window.saveCardEdit = function(key, index) {
+    const allData = getMemoriesData();
+    if (!allData[key] || !allData[key][index]) return;
+    const textarea = document.getElementById(`ecm-${key}-${index}`);
+    if (!textarea) return;
+    allData[key][index].text = textarea.value.trim();
+    saveMemoriesData(allData);
+    // 短暫顯示已儲存提示
+    const btn = textarea.closest(".edit-card-controls").querySelector(".btn-sm");
+    const orig = btn.textContent;
+    btn.textContent = "✓ 已儲存";
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1500);
+};
+
+window.deleteCardItem = function(key, index) {
+    if (!confirm(`確定刪除第 ${index + 1} 張照片？`)) return;
+    const allData = getMemoriesData();
+    if (!allData[key]) return;
+    allData[key].splice(index, 1);
+    if (allData[key].length === 0) delete allData[key];
+    saveMemoriesData(allData);
+    renderAdminSavedList();
+};
+
 window.deleteAdminKey = function(key) {
+    if (!confirm(`確定清空「${key}」的所有照片嗎？`)) return;
     const allData = getMemoriesData();
     delete allData[key];
     saveMemoriesData(allData);
