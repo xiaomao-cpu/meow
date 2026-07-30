@@ -470,16 +470,14 @@ function prevQuestion() {
 }
 
 // ── 修正後的判定邏輯 ────────────────────────────────────────────
-// 原版直接比原始分數，各角色滿分不同（7 或 6），會造成判定偏差。
-// 改用「標準化百分比」（原始分 ÷ 滿分）來比較，確保公平判定。
-// 負分時視為 0 參與比較，避免負分干擾結果，但結果頁仍顯示實際數值。
+// 使用「標準化百分比」（原始分 ÷ 滿分）來比較，確保公平判定。
+// 允許負分（如：-14%）與超過 100%（如：114%）的真實數據表現。
 function calculateAndShowResult() {
     const scores = Object.fromEntries(
         Object.keys(quizConfig.characters).map(id => [id, 0])
     );
     const answers = normalizeAnswers(userAnswers);
     const rules = quizConfig.scoring[gender];
-    const disqualifiedCharacters = new Set();
 
     rules.forEach(rule => {
         const answer = answers[rule.questionId];
@@ -488,16 +486,8 @@ function calculateAndShowResult() {
             : answer === rule.value;
         if (!matched) return;
         Object.entries(rule.scores).forEach(([characterId, delta]) => {
-            if (delta < 0) {
-                disqualifiedCharacters.add(characterId);
-            } else {
-                scores[characterId] += delta;
-            }
+            scores[characterId] += delta;
         });
-    });
-
-    disqualifiedCharacters.forEach(characterId => {
-        scores[characterId] = 0;
     });
 
     const targetIds = quizConfig.targetCharacters[gender];
