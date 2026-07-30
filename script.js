@@ -252,9 +252,9 @@ async function init() {
                 const nextDm = dmGender === "M" ? "F" : "M";
                 setDmGender(nextDm);
                 if (nextDm === "F") {
-                    showToast("✨ 已切換為：女 DM 模式 ♀（已自動避開「畔」）");
+                    showToast("✨ 已切換為：女 DM 模式 ♀（女玩家自動避開「畔」）");
                 } else {
-                    showToast("✨ 已切換為：男 DM 模式 ♂（全角色正常模式）");
+                    showToast("✨ 已切換為：男 DM 模式 ♂（男玩家自動避開「畔」）");
                 }
                 clickCount = 0;
             } else {
@@ -556,9 +556,13 @@ function calculateAndShowResult() {
     });
 
     let targetIds = [...quizConfig.targetCharacters[gender]];
-    // 當游泉由女 DM 演繹且玩家為女性時，自動為女玩家剔除 畔（女生版） (id: "4")
+    // 避開同性 DM 戀愛線 (BL / GL)：
+    // 女 DM 模式下，女玩家避開 畔（女生版） (id: "4")
+    // 男 DM 模式下，男玩家避開 畔（男生版） (id: "1")
     if (gender === "F" && dmGender === "F") {
         targetIds = targetIds.filter(id => id !== "4");
+    } else if (gender === "M" && dmGender === "M") {
+        targetIds = targetIds.filter(id => id !== "1");
     }
 
     const highestId = targetIds.reduce((bestId, characterId) => {
