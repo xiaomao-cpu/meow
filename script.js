@@ -805,10 +805,10 @@ function createFeatherPhotonEffect(e) {
         photon.style.setProperty("--p-size", psize);
 
         document.body.appendChild(photon);
-        setTimeout(() => photon.remove(), 1850);
+        setTimeout(() => photon.remove(), 2200);
     }
 
-    // 3. 向外擴散直落的高清純白羽毛 (6 款 SVG 向量，100% 必定顯示)
+    // 3. 柔和輕盈直落的高清純白羽毛 (3 根精緻小羽毛，告別噴射感)
     const SVG_FEATHERS = [
         `<svg viewBox="0 0 100 100" fill="none"><path d="M15 85 Q 40 55 85 15" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M85 15 C 70 20 50 30 38 48 C 30 60 25 72 20 80 C 26 77 34 68 44 57 C 56 43 72 28 85 15 Z" fill="#ffffff" opacity="0.95"/><path d="M85 15 C 75 12 58 18 42 32 C 28 45 20 58 15 72 C 20 68 30 62 43 50 C 58 36 74 22 85 15 Z" fill="#ffffff" opacity="0.95"/><path d="M72 24 L 62 20 M 60 34 L 50 28 M 48 45 L 38 38 M 36 56 L 28 48" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/></svg>`,
         `<svg viewBox="0 0 100 100" fill="none"><path d="M50 90 L 50 10" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M50 10 Q 25 30 25 60 Q 35 75 50 90 Q 65 75 75 60 Q 75 30 50 10 Z" fill="#ffffff" opacity="0.92"/><path d="M40 30 L 50 25 M 60 30 L 50 25 M 35 45 L 50 40 M 65 45 L 50 40" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/></svg>`,
@@ -835,7 +835,7 @@ function createFeatherPhotonEffect(e) {
         feather.style.setProperty("--rot", rotVal);
         document.body.appendChild(feather);
 
-        setTimeout(() => feather.remove(), 1900);
+        setTimeout(() => feather.remove(), 2200);
     }
 }
 

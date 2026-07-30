@@ -597,13 +597,17 @@ h1 {
     box-shadow: 0 0 6px #ffffff, 0 0 14px rgba(255, 255, 255, 0.9);
     pointer-events: none;
     z-index: 9999;
-    animation: photon-straight-fall 1.75s linear forwards;
+    animation: photon-straight-fall 2.1s cubic-bezier(0.35, 0, 0.25, 1) forwards;
 }
 
 @keyframes photon-straight-fall {
     0% {
-        transform: translate(0, 0) scale(1.3);
-        opacity: 1;
+        transform: translate(0, 0) scale(0.6);
+        opacity: 0;
+    }
+    15% {
+        transform: translate(calc(var(--p-dx) * 0.2), 18px) scale(1.2);
+        opacity: 0.95;
     }
     100% {
         transform: translate(var(--p-dx), var(--p-dy)) scale(0.1);
@@ -623,7 +627,7 @@ h1 {
     z-index: 9999;
     opacity: 0.98;
     filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.95));
-    animation: feather-straight-fall 1.85s cubic-bezier(0.35, 0, 0.25, 1) forwards;
+    animation: feather-straight-fall 2.1s cubic-bezier(0.35, 0, 0.25, 1) forwards;
 }
 
 .floating-feather svg {
@@ -642,7 +646,7 @@ h1 {
         opacity: 0.95;
     }
     100% {
-        transform: translate(var(--f-dx), 135px) rotate(var(--rot)) scale(0.55);
+        transform: translate(var(--f-dx), 145px) rotate(var(--rot)) scale(0.5);
         opacity: 0;
     }
 }
