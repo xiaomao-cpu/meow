@@ -801,31 +801,21 @@ function createFeatherPhotonEffect(e) {
         setTimeout(() => photon.remove(), 650);
     }
 
-    // 3. 飄落白色羽毛 (2 根)
-    const featherCount = 2;
-    const featherSvg = `<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-            <linearGradient id="fgrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
-                <stop offset="70%" stop-color="#fff9f2" stop-opacity="0.92"/>
-                <stop offset="100%" stop-color="#f2eaee" stop-opacity="0.8"/>
-            </linearGradient>
-        </defs>
-        <path d="M15 85 Q 40 55 85 15" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
-        <path d="M15 85 Q 40 55 85 15" stroke="#e8dfd1" stroke-width="1.4" stroke-linecap="round"/>
-        <path d="M85 15 C 70 20 50 30 38 48 C 30 60 25 72 20 80 C 26 77 34 68 44 57 C 56 43 72 28 85 15 Z" fill="url(#fgrad)"/>
-        <path d="M85 15 C 75 12 58 18 42 32 C 28 45 20 58 15 72 C 20 68 30 62 43 50 C 58 36 74 22 85 15 Z" fill="url(#fgrad)"/>
-        <path d="M72 24 L 62 20 M 60 34 L 50 28 M 48 45 L 38 38 M 36 56 L 28 48" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
-        <path d="M78 20 L 70 28 M 65 30 L 56 38 M 52 42 L 42 50 M 40 54 L 30 62" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
-    </svg>`;
+    // 3. 飄落使用者圖片同款真實純白羽毛 (2 根隨機圖片)
+    const featherImages = [
+        "assets/feather1.png",
+        "assets/feather2.png",
+        "assets/feather3.png"
+    ];
 
-    for (let f = 0; f < featherCount; f++) {
-        const feather = document.createElement("div");
+    for (let f = 0; f < 2; f++) {
+        const feather = document.createElement("img");
         feather.className = "floating-feather";
-        feather.innerHTML = featherSvg;
+        feather.src = featherImages[Math.floor(Math.random() * featherImages.length)];
+        feather.alt = "feather";
 
-        const swayVal = (f % 2 === 0 ? 1 : -1) * (25 + Math.random() * 20);
-        const rotVal = (f % 2 === 0 ? 1 : -1) * (45 + Math.random() * 45);
+        const swayVal = (f % 2 === 0 ? 1 : -1) * (28 + Math.random() * 22);
+        const rotVal = (f % 2 === 0 ? 1 : -1) * (50 + Math.random() * 50);
 
         feather.style.left = x + "px";
         feather.style.top = y + "px";
