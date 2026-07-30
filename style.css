@@ -98,7 +98,7 @@ button {
 .home-screen,
 .quiz-screen,
 .result-screen {
-    padding: 24px;
+    padding: 52px 36px 42px;
     border: 1px solid rgba(255, 250, 244, 0.46);
     border-radius: 8px;
     background: var(--paper);
@@ -120,7 +120,7 @@ button {
     border-radius: inherit;
     border-image-source: var(--quiz-panel-image);
     border-image-slice: 150 fill;
-    border-image-width: 72px;
+    border-image-width: 52px;
     border-image-repeat: stretch;
     pointer-events: none;
 }
@@ -132,18 +132,8 @@ button {
     z-index: 1;
 }
 
-.cover-mark {
-    width: fit-content;
-    margin: 0 auto 22px;
-    padding: 6px 12px;
-    border: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 13px;
-    letter-spacing: 0;
-}
-
 .home-screen {
-    padding: 44px 34px 38px;
+    padding: 54px 38px 44px;
 }
 
 h1 {
@@ -565,6 +555,6 @@ h1 {
 
     .home-screen,
     .quiz-screen {
-        padding: 34px;
+        padding: 56px 44px 44px;
     }
 }
