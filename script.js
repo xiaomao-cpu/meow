@@ -743,11 +743,8 @@ function validateIntroValue(id, value) {
     if (id === "lineNickname") return String(value || "").trim().length > 0;
     if (id === "playDate") {
         const formatted = formatDateInput(value);
-        if (!/^\d{4}\/\d{2}\/\d{2}$/.test(formatted)) return false;
-        const [year, month, day] = formatted.split("/").map(Number);
-        if (year < 2000 || year > 2100) return false;
-        const date = new Date(year, month - 1, day);
-        return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+        // 允許包含 0000/00/00 在內的任何 8 位數字日期排版格式
+        return /^\d{4}\/\d{2}\/\d{2}$/.test(formatted);
     }
     return true;
 }
