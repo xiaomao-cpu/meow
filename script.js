@@ -1166,7 +1166,7 @@ function checkUrlSyncMemories() {
 let activeSecretKey = "";
 let maxPolaroidZIndex = 100;
 
-function initPolaroidDrag(card) {
+function initPolaroidDrag(card, cardIndex) {
     let isDragging = false;
     let startX = 0;
     let startY = 0;
@@ -1208,6 +1208,20 @@ function initPolaroidDrag(card) {
             isDragging = false;
             card.classList.remove("dragging");
 
+            // 儲存手動調整後的位置與層級（下次進入或離線/跨裝置皆保留）
+            if (activeSecretKey && cardIndex !== undefined) {
+                const allData = getMemoriesData();
+                if (!allData[activeSecretKey]) {
+                    allData[activeSecretKey] = DEFAULT_PAN_MEMORIES.map(m => ({ ...m }));
+                }
+                if (allData[activeSecretKey][cardIndex]) {
+                    allData[activeSecretKey][cardIndex].left = card.style.left;
+                    allData[activeSecretKey][cardIndex].top = card.style.top;
+                    allData[activeSecretKey][cardIndex].zIndex = card.style.zIndex;
+                    saveMemoriesData(allData, true);
+                }
+            }
+
             window.removeEventListener("mousemove", onPointerMove);
             window.removeEventListener("mouseup", onPointerUp);
             window.removeEventListener("touchmove", onPointerMove);
@@ -1234,7 +1248,8 @@ async function openSecretPanScreen(key) {
     let memories = allData[activeSecretKey];
 
     if (!memories || memories.length === 0) {
-        memories = DEFAULT_PAN_MEMORIES;
+        memories = DEFAULT_PAN_MEMORIES.map(m => ({ ...m }));
+        allData[activeSecretKey] = memories;
     }
 
     const wallEl = document.getElementById("polaroid-wall");
@@ -1271,9 +1286,14 @@ async function openSecretPanScreen(key) {
             const rotSeed = rand(index * 17 + 5);
             const rot = Math.round((rotSeed * 28 - 14) * 10) / 10;
             const { left, top } = positions[index];
+
+            const cardLeft = item.left !== undefined ? item.left : (typeof left === "number" ? `${left}%` : `${left}px`);
+            const cardTop = item.top !== undefined ? item.top : `${top}px`;
+            const cardZIndex = item.zIndex !== undefined ? item.zIndex : (index + 1);
+
             return `
                 <div class="polaroid-card"
-                     style="--rot: ${rot}deg; left: ${left}%; top: ${top}px; z-index: ${index + 1};">
+                     style="--rot: ${rot}deg; left: ${cardLeft}; top: ${cardTop}; z-index: ${cardZIndex};">
                     <div class="polaroid-tape"></div>
                     <div class="polaroid-img-wrap">
                         <img src="${sanitizeUrl(item.img)}" alt="memory" loading="lazy" />
@@ -1283,7 +1303,7 @@ async function openSecretPanScreen(key) {
             `;
         }).join("");
 
-        wallEl.querySelectorAll(".polaroid-card").forEach(card => initPolaroidDrag(card));
+        wallEl.querySelectorAll(".polaroid-card").forEach((card, idx) => initPolaroidDrag(card, idx));
     }
 
     playUnlockSFX();
