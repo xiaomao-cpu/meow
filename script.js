@@ -1,4 +1,4 @@
-let quizConfig = FALLBACK_QUIZ_CONFIG;
+let quizConfig = null;
 const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxaADhnMJQRW3narMXeIA7K8zPOcGtqOWQbChvJLNCx-MANNKJqh4rig1Tb15DvL-43/exec"; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
 let currentPath = [];
 let currentStep = 0;
@@ -210,6 +210,8 @@ const FALLBACK_QUIZ_CONFIG = {
   }
 };
 
+quizConfig = FALLBACK_QUIZ_CONFIG;
+
 // 核心按鈕同步綁定（同時支援 onclick 與 addEventListener，重疊保護）
 function bindCoreEvents() {
     try {
@@ -373,6 +375,7 @@ function showScreen(name) {
 }
 
 function startBgm() {
+    if (!bgm) return;
     bgm.currentTime = 0;
     isBgmOn = true;
     updateAudioButton();
@@ -384,6 +387,7 @@ function startBgm() {
 }
 
 function toggleAudio() {
+    if (!bgm) return;
     if (isBgmOn) {
         bgm.pause();
         isBgmOn = false;
@@ -851,8 +855,10 @@ async function copyResult() {
 }
 
 function restartQuiz() {
-    bgm.pause();
-    bgm.currentTime = 0;
+    if (bgm) {
+        bgm.pause();
+        bgm.currentTime = 0;
+    }
     isBgmOn = false;
     updateAudioButton();
     els.copyStatus.textContent = "";
