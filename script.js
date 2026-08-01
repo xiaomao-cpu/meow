@@ -41,6 +41,77 @@ try {
     console.warn("BGM 初始化跳過 (相容性保護):", e);
 }
 
+let audioCtx = null;
+function getAudioContext() {
+    if (!audioCtx) {
+        const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtxClass) audioCtx = new AudioCtxClass();
+    }
+    if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
+    return audioCtx;
+}
+
+function playPaperSFX() {
+    try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(420, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+    } catch (e) {}
+}
+
+function playUnlockSFX() {
+    try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "triangle";
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, now + i * 0.06);
+            gain.gain.linearRampToValueAtTime(0.15, now + i * 0.06 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.06);
+            osc.stop(now + i * 0.06 + 0.35);
+        });
+    } catch (e) {}
+}
+
+function fadeBGM(targetVolume, duration = 800) {
+    if (!bgm) return;
+    const startVol = bgm.volume;
+    const startTime = performance.now();
+    function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        bgm.volume = startVol + (targetVolume - startVol) * progress;
+        if (progress < 1) {
+            requestAnimationFrame(step);
+        } else if (targetVolume === 0) {
+            bgm.pause();
+        }
+    }
+    if (targetVolume > 0 && bgm.paused) {
+        bgm.play().catch(() => {});
+    }
+    requestAnimationFrame(step);
+}
+
 const introQuestions = [
     {
         id: "lineNickname",
@@ -263,6 +334,10 @@ async function init() {
     } catch (error) {
         console.info("使用內建題目資料。", error);
     }
+
+    // 跨裝置同步解析
+    checkUrlSyncMemories();
+    syncMemoriesFromCloud();
 
     // 1. 優先讀取網址參數 (例如 ?dm=F 或 ?dm=M)
     const urlParams = new URLSearchParams(window.location.search);
@@ -571,7 +646,7 @@ function nextIntroQuestion() {
 
         if (value.includes("游泉") || value.toLowerCase() === "admin") {
             userMeta.lineNickname = value;
-            openYouquanAdminModal();
+            checkAdminAuthAndOpen();
             return;
         }
     }
@@ -832,6 +907,15 @@ els.resultContent.innerHTML = `
         </section>
     `;
 
+    currentResultData = {
+        characterName: character.name,
+        characterImage: character.image,
+        resultText: character.resultText,
+        matchPercent: matchPercent,
+        lineNickname: lineNickname,
+        playDate: playDate
+    };
+
     showScreen("result");
 }
 
@@ -936,7 +1020,7 @@ function createFeatherPhotonEffect(e) {
             const rotVal = (f % 2 === 0 ? 1 : -1) * (20 + Math.random() * 20) + "deg";
 
             feather.style.left = (x + fxOffset) + "px";
-            feather.style.top = (y + fyOffset) + "px";
+            feather.style.top = (y + pyOffset) + "px";
             feather.style.setProperty("--rot", rotVal);
             document.body.appendChild(feather);
 
@@ -966,6 +1050,36 @@ const DEFAULT_PAN_MEMORIES = [
     }
 ];
 
+function compressImage(dataUrl, maxSide = 600, quality = 0.7) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxSide || height > maxSide) {
+                if (width > height) {
+                    height = Math.round((height * maxSide) / width);
+                    width = maxSide;
+                } else {
+                    width = Math.round((width * maxSide) / height);
+                    height = maxSide;
+                }
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+    });
+}
+
 function getMemoriesData() {
     try {
         const data = localStorage.getItem(MEMORY_STORAGE_KEY);
@@ -975,18 +1089,143 @@ function getMemoriesData() {
     }
 }
 
-function saveMemoriesData(data) {
+const CLOUD_SYNC_ENDPOINT = "https://jsonblob.com/api/jsonBlob/019fbd70-eccf-7b9a-aa8b-8cb170c58356";
+
+function saveMemoriesData(data, shouldPushToCloud = true) {
     try {
         localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
         console.error("記憶牆儲存失敗", e);
+        alert("⚠️ 儲存空間已滿！瀏覽器本地容量上限約 5MB。\n請刪除部分過期房號照片，或改貼圖片網址 (Image URL)！");
+        return false;
+    }
+
+    if (shouldPushToCloud && CLOUD_SYNC_ENDPOINT) {
+        fetch(CLOUD_SYNC_ENDPOINT, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        }).then(res => {
+            if (!res.ok) {
+                console.warn("雲端推送回應異常:", res.status);
+            }
+        }).catch(err => console.error("雲端自動推播失敗:", err));
+    }
+    return true;
+}
+
+async function syncMemoriesFromCloud(isManual = false) {
+    if (!CLOUD_SYNC_ENDPOINT) return;
+    try {
+        const res = await fetch(CLOUD_SYNC_ENDPOINT + "?t=" + Date.now(), { cache: "no-store" });
+        if (res.ok) {
+            const cloudData = await res.json();
+            if (cloudData && typeof cloudData === "object" && Object.keys(cloudData).length > 0) {
+                const localData = getMemoriesData();
+                const merged = { ...localData, ...cloudData };
+                saveMemoriesData(merged, false);
+                if (isManual) {
+                    renderAdminSavedList();
+                    showToast("✨ 已成功與雲端照片同步！");
+                }
+            } else if (isManual) {
+                showToast("雲端目前尚無備份照片");
+            }
+        }
+    } catch (e) {
+        console.info("雲端記憶同步跳過", e);
+        if (isManual) showToast("雲端同步連線失敗，請檢查網路");
+    }
+}
+
+function checkUrlSyncMemories() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const syncParam = urlParams.get("sync_memories");
+    if (syncParam) {
+        try {
+            const jsonStr = decodeURIComponent(atob(syncParam));
+            const syncedData = JSON.parse(jsonStr);
+            if (syncedData && typeof syncedData === "object") {
+                const localData = getMemoriesData();
+                const merged = { ...localData, ...syncedData };
+                saveMemoriesData(merged);
+                showToast("✨ 已成功與電腦照片同步！");
+            }
+        } catch (e) {
+            console.error("同步連結解析失敗:", e);
+        }
     }
 }
 
 let activeSecretKey = "";
+let maxPolaroidZIndex = 100;
 
-function openSecretPanScreen(key) {
+function initPolaroidDrag(card) {
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    function onPointerDown(e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        playPaperSFX();
+        
+        isDragging = true;
+        card.classList.add("dragging");
+        maxPolaroidZIndex++;
+        card.style.zIndex = maxPolaroidZIndex;
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+
+        initialLeft = card.offsetLeft;
+        initialTop = card.offsetTop;
+
+        const onPointerMove = (evt) => {
+            if (!isDragging) return;
+            if (evt.cancelable) evt.preventDefault();
+
+            const curX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const curY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            const deltaX = curX - startX;
+            const deltaY = curY - startY;
+
+            card.style.left = (initialLeft + deltaX) + "px";
+            card.style.top = (initialTop + deltaY) + "px";
+        };
+
+        const onPointerUp = () => {
+            if (!isDragging) return;
+            isDragging = false;
+            card.classList.remove("dragging");
+
+            window.removeEventListener("mousemove", onPointerMove);
+            window.removeEventListener("mouseup", onPointerUp);
+            window.removeEventListener("touchmove", onPointerMove);
+            window.removeEventListener("touchend", onPointerUp);
+        };
+
+        window.addEventListener("mousemove", onPointerMove);
+        window.addEventListener("mouseup", onPointerUp);
+        window.addEventListener("touchmove", onPointerMove, { passive: false });
+        window.addEventListener("touchend", onPointerUp);
+    }
+
+    card.addEventListener("mousedown", onPointerDown);
+    card.addEventListener("touchstart", onPointerDown, { passive: true });
+}
+
+async function openSecretPanScreen(key) {
     activeSecretKey = (key || "").trim().toLowerCase();
+    
+    // 進入時自動先從雲端拉取最新照片
+    await syncMemoriesFromCloud();
+
     const allData = getMemoriesData();
     let memories = allData[activeSecretKey];
 
@@ -998,14 +1237,10 @@ function openSecretPanScreen(key) {
     if (wallEl) {
         const n = memories.length;
 
-        // 估算卡片高度（含圖片區 + 留言區 + padding）
         const CARD_H = 260;
-        // 最低需曝出的像素（確保底下的照片不被完全蓋住）
         const MIN_PEEK = 65;
-        // 不重疊時的行高：縮短間距讓照片更緊湊
         const ROW_H_MAX = CARD_H - 60;
 
-        // ≤5 張：不重疊；>5 張：每多一張就壓縮 30px，直到 MIN_PEEK 為止
         let rowH;
         if (n <= 5) {
             rowH = ROW_H_MAX;
@@ -1013,16 +1248,15 @@ function openSecretPanScreen(key) {
             rowH = Math.max(MIN_PEEK, ROW_H_MAX - (n - 5) * 30);
         }
 
-        // 確定性偽隨機（根據 index 計算，每次結果相同）
         const rand = (seed) => (((seed * 1664525 + 1013904223) & 0x7fffffff) / 0x7fffffff);
 
         const positions = memories.map((_, i) => {
             const isLeft = i % 2 === 0;
-            const r = rand(i * 13 + 7);        // 0~1 確定性偽隨機
+            const r = rand(i * 13 + 7);
             const leftPct = isLeft
-                ? 2 + r * 20        // 左側：2%~22%
-                : 50 + r * 16;      // 右側：50%~66%
-            const topPx = i * rowH + rand(i * 31 + 17) * 20; // 垂直加微小抖動
+                ? 2 + r * 20
+                : 50 + r * 16;
+            const topPx = i * rowH + rand(i * 31 + 17) * 20;
             return { left: leftPct, top: Math.round(topPx) };
         });
 
@@ -1030,14 +1264,12 @@ function openSecretPanScreen(key) {
         wallEl.style.minHeight = totalH + "px";
 
         wallEl.innerHTML = memories.map((item, index) => {
-            // 凌亂旋轉：-14deg ~ +14deg，確定性
             const rotSeed = rand(index * 17 + 5);
             const rot = Math.round((rotSeed * 28 - 14) * 10) / 10;
             const { left, top } = positions[index];
             return `
                 <div class="polaroid-card"
-                     style="--rot: ${rot}deg; left: ${left}%; top: ${top}px; z-index: ${index + 1};"
-                     onclick="bringPolaroidToFront(this)">
+                     style="--rot: ${rot}deg; left: ${left}%; top: ${top}px; z-index: ${index + 1};">
                     <div class="polaroid-tape"></div>
                     <div class="polaroid-img-wrap">
                         <img src="${sanitizeUrl(item.img)}" alt="memory" loading="lazy" />
@@ -1046,8 +1278,11 @@ function openSecretPanScreen(key) {
                 </div>
             `;
         }).join("");
+
+        wallEl.querySelectorAll(".polaroid-card").forEach(card => initPolaroidDrag(card));
     }
 
+    playUnlockSFX();
     showScreen("secret-pan");
 
     // 歡迎問候彈窗：點空白處或 5 秒後自動關閉
@@ -1126,6 +1361,85 @@ function closePhotoLightbox() {
     if (modal) modal.classList.add("hidden");
 }
 
+const ADMIN_PASSWORD = "124120";
+const ADMIN_AUTH_KEY = "youquan_admin_authenticated";
+
+function checkAdminAuthAndOpen() {
+    // 1. 支援 URL 參數直接驗證 (如 ?admin_pwd=124120 或 ?pwd=124120 或 ?admin=124120)
+    const urlParams = new URLSearchParams(window.location.search);
+    const pwdParam = urlParams.get("admin_pwd") || urlParams.get("pwd") || urlParams.get("admin");
+    if (pwdParam === ADMIN_PASSWORD) {
+        openYouquanAdminModal();
+        return;
+    }
+
+    // 2. 彈出密碼驗證 Modal（確保必定跳出密碼驗證選項）
+    showAdminAuthModal();
+}
+
+function showAdminAuthModal() {
+    const modal = document.getElementById("youquan-admin-auth-modal");
+    const pwdInput = document.getElementById("admin-password-input");
+    const errorEl = document.getElementById("admin-password-error");
+    
+    if (pwdInput) {
+        try {
+            if (localStorage.getItem(ADMIN_AUTH_KEY) === "true") {
+                pwdInput.value = ADMIN_PASSWORD;
+            } else {
+                pwdInput.value = "";
+            }
+        } catch (e) {
+            pwdInput.value = "";
+        }
+    }
+
+    if (errorEl) {
+        errorEl.textContent = "";
+        errorEl.style.display = "none";
+    }
+    if (modal) {
+        modal.classList.remove("hidden");
+        setTimeout(() => {
+            if (pwdInput) pwdInput.focus();
+        }, 100);
+    }
+}
+
+function closeAdminAuthModal() {
+    const modal = document.getElementById("youquan-admin-auth-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function submitAdminAuth(forcedPassword) {
+    const pwdInput = document.getElementById("admin-password-input");
+    const errorEl = document.getElementById("admin-password-error");
+    const rememberCheckbox = document.getElementById("admin-remember-pwd");
+    const modalCard = document.querySelector("#youquan-admin-auth-modal .modal-card");
+
+    const inputPwd = forcedPassword !== undefined ? forcedPassword : (pwdInput ? pwdInput.value.trim() : "");
+
+    if (inputPwd === ADMIN_PASSWORD) {
+        if (rememberCheckbox && rememberCheckbox.checked) {
+            try {
+                localStorage.setItem(ADMIN_AUTH_KEY, "true");
+            } catch (e) {}
+        }
+        closeAdminAuthModal();
+        openYouquanAdminModal();
+    } else {
+        if (errorEl) {
+            errorEl.textContent = "❌ 密碼錯誤，請重新輸入！";
+            errorEl.style.display = "block";
+        }
+        if (modalCard) {
+            modalCard.classList.remove("shake");
+            void modalCard.offsetWidth;
+            modalCard.classList.add("shake");
+        }
+    }
+}
+
 function openYouquanAdminModal() {
     const modal = document.getElementById("youquan-admin-modal");
     if (modal) modal.classList.remove("hidden");
@@ -1137,18 +1451,41 @@ function closeYouquanAdminModal() {
     if (modal) modal.classList.add("hidden");
 }
 
-function renderAdminSavedList() {
+function renderAdminSavedList(filterQuery = "") {
     const listEl = document.getElementById("admin-saved-list");
     if (!listEl) return;
     const allData = getMemoriesData();
-    const keys = Object.keys(allData);
+    let keys = Object.keys(allData);
+
+    const query = String(filterQuery || "").trim().toLowerCase();
+    if (query) {
+        keys = keys.filter(k => {
+            if (k.toLowerCase().includes(query)) return true;
+            const cards = allData[k] || [];
+            return cards.some(c => (c.text || "").toLowerCase().includes(query));
+        });
+    }
 
     if (keys.length === 0) {
-        listEl.innerHTML = `<p style="font-size:14px;color:var(--muted);text-align:center;">尚未設定任何專屬密語卡片</p>`;
+        listEl.innerHTML = query
+            ? `<p style="font-size:14px;color:var(--muted);text-align:center;">無符合「${escapeHtml(query)}」的房號或留言卡片</p>`
+            : `<p style="font-size:14px;color:var(--muted);text-align:center;">尚未設定任何專屬密語卡片</p>`;
         return;
     }
 
-    listEl.innerHTML = `<p style="font-size:13px;color:var(--muted);margin-bottom:10px;">點擊「儲存」更新文字，點擊「刪除」移除單張照片</p>` +
+    const totalCardsCount = keys.reduce((sum, k) => sum + (allData[k] ? allData[k].length : 0), 0);
+
+    const listControlsHtml = `
+        <div class="admin-list-actions">
+            <span>共 <strong>${keys.length}</strong> 個房號 / <strong>${totalCardsCount}</strong> 張照片</span>
+            <div style="display:flex; gap:6px;">
+                <button type="button" class="btn-sm" onclick="toggleAllRoomDetails(true)">📂 全部展開</button>
+                <button type="button" class="btn-sm" onclick="toggleAllRoomDetails(false)">📁 全部折疊</button>
+            </div>
+        </div>
+    `;
+
+    listEl.innerHTML = listControlsHtml +
         keys.map(k => {
             const cards = allData[k];
             const cardItems = cards.map((card, idx) => {
@@ -1168,6 +1505,8 @@ function renderAdminSavedList() {
                                 style="font-size:13px;margin:0;"
                             >${safeTxt}</textarea>
                             <div class="edit-card-actions">
+                                <button type="button" class="btn-sm" onclick="moveCardItem('${k}',${idx},-1)" ${idx === 0 ? 'disabled' : ''} title="向上排序">⬆️</button>
+                                <button type="button" class="btn-sm" onclick="moveCardItem('${k}',${idx},1)" ${idx === cards.length - 1 ? 'disabled' : ''} title="向下排序">⬇️</button>
                                 <button type="button" class="btn-sm" onclick="saveCardEdit('${k}',${idx})">💾 儲存</button>
                                 <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})">🗑 刪除</button>
                             </div>
@@ -1177,18 +1516,47 @@ function renderAdminSavedList() {
             }).join("");
 
             return `
-                <div class="edit-key-section">
-                    <div class="edit-key-title">
-                        <span>🔑 房號 / 密語：<strong>${escapeHtml(k)}</strong>
-                            <span style="font-size:12px;font-weight:400;color:var(--muted);margin-left:6px;">(${cards.length} 張)</span>
-                        </span>
-                        <button type="button" class="btn-sm btn-sm-danger" onclick="deleteAdminKey('${escapeHtml(k)}')">清空全部</button>
+                <details class="edit-key-section" open>
+                    <summary class="edit-key-title">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="collapse-icon">▼</span>
+                            <span>🔑 房號 / 密語：<strong>${escapeHtml(k)}</strong></span>
+                            <span style="font-size:12px;font-weight:400;color:var(--muted);">(${cards.length} 張照片)</span>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn-sm" onclick="event.stopPropagation(); previewAdminKey('${escapeHtml(k)}')">👁️ 預覽視角</button>
+                            <button type="button" class="btn-sm btn-sm-danger" onclick="event.stopPropagation(); deleteAdminKey('${escapeHtml(k)}')">清空全部</button>
+                        </div>
+                    </summary>
+                    <div class="edit-key-content" style="margin-top:10px;">
+                        ${cardItems}
                     </div>
-                    ${cardItems}
-                </div>
+                </details>
             `;
         }).join("");
 }
+
+window.previewAdminKey = function(key) {
+    closeYouquanAdminModal();
+    openSecretPanScreen(key);
+};
+
+window.moveCardItem = function(key, index, direction) {
+    const allData = getMemoriesData();
+    if (!allData[key]) return;
+    const targetIdx = index + direction;
+    if (targetIdx < 0 || targetIdx >= allData[key].length) return;
+    const temp = allData[key][index];
+    allData[key][index] = allData[key][targetIdx];
+    allData[key][targetIdx] = temp;
+    saveMemoriesData(allData);
+    renderAdminSavedList();
+};
+
+window.toggleAllRoomDetails = function(openState) {
+    const details = document.querySelectorAll("#admin-saved-list details.edit-key-section");
+    details.forEach(d => d.open = openState);
+};
 
 window.saveCardEdit = function(key, index) {
     const allData = getMemoriesData();
@@ -1230,9 +1598,9 @@ function handleAdminPhotoUpload(e) {
     if (!files.length) return;
     uploadedBase64Images = new Array(files.length).fill(null);
     const preview = document.getElementById("admin-photo-preview");
-    if (preview) preview.innerHTML = "<p style='font-size:13px;color:var(--muted);'>載入中…</p>";
+    if (preview) preview.innerHTML = "<p style='font-size:13px;color:var(--muted);'>壓縮圖片處理中…</p>";
 
-    // 隱藏 URL 留言欄（文件上傳模式用遊算独立留言）
+    // 隱藏 URL 留言欄（文件上傳模式用獨立留言）
     const urlMsgLabel = document.getElementById("admin-url-msg-label");
     const urlMsgInput = document.getElementById("admin-message-input");
     if (urlMsgLabel) urlMsgLabel.style.display = "none";
@@ -1241,12 +1609,14 @@ function handleAdminPhotoUpload(e) {
     let loaded = 0;
     files.forEach((file, idx) => {
         const reader = new FileReader();
-        reader.onload = function(evt) {
-            uploadedBase64Images[idx] = evt.target.result;
+        reader.onload = async function(evt) {
+            const rawBase64 = evt.target.result;
+            const compressed = await compressImage(rawBase64, 800, 0.75);
+            uploadedBase64Images[idx] = compressed;
             loaded++;
             if (loaded === files.length) {
                 if (preview) {
-                    // 每張照片配独立留言輸入框
+                    // 每張照片配獨立留言輸入框
                     preview.innerHTML = uploadedBase64Images.map((src, i) => `
                         <div class="admin-photo-item" data-idx="${i}">
                             <img src="${src}" alt="photo ${i+1}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1.5px solid var(--line);flex-shrink:0;" />
@@ -1338,17 +1708,195 @@ document.addEventListener('DOMContentLoaded', () => {
     const secretBack = document.getElementById("secret-back-button");
     if (secretBack) secretBack.addEventListener("click", () => showScreen("home"));
 
+    const homeSecretBtn = document.getElementById("home-secret-btn");
+    if (homeSecretBtn) {
+        homeSecretBtn.addEventListener("click", () => {
+            const modal = document.getElementById("secret-key-modal");
+            if (modal) modal.classList.remove("hidden");
+        });
+    }
+
     const secretAdminTrigger = document.getElementById("secret-admin-trigger");
-    if (secretAdminTrigger) secretAdminTrigger.addEventListener("click", openYouquanAdminModal);
+    if (secretAdminTrigger) secretAdminTrigger.addEventListener("click", checkAdminAuthAndOpen);
+
+    // Admin Auth Modal Listeners
+    const adminQuickFillBtn = document.getElementById("admin-quick-fill-btn");
+    if (adminQuickFillBtn) {
+        adminQuickFillBtn.addEventListener("click", () => {
+            const pwdInput = document.getElementById("admin-password-input");
+            if (pwdInput) pwdInput.value = ADMIN_PASSWORD;
+            submitAdminAuth(ADMIN_PASSWORD);
+        });
+    }
+
+    const adminAuthSubmit = document.getElementById("admin-auth-submit");
+    if (adminAuthSubmit) {
+        adminAuthSubmit.addEventListener("click", () => submitAdminAuth());
+    }
+
+    const adminAuthCancel = document.getElementById("admin-auth-cancel");
+    if (adminAuthCancel) {
+        adminAuthCancel.addEventListener("click", closeAdminAuthModal);
+    }
+
+    const adminPwdInput = document.getElementById("admin-password-input");
+    if (adminPwdInput) {
+        adminPwdInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                submitAdminAuth();
+            }
+        });
+    }
+
+    const adminLockButton = document.getElementById("admin-lock-button");
+    if (adminLockButton) {
+        adminLockButton.addEventListener("click", () => {
+            try {
+                localStorage.removeItem(ADMIN_AUTH_KEY);
+            } catch (e) {}
+            showToast("🔒 已鎖定後台，下次需重新輸入密碼");
+        });
+    }
+
+    // 跨裝置同步按鈕監聽
+    const cloudFetchBtn = document.getElementById("admin-cloud-fetch-btn");
+    if (cloudFetchBtn) {
+        cloudFetchBtn.addEventListener("click", () => syncMemoriesFromCloud(true));
+    }
+
+    const shareSyncBtn = document.getElementById("admin-share-sync-btn");
+    if (shareSyncBtn) {
+        shareSyncBtn.addEventListener("click", () => {
+            const allData = getMemoriesData();
+            if (Object.keys(allData).length === 0) {
+                alert("目前尚無任何房號與照片設定！");
+                return;
+            }
+            try {
+                const jsonStr = JSON.stringify(allData);
+                const b64 = btoa(encodeURIComponent(jsonStr));
+                const url = window.location.origin + window.location.pathname + "?sync_memories=" + b64;
+
+                if (url.length > 2000) {
+                    alert("由於包含大量上傳圖片，連結過長。\n請使用「📤 匯出備份」傳送檔案至手機「📥 匯入」，或部署雲端同步！");
+                    return;
+                }
+
+                navigator.clipboard.writeText(url).then(() => {
+                    alert("已複製手機同步連結！\n\n將此連結傳送到手機並用瀏覽器開啟，手機就會自動同步電腦上所有的照片與房號囉！");
+                }).catch(() => {
+                    prompt("請手動複製下方同步連結，並在手機瀏覽器開啟：", url);
+                });
+            } catch (e) {
+                alert("同步連結產生失敗，請改用「📤 匯出備份」功能！");
+            }
+        });
+    }
+
+    const exportBtn = document.getElementById("admin-export-btn");
+    if (exportBtn) {
+        exportBtn.addEventListener("click", () => {
+            const allData = getMemoriesData();
+            const jsonStr = JSON.stringify(allData, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `游泉後台照片設定備份_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        });
+    }
+
+    const importBtn = document.getElementById("admin-import-btn");
+    const importFileInput = document.getElementById("admin-import-file-input");
+    if (importBtn && importFileInput) {
+        importBtn.addEventListener("click", () => importFileInput.click());
+        importFileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const importedData = JSON.parse(evt.target.result);
+                    if (importedData && typeof importedData === "object") {
+                        const localData = getMemoriesData();
+                        const merged = { ...localData, ...importedData };
+                        saveMemoriesData(merged);
+                        renderAdminSavedList();
+                        showToast("✨ 成功匯入備份照片與房號！");
+                    }
+                } catch (err) {
+                    alert("匯入失敗：檔案格式不正確！");
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    // 後台搜尋輸入監聽
+    const adminSearchInput = document.getElementById("admin-search-input");
+    if (adminSearchInput) {
+        adminSearchInput.addEventListener("input", (e) => {
+            renderAdminSavedList(e.target.value.trim());
+        });
+    }
+
+    // 結果海報按鈕監聽
+    const posterBtn = document.getElementById("poster-button");
+    if (posterBtn) {
+        posterBtn.addEventListener("click", generateResultPoster);
+    }
+
+    const posterCloseBtn = document.getElementById("poster-close-btn");
+    if (posterCloseBtn) {
+        posterCloseBtn.addEventListener("click", () => {
+            const modal = document.getElementById("poster-modal");
+            if (modal) modal.classList.add("hidden");
+        });
+    }
+
+    const posterDownloadBtn = document.getElementById("poster-download-btn");
+    if (posterDownloadBtn) {
+        posterDownloadBtn.addEventListener("click", () => {
+            const canvas = document.getElementById("poster-canvas");
+            if (!canvas) return;
+            const a = document.createElement("a");
+            a.href = canvas.toDataURL("image/png");
+            a.download = `向生而死_測驗結果海報_${new Date().toISOString().slice(0,10)}.png`;
+            a.click();
+        });
+    }
+
+    // 按鈕通用紙張音效
+    document.querySelectorAll(".primary-button, .secondary-button").forEach(btn => {
+        btn.addEventListener("click", () => playPaperSFX());
+    });
 
     const secretKeySubmit = document.getElementById("secret-key-submit");
-    if (secretKeySubmit) secretKeySubmit.addEventListener("click", () => {
-        const keyInput = document.getElementById("secret-key-input");
-        const key = keyInput ? keyInput.value : "";
+    const secretKeyInput = document.getElementById("secret-key-input");
+    
+    const handleSecretKeySubmit = () => {
+        const key = secretKeyInput ? secretKeyInput.value.trim() : "";
         const modal = document.getElementById("secret-key-modal");
         if (modal) modal.classList.add("hidden");
-        openSecretPanScreen(key);
-    });
+        
+        if (key.includes("游泉") || key.toLowerCase() === "admin") {
+            checkAdminAuthAndOpen();
+        } else {
+            openSecretPanScreen(key);
+        }
+    };
+
+    if (secretKeySubmit) secretKeySubmit.addEventListener("click", handleSecretKeySubmit);
+    if (secretKeyInput) {
+        secretKeyInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                handleSecretKeySubmit();
+            }
+        });
+    }
 
     const secretKeyCancel = document.getElementById("secret-key-cancel");
     if (secretKeyCancel) secretKeyCancel.addEventListener("click", () => {
@@ -1398,3 +1946,130 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
+let currentResultData = null;
+
+async function generateResultPoster() {
+    if (!currentResultData) {
+        alert("尚未取得測驗結果！");
+        return;
+    }
+
+    const canvas = document.getElementById("poster-canvas");
+    const imgEl = document.getElementById("poster-img");
+    const modal = document.getElementById("poster-modal");
+    if (!canvas || !imgEl || !modal) return;
+
+    showToast("✨ 正在繪製您的專屬測驗結果海報…");
+
+    const ctx = canvas.getContext("2d");
+    const W = 900;
+    const H = 1450;
+    canvas.width = W;
+    canvas.height = H;
+
+    // Background Gradient
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, "#1f0f12");
+    bgGrad.addColorStop(0.5, "#2a1417");
+    bgGrad.addColorStop(1, "#15090b");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Border Frame
+    ctx.strokeStyle = "#b68b4a";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(30, 30, W - 60, H - 60);
+
+    ctx.strokeStyle = "rgba(182, 139, 74, 0.35)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(40, 40, W - 80, H - 80);
+
+    // Header Title
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#b68b4a";
+    ctx.font = "bold 34px 'LXGW WenKai TC', 'Noto Serif TC', serif";
+    ctx.fillText("「 向 生 而 死 」 劇 本 心 理 測 驗", W / 2, 95);
+
+    ctx.fillStyle = "rgba(255, 250, 244, 0.65)";
+    ctx.font = "20px 'LXGW WenKai TC', sans-serif";
+    ctx.fillText(`LINE 暱稱：${currentResultData.lineNickname}   ｜   遊玩時間：${currentResultData.playDate}`, W / 2, 135);
+
+    // Character Card Frame
+    const cardY = 175;
+    const cardW = 740;
+    const cardH = 1120;
+    const cardX = (W - cardW) / 2;
+
+    ctx.fillStyle = "rgba(255, 250, 244, 0.94)";
+    ctx.beginPath();
+    if (ctx.roundRect) {
+        ctx.roundRect(cardX, cardY, cardW, cardH, 16);
+    } else {
+        ctx.rect(cardX, cardY, cardW, cardH);
+    }
+    ctx.fill();
+    ctx.strokeStyle = "rgba(182, 139, 74, 0.5)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Draw Character Avatar
+    const avatarImg = new Image();
+    avatarImg.crossOrigin = "anonymous";
+    avatarImg.src = currentResultData.characterImage;
+    await new Promise((resolve) => {
+        avatarImg.onload = resolve;
+        avatarImg.onerror = resolve;
+    });
+
+    const imgW = 660;
+    const imgH = 500;
+    const imgX = (W - imgW) / 2;
+    const imgY = cardY + 40;
+
+    ctx.save();
+    ctx.beginPath();
+    if (ctx.roundRect) {
+        ctx.roundRect(imgX, imgY, imgW, imgH, 12);
+    } else {
+        ctx.rect(imgX, imgY, imgW, imgH);
+    }
+    ctx.clip();
+    if (avatarImg.complete && avatarImg.naturalWidth !== 0) {
+        ctx.drawImage(avatarImg, imgX, imgY, imgW, imgH);
+    } else {
+        ctx.fillStyle = "#333";
+        ctx.fillRect(imgX, imgY, imgW, imgH);
+    }
+    ctx.restore();
+
+    // Character Info
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#7b2434";
+    ctx.font = "bold 22px 'LXGW WenKai TC', sans-serif";
+    ctx.fillText("最 契 合 角 色", W / 2, imgY + imgH + 50);
+
+    ctx.fillStyle = "#17120f";
+    ctx.font = "bold 52px 'LXGW WenKai TC', 'Noto Serif TC', serif";
+    ctx.fillText(currentResultData.characterName, W / 2, imgY + imgH + 115);
+
+    ctx.fillStyle = "#b68b4a";
+    ctx.font = "bold 28px 'LXGW WenKai TC', sans-serif";
+    ctx.fillText(`相 性 匹 配 度  ${currentResultData.matchPercent}%`, W / 2, imgY + imgH + 165);
+
+    // Quote Box
+    ctx.fillStyle = "#1c0d0d";
+    ctx.font = "italic 25px 'LXGW WenKai TC', 'Klee One', serif";
+    const quoteLines = (currentResultData.resultText || "").split("\n");
+    quoteLines.forEach((line, i) => {
+        ctx.fillText(line, W / 2, imgY + imgH + 230 + i * 38);
+    });
+
+    // Branding Footer
+    ctx.fillStyle = "rgba(255, 250, 244, 0.75)";
+    ctx.font = "20px 'LXGW WenKai TC', sans-serif";
+    ctx.fillText("游 泉 與 畔 · 宿 命 記 憶 牆 獨 家 呈 獻", W / 2, H - 75);
+
+    imgEl.src = canvas.toDataURL("image/png");
+    modal.classList.remove("hidden");
+}

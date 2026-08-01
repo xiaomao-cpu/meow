@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@600;700;900&family=Zhi+Mang+Xing&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@400;600;700;900&family=Zhi+Mang+Xing&display=swap');
 
 :root {
     --ink: #17120f;
@@ -12,8 +12,8 @@
     --deep: #241413;
     --gold: #b68b4a;
     --quiz-panel-image: url("assets/心测选项背景.jpg");
-    --font-handwritten: "BiauKai", "BiauKaiTC", "DFKai-SB", "STKaiti", "KaiTi", "Kaiti TC", "Noto Serif TC", serif;
-    --font-cursive: "Yunfeng Hancham", "雲峰寒蟬", "雲峰寒蟬體", "Yunfeng", "LXGW WenKai TC", "Klee One", "BiauKai", "BiauKaiTC", "DFKai-SB", "STKaiti", "KaiTi", "Kaiti TC", cursive, serif;
+    --font-handwritten: "LXGW WenKai TC", "Klee One", "Noto Serif TC", "BiauKai", "BiauKaiTC", "DFKai-SB", "STKaiti", "KaiTi", "Kaiti TC", serif;
+    --font-cursive: "LXGW WenKai TC", "Klee One", "Long Cang", "Liu Jian Mao Cao", "Zhi Mang Xing", "Yunfeng Hancham", "雲峰寒蟬", "BiauKai", cursive, serif;
 }
 
 * {
@@ -35,8 +35,8 @@ body {
         url("assets/劇本封面.JPG") center / cover fixed;
 }
 
-button {
-    font: inherit;
+button, input, textarea, select {
+    font-family: inherit;
 }
 
 .hidden {
@@ -701,17 +701,27 @@ h1 {
     border-radius: 4px;
     box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
     transform: rotate(var(--rot, 0deg));
-    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.35s ease, z-index 0s;
-    cursor: pointer;
-    will-change: transform, z-index;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    will-change: transform, z-index, left, top;
 }
 
 .polaroid-card:hover {
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
 }
 
+.polaroid-card.dragging {
+    cursor: grabbing !important;
+    z-index: 99999 !important;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6) !important;
+    transform: scale(1.08) rotate(0deg) !important;
+    transition: none !important;
+}
+
 .polaroid-card.on-top {
-    transform: rotate(0deg) scale(1.06) !important;
+    transform: rotate(0deg) scale(1.05) !important;
     box-shadow: 0 22px 44px rgba(0, 0, 0, 0.55) !important;
 }
 
@@ -921,21 +931,53 @@ h1 {
 }
 
 .edit-key-section {
-    margin-bottom: 20px;
-    padding: 14px;
-    background: rgba(255, 250, 244, 0.5);
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: rgba(255, 250, 244, 0.65);
     border-radius: 8px;
     border: 1px solid var(--line);
+    transition: background 0.2s ease;
 }
 
-.edit-key-title {
+summary.edit-key-title {
     font-size: 15px;
     font-weight: 700;
     color: var(--ink);
-    margin-bottom: 10px;
+    margin-bottom: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+}
+
+summary.edit-key-title::-webkit-details-marker {
+    display: none;
+}
+
+.collapse-icon {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--muted);
+    transition: transform 0.2s ease;
+}
+
+.edit-key-section[open] .collapse-icon {
+    transform: rotate(0deg);
+}
+
+.edit-key-section:not([open]) .collapse-icon {
+    transform: rotate(-90deg);
+}
+
+.admin-list-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--muted);
 }
 
 .edit-card-item {

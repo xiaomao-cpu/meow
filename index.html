@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>向生而死</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@400;600;700;900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=20260801_99999">
 </head>
 <body>
     <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">開啟 BGM</button>
@@ -14,6 +16,9 @@
             <h1 id="main-title" style="cursor: pointer; user-select: none;">向生而死</h1>
             <p class="subtitle">「犯下罪孽的你，渴望光明的你，哪個才是真正的你？<br>如若你心中尚存一息善念，那麼你不配踏足於此。」</p>
             <button id="start-button" class="primary-button" type="button" onclick="startQuiz()">開始測驗</button>
+            <div style="margin-top: 16px;">
+                <button id="home-secret-btn" type="button" style="background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; text-decoration: underline;">🔑 輸入密語 / 游泉管理登入</button>
+            </div>
         </section>
 
         <section id="quiz-screen" class="screen quiz-screen hidden">
@@ -31,7 +36,8 @@
 
         <section id="result-screen" class="screen result-screen hidden">
             <div id="result-content"></div>
-            <div class="result-actions">
+            <div class="result-actions" style="flex-wrap: wrap; justify-content: center;">
+                <button id="poster-button" class="primary-button" type="button" style="background: var(--gold); border-color: var(--gold); color: #ffffff;">📸 生成結果海報</button>
                 <button id="copy-button" class="primary-button" type="button">一鍵複製結果</button>
                 <button id="restart-button" class="secondary-button" type="button">重新測驗</button>
             </div>
@@ -41,7 +47,7 @@
         <!-- 隱藏彩蛋：游泉與畔 宿命記憶牆 -->
         <section id="secret-pan-screen" class="screen secret-pan-screen hidden">
             <div class="secret-header">
-                <h2>歡迎回到我們的秘密基地：）</h2>
+                <h2 id="secret-admin-trigger" style="cursor: pointer;" title="管理員後台入口">歡迎回到我們的秘密基地：）</h2>
             </div>
             <div id="polaroid-wall" class="polaroid-wall"></div>
             <div class="secret-actions">
@@ -63,10 +69,34 @@
         </div>
     </div>
 
+    <!-- 游泉後台密碼驗證 Modal -->
+    <div id="youquan-admin-auth-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3>🔐 游泉後台權限驗證</h3>
+            <p>為避免玩家重名誤入，請輸入後台管理密碼：</p>
+            <input id="admin-password-input" type="password" class="modal-input" placeholder="請輸入密碼" autocomplete="off" />
+            <p id="admin-password-error" class="input-error-msg" style="color: #c93b3b; font-size: 15px; margin-top: -8px; margin-bottom: 12px; display: none;"></p>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; font-size: 15px; color: var(--deep);">
+                <input type="checkbox" id="admin-remember-pwd" checked style="width: 16px; height: 16px; cursor: pointer;" />
+                <label for="admin-remember-pwd" style="cursor: pointer; user-select: none;">記住密碼（此裝置下次免輸入）</label>
+            </div>
+
+            <div class="modal-buttons" style="flex-wrap: wrap; gap: 10px;">
+                <button id="admin-quick-fill-btn" class="primary-button" type="button" style="background: var(--accent); color: #ffffff; border-color: var(--accent);">⚡ 一鍵帶入 124120 解鎖</button>
+                <button id="admin-auth-submit" class="secondary-button" type="button" style="flex: 1;">確認進入</button>
+                <button id="admin-auth-cancel" class="secondary-button" type="button" style="flex: 1;">取消</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 游泉秘密管理後台 Modal -->
     <div id="youquan-admin-modal" class="modal-overlay hidden">
         <div class="modal-card admin-card">
-            <h3>游泉秘密管理後台</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="margin: 0;">游泉秘密管理後台</h3>
+                <button id="admin-lock-button" class="btn-sm btn-sm-danger" type="button" title="清除此裝置的免密碼記住狀態">🔒 鎖定後台</button>
+            </div>
             <div class="admin-form">
                 <label class="form-label">玩家專屬密語 / 房號：</label>
                 <input id="admin-key-input" type="text" class="modal-input" placeholder="例如：0731 或 room1" />
@@ -88,7 +118,42 @@
                     <button id="admin-close-button" class="secondary-button" type="button">關閉後台</button>
                 </div>
             </div>
+
+            <!-- 手機與電腦跨裝置同步工具列 -->
+            <div class="admin-sync-bar" style="margin-top: 16px; padding: 12px 14px; background: rgba(182, 139, 74, 0.1); border: 1px dashed var(--gold); border-radius: 8px; font-size: 13px;">
+                <div style="font-weight: 700; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>📱 手機與電腦跨裝置同步</span>
+                    <button id="admin-cloud-fetch-btn" type="button" class="btn-sm" title="從雲端試算表拉取最新照片與房號">🔄 雲端拉取同步</button>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button id="admin-share-sync-btn" type="button" class="btn-sm" style="flex: 1; background: var(--accent); color: #ffffff; border-color: var(--accent);">🔗 複製手機同步連結</button>
+                    <button id="admin-export-btn" type="button" class="btn-sm">📤 匯出備份</button>
+                    <button id="admin-import-btn" type="button" class="btn-sm">📥 匯入備份</button>
+                    <input id="admin-import-file-input" type="file" accept=".json" style="display:none;" />
+                </div>
+            </div>
+
+            <div style="margin-top: 14px; margin-bottom: 10px;">
+                <input id="admin-search-input" type="text" class="modal-input" placeholder="🔍 搜尋房號 / 密語 / 悄悄話關鍵字..." style="font-size: 14px; padding: 8px 12px; margin: 0;" />
+            </div>
+
             <div id="admin-saved-list" class="admin-saved-list"></div>
+        </div>
+    </div>
+
+    <!-- 結果海報預覽 Modal -->
+    <div id="poster-modal" class="modal-overlay hidden" style="z-index: 10000;">
+        <div class="modal-card" style="max-width: 480px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto;">
+            <h3 style="margin: 0 0 8px 0;">✨ 你的專屬測驗結果海報</h3>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">長按或點擊「下載」即可儲存圖片，分享至 IG / LINE！</p>
+            <div id="poster-canvas-wrap" style="max-width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.3); margin-bottom: 14px;">
+                <canvas id="poster-canvas" style="display: none;"></canvas>
+                <img id="poster-img" src="" alt="測驗海報" style="max-width: 100%; max-height: 60vh; display: block; border-radius: 8px;" />
+            </div>
+            <div class="modal-buttons" style="width: 100%; gap: 10px; margin-top: 0;">
+                <button id="poster-download-btn" class="primary-button" type="button" style="flex: 1; background: var(--gold); border-color: var(--gold); color: #fff;">💾 下載海報圖片</button>
+                <button id="poster-close-btn" class="secondary-button" type="button" style="flex: 1;">關閉</button>
+            </div>
         </div>
     </div>
 
@@ -110,6 +175,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260801_999"></script>
+    <script src="script.js?v=20260801_777777"></script>
 </body>
 </html>
