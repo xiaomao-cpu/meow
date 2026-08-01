@@ -33,8 +33,13 @@ const els = {
     resultContent: document.getElementById("result-content")
 };
 
-const bgm = new Audio("assets/bgm.mp3");
-bgm.loop = true;
+let bgm = null;
+try {
+    bgm = new Audio("assets/bgm.mp3");
+    if (bgm) bgm.loop = true;
+} catch (e) {
+    console.warn("BGM 初始化跳過 (相容性保護):", e);
+}
 
 const introQuestions = [
     {
@@ -205,27 +210,44 @@ const FALLBACK_QUIZ_CONFIG = {
   }
 };
 
-// 核心按鈕事件同步綁定，絕不上網等待 fetch
+// 核心按鈕同步綁定（同時支援 onclick 與 addEventListener，重疊保護）
 function bindCoreEvents() {
-    const startBtn = document.getElementById("start-button");
-    const restartBtn = document.getElementById("restart-button");
-    const copyBtn = document.getElementById("copy-button");
-    const prevBtn = document.getElementById("prev-button");
-    const nextBtn = document.getElementById("next-button");
-    const audioBtn = document.getElementById("audio-toggle");
+    try {
+        const startBtn = document.getElementById("start-button");
+        const restartBtn = document.getElementById("restart-button");
+        const copyBtn = document.getElementById("copy-button");
+        const prevBtn = document.getElementById("prev-button");
+        const nextBtn = document.getElementById("next-button");
+        const audioBtn = document.getElementById("audio-toggle");
 
-    if (startBtn) startBtn.onclick = startQuiz;
-    if (restartBtn) restartBtn.onclick = restartQuiz;
-    if (copyBtn) copyBtn.onclick = copyResult;
-    if (prevBtn) prevBtn.onclick = prevQuestion;
-    if (nextBtn) nextBtn.onclick = nextQuestion;
-    if (audioBtn) audioBtn.onclick = toggleAudio;
+        if (startBtn) {
+            startBtn.onclick = startQuiz;
+        }
+        if (restartBtn) {
+            restartBtn.onclick = restartQuiz;
+        }
+        if (copyBtn) {
+            copyBtn.onclick = copyResult;
+        }
+        if (prevBtn) {
+            prevBtn.onclick = prevQuestion;
+        }
+        if (nextBtn) {
+            nextBtn.onclick = nextQuestion;
+        }
+        if (audioBtn) {
+            audioBtn.onclick = toggleAudio;
+        }
+    } catch (e) {
+        console.warn("bindCoreEvents 綁定失敗:", e);
+    }
 }
 
 bindCoreEvents();
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bindCoreEvents);
 }
+window.addEventListener("load", bindCoreEvents);
 
 init();
 
@@ -306,7 +328,7 @@ function setDmGender(g) {
 }
 
 function startQuiz() {
-    try { startBgm(); } catch (e) {}
+    try { if (bgm) startBgm(); } catch (e) {}
     currentPath = [];
     currentStep = 0;
     gender = null;
@@ -332,10 +354,22 @@ function showScreen(name) {
     const resultEl = document.getElementById("result-screen");
     const secretPanScreen = document.getElementById("secret-pan-screen");
 
-    if (homeEl) homeEl.classList.toggle("hidden", name !== "home");
-    if (quizEl) quizEl.classList.toggle("hidden", name !== "quiz");
-    if (resultEl) resultEl.classList.toggle("hidden", name !== "result");
-    if (secretPanScreen) secretPanScreen.classList.toggle("hidden", name !== "secret-pan");
+    if (homeEl) {
+        if (name === "home") homeEl.classList.remove("hidden");
+        else homeEl.classList.add("hidden");
+    }
+    if (quizEl) {
+        if (name === "quiz") quizEl.classList.remove("hidden");
+        else quizEl.classList.add("hidden");
+    }
+    if (resultEl) {
+        if (name === "result") resultEl.classList.remove("hidden");
+        else resultEl.classList.add("hidden");
+    }
+    if (secretPanScreen) {
+        if (name === "secret-pan") secretPanScreen.classList.remove("hidden");
+        else secretPanScreen.classList.add("hidden");
+    }
 }
 
 function startBgm() {
