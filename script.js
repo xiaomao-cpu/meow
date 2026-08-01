@@ -1,4 +1,4 @@
-let quizConfig = null;
+let quizConfig = FALLBACK_QUIZ_CONFIG;
 const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxaADhnMJQRW3narMXeIA7K8zPOcGtqOWQbChvJLNCx-MANNKJqh4rig1Tb15DvL-43/exec"; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
 let currentPath = [];
 let currentStep = 0;
@@ -205,23 +205,40 @@ const FALLBACK_QUIZ_CONFIG = {
   }
 };
 
+// 核心按鈕事件同步綁定，絕不上網等待 fetch
+function bindCoreEvents() {
+    const startBtn = document.getElementById("start-button");
+    const restartBtn = document.getElementById("restart-button");
+    const copyBtn = document.getElementById("copy-button");
+    const prevBtn = document.getElementById("prev-button");
+    const nextBtn = document.getElementById("next-button");
+    const audioBtn = document.getElementById("audio-toggle");
+
+    if (startBtn) startBtn.onclick = startQuiz;
+    if (restartBtn) restartBtn.onclick = restartQuiz;
+    if (copyBtn) copyBtn.onclick = copyResult;
+    if (prevBtn) prevBtn.onclick = prevQuestion;
+    if (nextBtn) nextBtn.onclick = nextQuestion;
+    if (audioBtn) audioBtn.onclick = toggleAudio;
+}
+
+bindCoreEvents();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindCoreEvents);
+}
+
 init();
 
 async function init() {
     try {
         const response = await fetch("quiz.json", { cache: "no-store" });
-        if (!response.ok) throw new Error(`quiz.json ${response.status}`);
-        quizConfig = await response.json();
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.questions) quizConfig = data;
+        }
     } catch (error) {
-        quizConfig = FALLBACK_QUIZ_CONFIG;
-        console.info("使用內建題目資料。若要讀取 quiz.json，請用本地伺服器開啟。", error);
+        console.info("使用內建題目資料。", error);
     }
-    els.start.addEventListener("click", startQuiz);
-    els.restart.addEventListener("click", restartQuiz);
-    els.copy.addEventListener("click", copyResult);
-    els.prev.addEventListener("click", prevQuestion);
-    els.next.addEventListener("click", nextQuestion);
-    els.audio.addEventListener("click", toggleAudio);
 
     // 1. 優先讀取網址參數 (例如 ?dm=F 或 ?dm=M)
     const urlParams = new URLSearchParams(window.location.search);
@@ -289,7 +306,7 @@ function setDmGender(g) {
 }
 
 function startQuiz() {
-    startBgm();
+    try { startBgm(); } catch (e) {}
     currentPath = [];
     currentStep = 0;
     gender = null;
@@ -303,11 +320,21 @@ function startQuiz() {
     renderIntroQuestion();
 }
 
+window.startQuiz = startQuiz;
+window.showScreen = showScreen;
+window.restartQuiz = restartQuiz;
+window.nextQuestion = nextQuestion;
+window.prevQuestion = prevQuestion;
+
 function showScreen(name) {
-    els.home.classList.toggle("hidden", name !== "home");
-    els.quiz.classList.toggle("hidden", name !== "quiz");
-    els.result.classList.toggle("hidden", name !== "result");
+    const homeEl = document.getElementById("home-screen");
+    const quizEl = document.getElementById("quiz-screen");
+    const resultEl = document.getElementById("result-screen");
     const secretPanScreen = document.getElementById("secret-pan-screen");
+
+    if (homeEl) homeEl.classList.toggle("hidden", name !== "home");
+    if (quizEl) quizEl.classList.toggle("hidden", name !== "quiz");
+    if (resultEl) resultEl.classList.toggle("hidden", name !== "result");
     if (secretPanScreen) secretPanScreen.classList.toggle("hidden", name !== "secret-pan");
 }
 
@@ -600,11 +627,12 @@ function calculateAndShowResult() {
 // ───────────────────────────────────────────────────────────────
 
 function validateIntroValue(id, value) {
-    if (id === "lineNickname") return value.length > 0;
+    if (id === "lineNickname") return String(value || "").trim().length > 0;
     if (id === "playDate") {
-        value = formatDateInput(value);
-        if (!/^\d{4}\/\d{2}\/\d{2}$/.test(value)) return false;
-        const [year, month, day] = value.split("/").map(Number);
+        const formatted = formatDateInput(value);
+        if (!/^\d{4}\/\d{2}\/\d{2}$/.test(formatted)) return false;
+        const [year, month, day] = formatted.split("/").map(Number);
+        if (year < 2000 || year > 2100) return false;
         const date = new Date(year, month - 1, day);
         return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
     }
@@ -612,9 +640,26 @@ function validateIntroValue(id, value) {
 }
 
 function formatDateInput(value) {
-    const digits = String(value).replace(/\D/g, "").slice(0, 8);
-    const parts = [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)].filter(Boolean);
-    return parts.join("/");
+    let str = String(value || "").trim();
+    if (!str) return "";
+
+    // 若含分隔符 /, -, .，例如 2026/7/8、2026-07-08、2026.7.8
+    if (/[/\-.]/.test(str)) {
+        const parts = str.split(/[/\-.]/).map(p => p.trim()).filter(Boolean);
+        if (parts.length === 3) {
+            let [y, m, d] = parts;
+            if (y.length === 2) y = "20" + y;
+            m = m.padStart(2, "0");
+            d = d.padStart(2, "0");
+            return `${y}/${m}/${d}`;
+        }
+    }
+
+    // 若為純數字（如 20260708 或 202678）
+    const digits = str.replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 4) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 4)}/${digits.slice(4)}`;
+    return `${digits.slice(0, 4)}/${digits.slice(4, 6)}/${digits.slice(6, 8)}`;
 }
 
 function escapeHtml(value) {
@@ -792,72 +837,72 @@ function normalizeAnswers(answers) {
 
 // ── 羽毛與白色光子點擊特效 ─────────────────────────
 function createFeatherPhotonEffect(e) {
-    let x, y;
-    if (e.touches && e.touches[0]) {
-        x = e.touches[0].clientX;
-        y = e.touches[0].clientY;
-    } else if (e.changedTouches && e.changedTouches[0]) {
-        x = e.changedTouches[0].clientX;
-        y = e.changedTouches[0].clientY;
-    } else {
-        x = e.clientX;
-        y = e.clientY;
-    }
-    if (x === undefined || y === undefined || x === null || y === null) return;
+    try {
+        let x, y;
+        if (e.touches && e.touches[0]) {
+            x = e.touches[0].clientX;
+            y = e.touches[0].clientY;
+        } else if (e.changedTouches && e.changedTouches[0]) {
+            x = e.changedTouches[0].clientX;
+            y = e.changedTouches[0].clientY;
+        } else {
+            x = e.clientX;
+            y = e.clientY;
+        }
+        if (x === undefined || y === undefined || x === null || y === null) return;
+        if (isNaN(x) || isNaN(y)) return;
 
-    // 1. 白色光子圓環
-    const ring = document.createElement("div");
-    ring.className = "photon-ring";
-    ring.style.left = x + "px";
-    ring.style.top = y + "px";
-    document.body.appendChild(ring);
-    setTimeout(() => ring.remove(), 600);
+        const ring = document.createElement("div");
+        ring.className = "photon-ring";
+        ring.style.left = x + "px";
+        ring.style.top = y + "px";
+        document.body.appendChild(ring);
+        setTimeout(() => ring.remove(), 600);
 
-    // 2. 與羽毛完全一同直直向下慢速掉落的閃耀白色光子微粒 (12 顆)
-    const photonCount = 12;
-    for (let i = 0; i < photonCount; i++) {
-        const photon = document.createElement("div");
-        photon.className = "falling-photon";
+        const photonCount = 12;
+        for (let i = 0; i < photonCount; i++) {
+            const photon = document.createElement("div");
+            photon.className = "falling-photon";
 
-        const pxOffset = (Math.random() - 0.5) * 40;
-        const pyOffset = (Math.random() - 0.5) * 20;
-        const psize = (1.5 + Math.random() * 2.2) + "px";
+            const pxOffset = (Math.random() - 0.5) * 40;
+            const pyOffset = (Math.random() - 0.5) * 20;
+            const psize = (1.5 + Math.random() * 2.2) + "px";
 
-        photon.style.left = (x + pxOffset) + "px";
-        photon.style.top = (y + pyOffset) + "px";
-        photon.style.setProperty("--p-size", psize);
+            photon.style.left = (x + pxOffset) + "px";
+            photon.style.top = (y + pyOffset) + "px";
+            photon.style.setProperty("--p-size", psize);
 
-        document.body.appendChild(photon);
-        setTimeout(() => photon.remove(), 2300);
-    }
+            document.body.appendChild(photon);
+            setTimeout(() => photon.remove(), 2300);
+        }
 
-    // 3. 與粒子完全一同直直向下慢速掉落的高清純白羽毛 (3 根精緻小羽毛，零噴射)
-    const SVG_FEATHERS = [
-        `<svg viewBox="0 0 100 100" fill="none"><path d="M15 85 Q 40 55 85 15" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M85 15 C 70 20 50 30 38 48 C 30 60 25 72 20 80 C 26 77 34 68 44 57 C 56 43 72 28 85 15 Z" fill="#ffffff" opacity="0.95"/><path d="M85 15 C 75 12 58 18 42 32 C 28 45 20 58 15 72 C 20 68 30 62 43 50 C 58 36 74 22 85 15 Z" fill="#ffffff" opacity="0.95"/><path d="M72 24 L 62 20 M 60 34 L 50 28 M 48 45 L 38 38 M 36 56 L 28 48" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/></svg>`,
-        `<svg viewBox="0 0 100 100" fill="none"><path d="M50 90 L 50 10" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M50 10 Q 25 30 25 60 Q 35 75 50 90 Q 65 75 75 60 Q 75 30 50 10 Z" fill="#ffffff" opacity="0.92"/><path d="M40 30 L 50 25 M 60 30 L 50 25 M 35 45 L 50 40 M 65 45 L 50 40" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/></svg>`,
-        `<svg viewBox="0 0 100 100" fill="none"><path d="M10 50 Q 50 10 90 40" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M90 40 Q 50 20 10 50 Q 40 60 90 40 Z" fill="#ffffff" opacity="0.95"/><path d="M75 28 L 65 33 M 55 24 L 45 31 M 35 25 L 25 35" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/></svg>`,
-        `<svg viewBox="0 0 100 100" fill="none"><path d="M50 85 Q 50 40 20 15 M 50 85 Q 50 40 80 15" stroke="#ffffff" stroke-width="3.5"/><path d="M50 85 C 30 60 10 40 20 15 C 35 30 45 60 50 85 Z" fill="#ffffff" opacity="0.9"/><path d="M50 85 C 70 60 90 40 80 15 C 65 30 55 60 50 85 Z" fill="#ffffff" opacity="0.9"/></svg>`,
-        `<svg viewBox="0 0 100 100" fill="none"><path d="M30 85 Q 60 50 85 20" stroke="#ffffff" stroke-width="3.5"/><path d="M85 20 Q 40 30 20 60 Q 30 75 85 20 Z" fill="#ffffff" opacity="0.95"/></svg>`,
-        `<svg viewBox="0 0 100 100" fill="none"><path d="M20 80 Q 50 50 80 20" stroke="#ffffff" stroke-width="3"/><path d="M80 20 C 65 25 45 35 30 55 C 22 65 18 75 15 80 C 22 75 30 65 42 52 C 55 38 70 25 80 20 Z" fill="#ffffff" opacity="0.95"/></svg>`
-    ];
+        const SVG_FEATHERS = [
+            `<svg viewBox="0 0 100 100" fill="none"><path d="M15 85 Q 40 55 85 15" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M85 15 C 70 20 50 30 38 48 C 30 60 25 72 20 80 C 26 77 34 68 44 57 C 56 43 72 28 85 15 Z" fill="#ffffff" opacity="0.95"/><path d="M85 15 C 75 12 58 18 42 32 C 28 45 20 58 15 72 C 20 68 30 62 43 50 C 58 36 74 22 85 15 Z" fill="#ffffff" opacity="0.95"/><path d="M72 24 L 62 20 M 60 34 L 50 28 M 48 45 L 38 38 M 36 56 L 28 48" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/></svg>`,
+            `<svg viewBox="0 0 100 100" fill="none"><path d="M50 90 L 50 10" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M50 10 Q 25 30 25 60 Q 35 75 50 90 Q 65 75 75 60 Q 75 30 50 10 Z" fill="#ffffff" opacity="0.92"/><path d="M40 30 L 50 25 M 60 30 L 50 25 M 35 45 L 50 40 M 65 45 L 50 40" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/></svg>`,
+            `<svg viewBox="0 0 100 100" fill="none"><path d="M10 50 Q 50 10 90 40" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/><path d="M90 40 Q 50 20 10 50 Q 40 60 90 40 Z" fill="#ffffff" opacity="0.95"/><path d="M75 28 L 65 33 M 55 24 L 45 31 M 35 25 L 25 35" stroke="rgba(255,255,255,0.75)" stroke-width="1.5"/></svg>`,
+            `<svg viewBox="0 0 100 100" fill="none"><path d="M50 85 Q 50 40 20 15 M 50 85 Q 50 40 80 15" stroke="#ffffff" stroke-width="3.5"/><path d="M50 85 C 30 60 10 40 20 15 C 35 30 45 60 50 85 Z" fill="#ffffff" opacity="0.9"/><path d="M50 85 C 70 60 90 40 80 15 C 65 30 55 60 50 85 Z" fill="#ffffff" opacity="0.9"/></svg>`,
+            `<svg viewBox="0 0 100 100" fill="none"><path d="M30 85 Q 60 50 85 20" stroke="#ffffff" stroke-width="3.5"/><path d="M85 20 Q 40 30 20 60 Q 30 75 85 20 Z" fill="#ffffff" opacity="0.95"/></svg>`,
+            `<svg viewBox="0 0 100 100" fill="none"><path d="M20 80 Q 50 50 80 20" stroke="#ffffff" stroke-width="3"/><path d="M80 20 C 65 25 45 35 30 55 C 22 65 18 75 15 80 C 22 75 30 65 42 52 C 55 38 70 25 80 20 Z" fill="#ffffff" opacity="0.95"/></svg>`
+        ];
 
-    const featherCount = 3;
-    for (let f = 0; f < featherCount; f++) {
-        const feather = document.createElement("div");
-        feather.className = "floating-feather";
-        feather.innerHTML = SVG_FEATHERS[Math.floor(Math.random() * SVG_FEATHERS.length)];
+        const featherCount = 3;
+        for (let f = 0; f < featherCount; f++) {
+            const feather = document.createElement("div");
+            feather.className = "floating-feather";
+            feather.innerHTML = SVG_FEATHERS[Math.floor(Math.random() * SVG_FEATHERS.length)];
 
-        const fxOffset = (Math.random() - 0.5) * 36;
-        const fyOffset = (Math.random() - 0.5) * 16;
-        const rotVal = (f % 2 === 0 ? 1 : -1) * (20 + Math.random() * 20) + "deg";
+            const fxOffset = (Math.random() - 0.5) * 36;
+            const fyOffset = (Math.random() - 0.5) * 16;
+            const rotVal = (f % 2 === 0 ? 1 : -1) * (20 + Math.random() * 20) + "deg";
 
-        feather.style.left = (x + fxOffset) + "px";
-        feather.style.top = (y + fyOffset) + "px";
-        feather.style.setProperty("--rot", rotVal);
-        document.body.appendChild(feather);
+            feather.style.left = (x + fxOffset) + "px";
+            feather.style.top = (y + fyOffset) + "px";
+            feather.style.setProperty("--rot", rotVal);
+            document.body.appendChild(feather);
 
-        setTimeout(() => feather.remove(), 2300);
-    }
+            setTimeout(() => feather.remove(), 2300);
+        }
+    } catch (_) {}
 }
 
 window.addEventListener("pointerdown", createFeatherPhotonEffect);
