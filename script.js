@@ -1140,6 +1140,10 @@ async function syncMemoriesFromCloud(isManual = false) {
     }
 }
 
+// 頁面載入時自動拉取雲端，並開啟每 15 秒背景無感自動連動
+syncMemoriesFromCloud(false);
+setInterval(() => syncMemoriesFromCloud(false), 15000);
+
 function checkUrlSyncMemories() {
     const urlParams = new URLSearchParams(window.location.search);
     const syncParam = urlParams.get("sync_memories");
