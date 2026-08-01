@@ -117,7 +117,7 @@ const introQuestions = [
         id: "lineNickname",
         label: "LINE 暱稱",
         text: "請輸入你的 LINE 暱稱",
-        placeholder: "例如：小光",
+        placeholder: "例如：小貓",
         hint: "這會顯示在你的測驗結果裡。",
         error: "請輸入 LINE 暱稱。"
     },
