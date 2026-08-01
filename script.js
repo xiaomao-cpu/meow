@@ -1708,26 +1708,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const secretBack = document.getElementById("secret-back-button");
     if (secretBack) secretBack.addEventListener("click", () => showScreen("home"));
 
-    const homeSecretBtn = document.getElementById("home-secret-btn");
-    if (homeSecretBtn) {
-        homeSecretBtn.addEventListener("click", () => {
-            const modal = document.getElementById("secret-key-modal");
-            if (modal) modal.classList.remove("hidden");
-        });
-    }
-
     const secretAdminTrigger = document.getElementById("secret-admin-trigger");
     if (secretAdminTrigger) secretAdminTrigger.addEventListener("click", checkAdminAuthAndOpen);
-
-    // Admin Auth Modal Listeners
-    const adminQuickFillBtn = document.getElementById("admin-quick-fill-btn");
-    if (adminQuickFillBtn) {
-        adminQuickFillBtn.addEventListener("click", () => {
-            const pwdInput = document.getElementById("admin-password-input");
-            if (pwdInput) pwdInput.value = ADMIN_PASSWORD;
-            submitAdminAuth(ADMIN_PASSWORD);
-        });
-    }
 
     const adminAuthSubmit = document.getElementById("admin-auth-submit");
     if (adminAuthSubmit) {
