@@ -1955,6 +1955,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let currentResultData = null;
 
+function drawCoverImage(ctx, img, x, y, w, h, r = 12) {
+    ctx.save();
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+    else ctx.rect(x, y, w, h);
+    ctx.clip();
+
+    if (img && img.complete && img.naturalWidth !== 0) {
+        const imgAspect = img.naturalWidth / img.naturalHeight;
+        const targetAspect = w / h;
+        let renderW, renderH, offsetX, offsetY;
+
+        if (imgAspect > targetAspect) {
+            renderH = h;
+            renderW = h * imgAspect;
+            offsetX = x - (renderW - w) / 2;
+            offsetY = y;
+        } else {
+            renderW = w;
+            renderH = w / imgAspect;
+            offsetX = x;
+            offsetY = y - (renderH - h) / 2;
+        }
+        ctx.drawImage(img, offsetX, offsetY, renderW, renderH);
+    } else {
+        ctx.fillStyle = "#261618";
+        ctx.fillRect(x, y, w, h);
+    }
+    ctx.restore();
+}
+
 async function generateResultPoster() {
     if (!currentResultData) {
         alert("尚未取得測驗結果！");
@@ -1966,60 +1997,76 @@ async function generateResultPoster() {
     const modal = document.getElementById("poster-modal");
     if (!canvas || !imgEl || !modal) return;
 
-    showToast("✨ 正在繪製您的專屬測驗結果海報…");
+    showToast("✨ 正在繪製您的專屬測驗海報…");
 
     const ctx = canvas.getContext("2d");
-    const W = 900;
-    const H = 1450;
+    const W = 1000;
+    const H = 1500;
     canvas.width = W;
     canvas.height = H;
 
-    // Background Gradient
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-    bgGrad.addColorStop(0, "#1f0f12");
-    bgGrad.addColorStop(0.5, "#2a1417");
-    bgGrad.addColorStop(1, "#15090b");
+    // 1. Rich Atmospheric Background Gradient
+    const bgGrad = ctx.createRadialGradient(W / 2, H * 0.4, 100, W / 2, H / 2, W * 0.8);
+    bgGrad.addColorStop(0, "#32161b");
+    bgGrad.addColorStop(0.5, "#200d10");
+    bgGrad.addColorStop(1, "#0f0507");
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, W, H);
 
-    // Border Frame
-    ctx.strokeStyle = "#b68b4a";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(30, 30, W - 60, H - 60);
+    // Subtle Gold Border Lines
+    ctx.strokeStyle = "rgba(197, 160, 89, 0.45)";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(36, 36, W - 72, H - 72);
 
-    ctx.strokeStyle = "rgba(182, 139, 74, 0.35)";
+    ctx.strokeStyle = "rgba(197, 160, 89, 0.2)";
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(40, 40, W - 80, H - 80);
+    ctx.strokeRect(46, 46, W - 92, H - 92);
+
+    // Corner Ornaments
+    ctx.fillStyle = "rgba(197, 160, 89, 0.7)";
+    ctx.font = "24px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("⚜", 54, 76);
+    ctx.textAlign = "right";
+    ctx.fillText("⚜", W - 54, 76);
+    ctx.fillText("⚜", W - 54, H - 54);
+    ctx.textAlign = "left";
+    ctx.fillText("⚜", 54, H - 54);
 
     // Header Title
     ctx.textAlign = "center";
-    ctx.fillStyle = "#b68b4a";
-    ctx.font = "bold 34px 'LXGW WenKai TC', 'Noto Serif TC', serif";
-    ctx.fillText("「 向 生 而 死 」 劇 本 心 理 測 驗", W / 2, 95);
+    ctx.fillStyle = "#d4af37";
+    ctx.font = "bold 38px 'LXGW WenKai TC', 'Noto Serif TC', serif";
+    ctx.fillText("「 向 生 而 死 」 劇 本 心 理 測 驗", W / 2, 105);
 
-    ctx.fillStyle = "rgba(255, 250, 244, 0.65)";
+    ctx.fillStyle = "rgba(255, 248, 238, 0.65)";
     ctx.font = "20px 'LXGW WenKai TC', sans-serif";
-    ctx.fillText(`LINE 暱稱：${currentResultData.lineNickname}   ｜   遊玩時間：${currentResultData.playDate}`, W / 2, 135);
+    ctx.fillText(`LINE 暱稱：${currentResultData.lineNickname}   ｜   遊玩時間：${currentResultData.playDate}`, W / 2, 148);
 
-    // Character Card Frame
-    const cardY = 175;
-    const cardW = 740;
-    const cardH = 1120;
+    // Main Card Frame (Dark Vintage Parchment Card)
+    const cardY = 185;
+    const cardW = 840;
+    const cardH = 1180;
     const cardX = (W - cardW) / 2;
 
-    ctx.fillStyle = "rgba(255, 250, 244, 0.94)";
+    // Card Shadow
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 15;
+
+    ctx.fillStyle = "#fffbf5";
     ctx.beginPath();
-    if (ctx.roundRect) {
-        ctx.roundRect(cardX, cardY, cardW, cardH, 16);
-    } else {
-        ctx.rect(cardX, cardY, cardW, cardH);
-    }
+    if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardW, cardH, 20);
+    else ctx.rect(cardX, cardY, cardW, cardH);
     ctx.fill();
-    ctx.strokeStyle = "rgba(182, 139, 74, 0.5)";
+    ctx.restore();
+
+    ctx.strokeStyle = "rgba(182, 139, 74, 0.4)";
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Draw Character Avatar
+    // Load Character Avatar
     const avatarImg = new Image();
     avatarImg.crossOrigin = "anonymous";
     avatarImg.src = currentResultData.characterImage;
@@ -2028,53 +2075,68 @@ async function generateResultPoster() {
         avatarImg.onerror = resolve;
     });
 
-    const imgW = 660;
-    const imgH = 500;
+    // Character Image Frame inside Card
+    const imgW = 760;
+    const imgH = 520;
     const imgX = (W - imgW) / 2;
     const imgY = cardY + 40;
 
-    ctx.save();
+    // Draw Image Border & Frame
+    ctx.fillStyle = "#15090b";
     ctx.beginPath();
-    if (ctx.roundRect) {
-        ctx.roundRect(imgX, imgY, imgW, imgH, 12);
-    } else {
-        ctx.rect(imgX, imgY, imgW, imgH);
-    }
-    ctx.clip();
-    if (avatarImg.complete && avatarImg.naturalWidth !== 0) {
-        ctx.drawImage(avatarImg, imgX, imgY, imgW, imgH);
-    } else {
-        ctx.fillStyle = "#333";
-        ctx.fillRect(imgX, imgY, imgW, imgH);
-    }
-    ctx.restore();
+    if (ctx.roundRect) ctx.roundRect(imgX - 4, imgY - 4, imgW + 8, imgH + 8, 14);
+    else ctx.rect(imgX - 4, imgY - 4, imgW + 8, imgH + 8);
+    ctx.fill();
 
-    // Character Info
+    drawCoverImage(ctx, avatarImg, imgX, imgY, imgW, imgH, 12);
+
+    // Character Name & Label
+    const textCenterY = imgY + imgH + 45;
     ctx.textAlign = "center";
-    ctx.fillStyle = "#7b2434";
+    ctx.fillStyle = "#8c2838";
+    ctx.font = "bold 20px 'LXGW WenKai TC', sans-serif";
+    ctx.fillText("✦ 最 契 合 角 色 ✦", W / 2, textCenterY);
+
+    ctx.fillStyle = "#1c1113";
+    ctx.font = "bold 58px 'LXGW WenKai TC', 'Noto Serif TC', serif";
+    ctx.fillText(currentResultData.characterName, W / 2, textCenterY + 65);
+
+    // Match Badge Pill
+    const badgeW = 260;
+    const badgeH = 46;
+    const badgeX = (W - badgeW) / 2;
+    const badgeY = textCenterY + 88;
+
+    const badgeGrad = ctx.createLinearGradient(badgeX, 0, badgeX + badgeW, 0);
+    badgeGrad.addColorStop(0, "#8c2838");
+    badgeGrad.addColorStop(1, "#5c1522");
+    ctx.fillStyle = badgeGrad;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 23);
+    else ctx.rect(badgeX, badgeY, badgeW, badgeH);
+    ctx.fill();
+
+    ctx.fillStyle = "#fdfbf7";
     ctx.font = "bold 22px 'LXGW WenKai TC', sans-serif";
-    ctx.fillText("最 契 合 角 色", W / 2, imgY + imgH + 50);
+    ctx.fillText(`相 性 匹 配 度  ${currentResultData.matchPercent}%`, W / 2, badgeY + 31);
 
-    ctx.fillStyle = "#17120f";
-    ctx.font = "bold 52px 'LXGW WenKai TC', 'Noto Serif TC', serif";
-    ctx.fillText(currentResultData.characterName, W / 2, imgY + imgH + 115);
-
-    ctx.fillStyle = "#b68b4a";
-    ctx.font = "bold 28px 'LXGW WenKai TC', sans-serif";
-    ctx.fillText(`相 性 匹 配 度  ${currentResultData.matchPercent}%`, W / 2, imgY + imgH + 165);
+    // Decorative Divider Line
+    ctx.fillStyle = "rgba(140, 40, 56, 0.25)";
+    ctx.fillRect(cardX + 60, badgeY + 68, cardW - 120, 1.5);
 
     // Quote Box
-    ctx.fillStyle = "#1c0d0d";
-    ctx.font = "italic 25px 'LXGW WenKai TC', 'Klee One', serif";
+    ctx.fillStyle = "#2c1c1e";
+    ctx.font = "26px 'LXGW WenKai TC', 'Klee One', serif";
     const quoteLines = (currentResultData.resultText || "").split("\n");
+    const quoteStartY = badgeY + 115;
     quoteLines.forEach((line, i) => {
-        ctx.fillText(line, W / 2, imgY + imgH + 230 + i * 38);
+        ctx.fillText(line, W / 2, quoteStartY + i * 42);
     });
 
     // Branding Footer
-    ctx.fillStyle = "rgba(255, 250, 244, 0.75)";
+    ctx.fillStyle = "rgba(255, 248, 238, 0.7)";
     ctx.font = "20px 'LXGW WenKai TC', sans-serif";
-    ctx.fillText("游 泉 與 畔 · 宿 命 記 憶 牆 獨 家 呈 獻", W / 2, H - 75);
+    ctx.fillText("游 泉 與 畔 · 宿 命 記 憶 牆 獨 家 呈 獻", W / 2, H - 65);
 
     imgEl.src = canvas.toDataURL("image/png");
     modal.classList.remove("hidden");
