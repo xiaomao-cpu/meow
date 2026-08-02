@@ -1825,6 +1825,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const secretBack = document.getElementById("secret-back-button");
     if (secretBack) secretBack.addEventListener("click", () => showScreen("home"));
 
+    const secretToAdmin = document.getElementById("secret-to-admin-button");
+    if (secretToAdmin) secretToAdmin.addEventListener("click", checkAdminAuthAndOpen);
+
     const secretAdminTrigger = document.getElementById("secret-admin-trigger");
     if (secretAdminTrigger) secretAdminTrigger.addEventListener("click", checkAdminAuthAndOpen);
 
