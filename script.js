@@ -1227,6 +1227,7 @@ let maxPolaroidZIndex = 100;
 
 function initPolaroidDrag(card, cardIndex) {
     let isDragging = false;
+    let hasMoved = false;
     let startX = 0;
     let startY = 0;
     let initialLeft = 0;
@@ -1237,6 +1238,7 @@ function initPolaroidDrag(card, cardIndex) {
         playPaperSFX();
         
         isDragging = true;
+        hasMoved = false;
         card.classList.add("dragging");
         maxPolaroidZIndex++;
         card.style.zIndex = maxPolaroidZIndex;
@@ -1251,12 +1253,17 @@ function initPolaroidDrag(card, cardIndex) {
 
         const onPointerMove = (evt) => {
             if (!isDragging) return;
-            if (evt.cancelable) evt.preventDefault();
 
             const curX = evt.touches ? evt.touches[0].clientX : evt.clientX;
             const curY = evt.touches ? evt.touches[0].clientY : evt.clientY;
             const deltaX = curX - startX;
             const deltaY = curY - startY;
+
+            if (Math.abs(deltaX) > 6 || Math.abs(deltaY) > 6) {
+                hasMoved = true;
+            }
+
+            if (evt.cancelable) evt.preventDefault();
 
             card.style.left = (initialLeft + deltaX) + "px";
             card.style.top = (initialTop + deltaY) + "px";
@@ -1267,17 +1274,22 @@ function initPolaroidDrag(card, cardIndex) {
             isDragging = false;
             card.classList.remove("dragging");
 
-            // 儲存手動調整後的位置與層級（下次進入或離線/跨裝置皆保留）
-            if (activeSecretKey && cardIndex !== undefined) {
-                const allData = getMemoriesData();
-                if (!allData[activeSecretKey]) {
-                    allData[activeSecretKey] = DEFAULT_PAN_MEMORIES.map(m => ({ ...m }));
-                }
-                if (allData[activeSecretKey][cardIndex]) {
-                    allData[activeSecretKey][cardIndex].left = card.style.left;
-                    allData[activeSecretKey][cardIndex].top = card.style.top;
-                    allData[activeSecretKey][cardIndex].zIndex = card.style.zIndex;
-                    saveMemoriesData(allData, true);
+            // 若位移距離極小，判定為點擊 -> 觸發照片放大 Modal
+            if (!hasMoved) {
+                bringPolaroidToFront(card);
+            } else {
+                // 儲存手動調整後的位置與層級
+                if (activeSecretKey && cardIndex !== undefined) {
+                    const allData = getMemoriesData();
+                    if (!allData[activeSecretKey]) {
+                        allData[activeSecretKey] = DEFAULT_PAN_MEMORIES.map(m => ({ ...m }));
+                    }
+                    if (allData[activeSecretKey][cardIndex]) {
+                        allData[activeSecretKey][cardIndex].left = card.style.left;
+                        allData[activeSecretKey][cardIndex].top = card.style.top;
+                        allData[activeSecretKey][cardIndex].zIndex = card.style.zIndex;
+                        saveMemoriesData(allData, true);
+                    }
                 }
             }
 
