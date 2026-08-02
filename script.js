@@ -1861,6 +1861,71 @@ window.deleteAdminKey = function(key) {
     renderAdminSavedList();
 };
 
+window.recoverAllHistoryPhotos = function() {
+    let recoveredPhotos = [];
+    try {
+        // 掃描本地所有 localStorage key
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            const val = localStorage.getItem(k);
+            if (!val) continue;
+
+            // 尋找 Base64 圖片或 JSON 物件
+            if (val.includes("data:image") || val.includes("http")) {
+                try {
+                    const parsed = JSON.parse(val);
+                    if (typeof parsed === "object") {
+                        Object.keys(parsed).forEach(rk => {
+                            if (Array.isArray(parsed[rk])) {
+                                parsed[rk].forEach(item => {
+                                    if (item && item.img && !isDefaultSampleCard(item)) {
+                                        recoveredPhotos.push(item);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                } catch(e) {}
+            }
+        }
+    } catch(e) {}
+
+    if (recoveredPhotos.length === 0) {
+        alert("未在此裝置的瀏覽器快取中找到其他歷史照片。請重新在手機點選「選擇照片」一次上傳即可！");
+        return;
+    }
+
+    // 去重
+    const uniqueImgs = new Set();
+    const cleanList = [];
+    recoveredPhotos.forEach(p => {
+        if (!uniqueImgs.has(p.img)) {
+            uniqueImgs.add(p.img);
+            cleanList.push(p);
+        }
+    });
+
+    const targetKey = "0318";
+    removeDeletedKey(targetKey);
+
+    const allData = getMemoriesData();
+    if (!allData[targetKey]) allData[targetKey] = [];
+    
+    // 合併救援到的照片
+    const existingImgs = new Set(allData[targetKey].map(i => i.img));
+    let addedCount = 0;
+    cleanList.forEach(p => {
+        if (!existingImgs.has(p.img)) {
+            allData[targetKey].push(p);
+            addedCount++;
+        }
+    });
+
+    saveMemoriesData(allData, true, true);
+    alert(`🚑 成功救援並復原 ${addedCount} 張歷史照片至房號「${targetKey}」！已同步至雲端 ☁️`);
+    renderAdminSavedList();
+};
+
 let uploadedBase64Images = [];
 
 function handleAdminPhotoUpload(e) {
