@@ -1106,18 +1106,10 @@ function mergeMemoriesDeep(base, incoming) {
     return result;
 }
 
-// 雲端同步輔助：過濾握 base64 大圖，只保留 URL 格式照片
-// base64 圖片可能高達幾百 KB，塞進 jsonblob 超限或被限流
-// URL 格式照片（http/https 開頭）本身只是短字串，可安全同步
+// 雲端同步輔助：保留所有照片資料（包含網址與上傳圖檔）
 function stripBase64ForCloud(data) {
-    const result = {};
-    Object.keys(data).forEach(key => {
-        const filtered = (data[key] || []).filter(item =>
-            item.img && (item.img.startsWith("http://") || item.img.startsWith("https://"))
-        );
-        if (filtered.length > 0) result[key] = filtered;
-    });
-    return result;
+    // 不再強制過濾，保留所有已設定的房號照片
+    return data || {};
 }
 
 // 防抖計時器（一秒內多次儲存只推一次）
@@ -1206,9 +1198,9 @@ async function syncMemoriesFromCloud(isManual = false) {
     }
 }
 
-// 頁面載入時拉一次，之後每 60 秒自動同步（原 15 秒太頻繁，易觸發 429）
+// 頁面載入時拉一次，之後每 10 秒自動同步最新照片
 syncMemoriesFromCloud(false);
-setInterval(() => syncMemoriesFromCloud(false), 60000);
+setInterval(() => syncMemoriesFromCloud(false), 10000);
 
 function checkUrlSyncMemories() {
     const urlParams = new URLSearchParams(window.location.search);
