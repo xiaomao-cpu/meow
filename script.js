@@ -1638,17 +1638,39 @@ function renderAdminSavedList(filterQuery = "") {
                             <span style="font-size:12px;font-weight:400;color:var(--muted);">(${cards.length} 張照片)</span>
                         </div>
                         <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn-sm" style="background:var(--gold); border-color:var(--gold); color:#fff;" onclick="event.stopPropagation(); saveAllCardsForKey('${escapeHtml(k)}')">💾 儲存此房號</button>
                             <button type="button" class="btn-sm" onclick="event.stopPropagation(); previewAdminKey('${escapeHtml(k)}')">👁️ 預覽視角</button>
                             <button type="button" class="btn-sm btn-sm-danger" onclick="event.stopPropagation(); deleteAdminKey('${escapeHtml(k)}')">清空全部</button>
                         </div>
                     </summary>
                     <div class="edit-key-content" style="margin-top:10px;">
                         ${cardItems}
+                        <div style="margin-top:12px; text-align:center;">
+                            <button type="button" class="primary-button" style="width:100%; padding:10px; font-size:14px; background:var(--accent); border-color:var(--accent); color:#fff;" onclick="saveAllCardsForKey('${escapeHtml(k)}')">💾 一鍵儲存「${escapeHtml(k)}」的所有照片與悄悄話</button>
+                        </div>
                     </div>
                 </details>
             `;
         }).join("");
 }
+
+window.saveAllCardsForKey = function(key) {
+    const allData = getMemoriesData();
+    if (!allData[key]) return;
+    
+    let updatedCount = 0;
+    allData[key].forEach((card, idx) => {
+        const textarea = document.getElementById(`ecm-${key}-${idx}`);
+        if (textarea) {
+            card.text = textarea.value.trim();
+            updatedCount++;
+        }
+    });
+
+    saveMemoriesData(allData);
+    showToast(`✨ 成功儲存「${key}」房號的所有照片與悄悄話！`);
+    renderAdminSavedList();
+};
 
 window.previewAdminKey = function(key) {
     closeYouquanAdminModal();
