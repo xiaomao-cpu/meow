@@ -1,5 +1,5 @@
 let quizConfig = null;
-const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxaADhnMJQRW3narMXeIA7K8zPOcGtqOWQbChvJLNCx-MANNKJqh4rig1Tb15DvL-43/exec"; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
+const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyCM1vKdEGcZlfjyNrWBNRRIY8N-Lzia0uTOhjDKl1-zaQifwTAdh1stfDMnTaF9l7N/exec"; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
 let currentPath = [];
 let currentStep = 0;
 let gender = null;
@@ -1093,9 +1093,12 @@ const CLOUD_SYNC_ENDPOINT = GOOGLE_SHEETS_WEB_APP_URL;
 // 判斷是否為系統預設範例卡片
 function isDefaultSampleCard(item) {
     if (!item || !item.img) return true;
-    if (item.img.includes("dummy_photo_url") || item.text === "手機測試照片") return true;
-    if (item.img.includes("畔（男）.jpg") || item.img.includes("畔（女）.jpg") || item.img.includes("游泉.jpg")) return true;
-    if (item.text && (item.text.includes("向生而死，為你而活") || item.text.includes("微光散盡之處") || item.text.includes("如果罪孽是宿命"))) return true;
+    const imgStr = String(item.img);
+    const txtStr = String(item.text || "");
+
+    if (imgStr.includes("dummy_photo_url") || txtStr === "手機測試照片") return true;
+    if (imgStr.includes("畔（男）") || imgStr.includes("畔（女）") || imgStr.includes("游泉") || imgStr.includes("劇本封面")) return true;
+    if (txtStr.includes("向生而死，為你而活") || txtStr.includes("微光散盡之處") || txtStr.includes("如果罪孽是宿命")) return true;
     return false;
 }
 
@@ -1577,6 +1580,20 @@ function renderAdminSavedList(filterQuery = "") {
     const listEl = document.getElementById("admin-saved-list");
     if (!listEl) return;
     const allData = getMemoriesData();
+
+    // 自動清理舊有的預設範例卡片
+    let hasCleaned = false;
+    Object.keys(allData).forEach(k => {
+        const origLen = allData[k] ? allData[k].length : 0;
+        allData[k] = (allData[k] || []).filter(item => !isDefaultSampleCard(item));
+        if (allData[k].length !== origLen) hasCleaned = true;
+        if (allData[k].length === 0) delete allData[k];
+    });
+
+    if (hasCleaned) {
+        saveMemoriesData(allData, true, true);
+    }
+
     let keys = Object.keys(allData);
 
     const query = String(filterQuery || "").trim().toLowerCase();
