@@ -1086,7 +1086,42 @@ function getMemoriesData() {
     }
 }
 
-const CLOUD_SYNC_ENDPOINT = "https://jsonblob.com/api/jsonBlob/019fbd70-eccf-7b9a-aa8b-8cb170c58356";
+// 雲端同步終點：使用現有的 Google Apps Script（穩定、免費、永不消失）
+// 同一個 GAS URL 完成测驗結果記錄 + 照片記憶牆同步雙功能
+const CLOUD_SYNC_ENDPOINT = GOOGLE_SHEETS_WEB_APP_URL;
+
+// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重
+function mergeMemoriesDeep(base, incoming) {
+    const result = { ...base };
+    Object.keys(incoming).forEach(key => {
+        if (!result[key]) {
+            result[key] = incoming[key];
+        } else {
+            // 合併陣列，用 img 欄位去重
+            const existingImgs = new Set(result[key].map(item => item.img));
+            const toAdd = incoming[key].filter(item => !existingImgs.has(item.img));
+            result[key] = [...result[key], ...toAdd];
+        }
+    });
+    return result;
+}
+
+// 雲端同步輔助：過濾握 base64 大圖，只保留 URL 格式照片
+// base64 圖片可能高達幾百 KB，塞進 jsonblob 超限或被限流
+// URL 格式照片（http/https 開頭）本身只是短字串，可安全同步
+function stripBase64ForCloud(data) {
+    const result = {};
+    Object.keys(data).forEach(key => {
+        const filtered = (data[key] || []).filter(item =>
+            item.img && (item.img.startsWith("http://") || item.img.startsWith("https://"))
+        );
+        if (filtered.length > 0) result[key] = filtered;
+    });
+    return result;
+}
+
+// 防抖計時器（一秒內多次儲存只推一次）
+let _cloudPushTimer = null;
 
 function saveMemoriesData(data, shouldPushToCloud = true) {
     try {
@@ -1098,31 +1133,65 @@ function saveMemoriesData(data, shouldPushToCloud = true) {
     }
 
     if (shouldPushToCloud && CLOUD_SYNC_ENDPOINT) {
-        fetch(CLOUD_SYNC_ENDPOINT, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        }).then(res => {
-            if (!res.ok) {
-                console.warn("雲端推送回應異常:", res.status);
+        // 防抖 800ms：避免同一秒內發送多次請求
+        clearTimeout(_cloudPushTimer);
+        _cloudPushTimer = setTimeout(() => {
+            // 只同步 URL 照片，剔除 base64 大圖
+            const cloudPayload = stripBase64ForCloud(data);
+            if (Object.keys(cloudPayload).length === 0) {
+                console.info("無 URL 照片可同步，跳過雲端推送");
+                return;
             }
-        }).catch(err => console.error("雲端自動推播失敗:", err));
+            // GAS 用 POST + _action: 'save_memories'
+            fetch(CLOUD_SYNC_ENDPOINT, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ _action: "save_memories", data: cloudPayload })
+            }).then(res => {
+                if (!res.ok) console.warn("雲端推送回應異常:", res.status);
+                else console.info("雲端同步成功");
+            }).catch(err => console.error("雲端自動推播失敗:", err));
+        }, 800);
     }
     return true;
 }
 
+// 雲端拉取同步：收到 429/503 時退遯 5 分鐘
+let _syncBackoffUntil = 0;
+
 async function syncMemoriesFromCloud(isManual = false) {
     if (!CLOUD_SYNC_ENDPOINT) return;
+    // 退遯期間靜默跳過（手動同步不受影響）
+    if (!isManual && Date.now() < _syncBackoffUntil) return;
+
     try {
         const res = await fetch(CLOUD_SYNC_ENDPOINT + "?t=" + Date.now(), { cache: "no-store" });
+
+        if (res.status === 429 || res.status === 503) {
+            _syncBackoffUntil = Date.now() + 5 * 60 * 1000;
+            console.warn("雲端被限流 (" + res.status + ")，5 分鐘後重試");
+            if (isManual) showToast("⚠️ 雲端暫時限流，請稍後再試");
+            return;
+        }
+        // GAS 用 GET 則回傳 HTML error page，這裡處理不存在的情況
+        if (res.status === 404 || res.status === 400) {
+            _syncBackoffUntil = Date.now() + 60 * 60 * 1000;
+            console.warn("雲端端點異常 (" + res.status + ")，請檢查 GAS 部署狀態");
+            if (isManual) showToast("⚠️ 雲端連線異常，請檢查 GAS 是否已重新部署");
+            return;
+        }
+
         if (res.ok) {
             const cloudData = await res.json();
             if (cloudData && typeof cloudData === "object" && Object.keys(cloudData).length > 0) {
                 const localData = getMemoriesData();
-                const merged = { ...localData, ...cloudData };
-                saveMemoriesData(merged, false);
+                // 逐 key 合併，雲端的 URL 照片補充進本地
+                const merged = mergeMemoriesDeep(localData, cloudData);
+                // 只有真的有新資料才寫入，避免無意義 IO
+                if (JSON.stringify(merged) !== JSON.stringify(localData)) {
+                    saveMemoriesData(merged, false);
+                    if (typeof renderAdminSavedList === "function") renderAdminSavedList();
+                }
                 if (isManual) {
                     renderAdminSavedList();
                     showToast("✨ 已成功與雲端照片同步！");
@@ -1137,9 +1206,9 @@ async function syncMemoriesFromCloud(isManual = false) {
     }
 }
 
-// 頁面載入時自動拉取雲端，並開啟每 15 秒背景無感自動連動
+// 頁面載入時拉一次，之後每 60 秒自動同步（原 15 秒太頻繁，易觸發 429）
 syncMemoriesFromCloud(false);
-setInterval(() => syncMemoriesFromCloud(false), 15000);
+setInterval(() => syncMemoriesFromCloud(false), 60000);
 
 function checkUrlSyncMemories() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1150,7 +1219,8 @@ function checkUrlSyncMemories() {
             const syncedData = JSON.parse(jsonStr);
             if (syncedData && typeof syncedData === "object") {
                 const localData = getMemoriesData();
-                const merged = { ...localData, ...syncedData };
+                // 逐 key 合併陣列，不互相覆蓋
+                const merged = mergeMemoriesDeep(localData, syncedData);
                 saveMemoriesData(merged);
                 showToast("✨ 已成功與電腦照片同步！");
             }
@@ -1617,9 +1687,9 @@ let uploadedBase64Images = [];
 function handleAdminPhotoUpload(e) {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+
     uploadedBase64Images = new Array(files.length).fill(null);
     const preview = document.getElementById("admin-photo-preview");
-    if (preview) preview.innerHTML = "<p style='font-size:13px;color:var(--muted);'>壓縮圖片處理中…</p>";
 
     // 隱藏 URL 留言欄（文件上傳模式用獨立留言）
     const urlMsgLabel = document.getElementById("admin-url-msg-label");
@@ -1627,30 +1697,64 @@ function handleAdminPhotoUpload(e) {
     if (urlMsgLabel) urlMsgLabel.style.display = "none";
     if (urlMsgInput) urlMsgInput.style.display = "none";
 
-    let loaded = 0;
+    // 立刻顯示佔位預覽（每張都有進度提示）
+    if (preview) {
+        preview.innerHTML = files.map((file, i) => `
+            <div class="admin-photo-item" data-idx="${i}" id="photo-item-${i}">
+                <div style="position:relative;flex-shrink:0;">
+                    <div id="photo-thumb-${i}" style="width:80px;height:80px;border-radius:4px;border:1.5px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:20px;">⏳</div>
+                    <span id="photo-badge-${i}" style="position:absolute;top:2px;right:2px;background:rgba(100,80,0,0.85);color:white;font-size:9px;padding:1px 4px;border-radius:3px;">壓縮中</span>
+                </div>
+                <textarea
+                    class="admin-per-photo-msg modal-textarea"
+                    data-idx="${i}"
+                    rows="2"
+                    placeholder="第 ${i+1} 張照片的悴悴話（可留空）..."
+                    style="flex:1;min-width:0;margin:0;font-size:15px;"
+                ></textarea>
+            </div>
+        `).join("");
+    }
+
+    // 並行處理每張圖：壓縮 → 上傳 Drive → 取回 URL
     files.forEach((file, idx) => {
         const reader = new FileReader();
         reader.onload = async function(evt) {
-            const rawBase64 = evt.target.result;
-            const compressed = await compressImage(rawBase64, 800, 0.75);
-            uploadedBase64Images[idx] = compressed;
-            loaded++;
-            if (loaded === files.length) {
-                if (preview) {
-                    // 每張照片配獨立留言輸入框
-                    preview.innerHTML = uploadedBase64Images.map((src, i) => `
-                        <div class="admin-photo-item" data-idx="${i}">
-                            <img src="${src}" alt="photo ${i+1}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;border:1.5px solid var(--line);flex-shrink:0;" />
-                            <textarea
-                                class="admin-per-photo-msg modal-textarea"
-                                data-idx="${i}"
-                                rows="2"
-                                placeholder="第 ${i+1} 張照片的悄悄話（可留空）..."
-                                style="flex:1;min-width:0;margin:0;font-size:15px;"
-                            ></textarea>
-                        </div>
-                    `).join("");
+            const thumbEl = document.getElementById(`photo-thumb-${idx}`);
+            const badgeEl = document.getElementById(`photo-badge-${idx}`);
+
+            // 1. 壓縮
+            const compressed = await compressImage(evt.target.result, 800, 0.75);
+            if (thumbEl) thumbEl.innerHTML = `<img src="${compressed}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />`;
+
+            // 2. 嘗試上傳到 Google Drive（透過 GAS）
+            if (CLOUD_SYNC_ENDPOINT) {
+                if (badgeEl) { badgeEl.textContent = "☁️ 上傳中"; badgeEl.style.background = "rgba(30,100,200,0.85)"; }
+                try {
+                    const res = await fetch(CLOUD_SYNC_ENDPOINT, {
+                        method: "POST",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ _action: "upload_image", data: compressed, filename: file.name || "photo.jpg" })
+                    });
+                    const result = await res.json();
+                    if (result.ok && result.url) {
+                        // 成功！儲存 Drive URL（跨裝置可見）
+                        uploadedBase64Images[idx] = result.url;
+                        if (thumbEl) thumbEl.innerHTML = `<img src="${result.url}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />`;
+                        if (badgeEl) { badgeEl.textContent = "✅ 已同步"; badgeEl.style.background = "rgba(20,140,60,0.85)"; }
+                    } else {
+                        throw new Error(result.error || "GAS 回傳失敗");
+                    }
+                } catch (err) {
+                    // 上傳失敗，退回 base64（只存本機）
+                    console.warn("圖片上傳 Drive 失敗，改用本機儲存:", err);
+                    uploadedBase64Images[idx] = compressed;
+                    if (badgeEl) { badgeEl.textContent = "⚠️ 本機"; badgeEl.style.background = "rgba(160,80,0,0.85)"; }
                 }
+            } else {
+                // 無雲端端點，直接用 base64
+                uploadedBase64Images[idx] = compressed;
+                if (badgeEl) { badgeEl.textContent = "💾 本機"; badgeEl.style.background = "rgba(100,100,100,0.7)"; }
             }
         };
         reader.readAsDataURL(file);
@@ -1675,7 +1779,7 @@ function saveAdminMemory() {
     if (!allData[key]) allData[key] = [];
 
     if (uploadedBase64Images.length > 0) {
-        // 文件上傳模式：讀取每張照片配独立的留言輸入框
+        // 文件上傳模式：讀取每張照片配獨立的留言輸入框
         const perPhotoItems = document.querySelectorAll(".admin-per-photo-msg");
         uploadedBase64Images.forEach((img, i) => {
             const msgEl = perPhotoItems[i];
@@ -1762,80 +1866,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 跨裝置同步按鈕監聽
-    const cloudFetchBtn = document.getElementById("admin-cloud-fetch-btn");
-    if (cloudFetchBtn) {
-        cloudFetchBtn.addEventListener("click", () => syncMemoriesFromCloud(true));
-    }
-
-    const shareSyncBtn = document.getElementById("admin-share-sync-btn");
-    if (shareSyncBtn) {
-        shareSyncBtn.addEventListener("click", () => {
-            const allData = getMemoriesData();
-            if (Object.keys(allData).length === 0) {
-                alert("目前尚無任何房號與照片設定！");
-                return;
-            }
-            try {
-                const jsonStr = JSON.stringify(allData);
-                const b64 = btoa(encodeURIComponent(jsonStr));
-                const url = window.location.origin + window.location.pathname + "?sync_memories=" + b64;
-
-                if (url.length > 2000) {
-                    alert("由於包含大量上傳圖片，連結過長。\n請使用「📤 匯出備份」傳送檔案至手機「📥 匯入」，或部署雲端同步！");
-                    return;
-                }
-
-                navigator.clipboard.writeText(url).then(() => {
-                    alert("已複製手機同步連結！\n\n將此連結傳送到手機並用瀏覽器開啟，手機就會自動同步電腦上所有的照片與房號囉！");
-                }).catch(() => {
-                    prompt("請手動複製下方同步連結，並在手機瀏覽器開啟：", url);
-                });
-            } catch (e) {
-                alert("同步連結產生失敗，請改用「📤 匯出備份」功能！");
-            }
-        });
-    }
-
-    const exportBtn = document.getElementById("admin-export-btn");
-    if (exportBtn) {
-        exportBtn.addEventListener("click", () => {
-            const allData = getMemoriesData();
-            const jsonStr = JSON.stringify(allData, null, 2);
-            const blob = new Blob([jsonStr], { type: "application/json" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `游泉後台照片設定備份_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            URL.revokeObjectURL(a.href);
-        });
-    }
-
-    const importBtn = document.getElementById("admin-import-btn");
-    const importFileInput = document.getElementById("admin-import-file-input");
-    if (importBtn && importFileInput) {
-        importBtn.addEventListener("click", () => importFileInput.click());
-        importFileInput.addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                try {
-                    const importedData = JSON.parse(evt.target.result);
-                    if (importedData && typeof importedData === "object") {
-                        const localData = getMemoriesData();
-                        const merged = { ...localData, ...importedData };
-                        saveMemoriesData(merged);
-                        renderAdminSavedList();
-                        showToast("✨ 成功匯入備份照片與房號！");
-                    }
-                } catch (err) {
-                    alert("匯入失敗：檔案格式不正確！");
-                }
-            };
-            reader.readAsText(file);
-        });
-    }
+    // 跨裝置同步全自動，相關按鈕已移除
 
     // 後台搜尋輸入監聽
     const adminSearchInput = document.getElementById("admin-search-input");
