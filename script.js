@@ -1668,6 +1668,7 @@ window.saveAllCardsForKey = function(key) {
     });
 
     saveMemoriesData(allData);
+    alert(`✨ 已成功儲存「${key}」房號的所有照片與悄悄話！已自動同步至雲端 ☁️`);
     showToast(`✨ 成功儲存「${key}」房號的所有照片與悄悄話！`);
     renderAdminSavedList();
 };
@@ -1849,7 +1850,8 @@ function saveAdminMemory() {
         uploadedBase64Images = [];
         document.getElementById("admin-photo-preview").innerHTML = "";
 
-        alert(`成功儲存 ${allData[key].length} 張照片給「${key}」！`);
+        alert(`✨ 成功儲存照片與留言給「${key}」！已自動同步至雲端 ☁️`);
+        showToast(`✨ 已成功儲存「${key}」房號的照片並同步至雲端！`);
     } else if (url) {
         // URL 模式：單張照片 + 留言
         allData[key].push({ img: url, text: urlMsg });
@@ -1862,7 +1864,8 @@ function saveAdminMemory() {
         if (urlMsgLabel) urlMsgLabel.style.display = "none";
         if (urlMsgInputEl) urlMsgInputEl.style.display = "none";
 
-        alert(`成功儲存 1 張照片給「${key}」！`);
+        alert(`✨ 成功儲存 1 張照片給「${key}」！已自動同步至雲端 ☁️`);
+        showToast(`✨ 已成功儲存「${key}」房號的照片並同步至雲端！`);
     } else {
         alert("請上傳至少一張圖片，或貼上圖片網址！");
         return;
