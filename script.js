@@ -1693,8 +1693,7 @@ function renderAdminSavedList(filterQuery = "") {
                             <div class="edit-card-actions">
                                 <button type="button" class="btn-sm" onclick="moveCardItem('${k}',${idx},-1)" ${idx === 0 ? 'disabled' : ''} title="向上排序">⬆️</button>
                                 <button type="button" class="btn-sm" onclick="moveCardItem('${k}',${idx},1)" ${idx === cards.length - 1 ? 'disabled' : ''} title="向下排序">⬇️</button>
-                                <button type="button" class="btn-sm" onclick="saveCardEdit('${k}',${idx})">💾 儲存</button>
-                                <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})">🗑 刪除</button>
+                                <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除此照片">🗑</button>
                             </div>
                         </div>
                     </div>
@@ -1706,29 +1705,25 @@ function renderAdminSavedList(filterQuery = "") {
                     <summary class="edit-key-title">
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span class="collapse-icon">▼</span>
-                            <span>🔑 房號 / 密語：<strong>${escapeHtml(k)}</strong></span>
-                            <span style="font-size:12px;font-weight:400;color:var(--muted);">(${cards.length} 張照片)</span>
+                            <span>🔑 房號：<strong>${escapeHtml(k)}</strong></span>
+                            <span style="font-size:12px;font-weight:400;color:var(--muted);">(${cards.length}張)</span>
                         </div>
                         <div style="display:flex; gap:6px;">
-                            <button type="button" class="btn-sm" style="background:var(--gold); border-color:var(--gold); color:#fff;" onclick="event.stopPropagation(); saveAllCardsForKey('${escapeHtml(k)}')">💾 儲存此房號</button>
-                            <button type="button" class="btn-sm" onclick="event.stopPropagation(); previewAdminKey('${escapeHtml(k)}')">👁️ 預覽視角</button>
-                            <button type="button" class="btn-sm btn-sm-danger" onclick="event.stopPropagation(); deleteAdminKey('${escapeHtml(k)}')">清空全部</button>
+                            <button type="button" class="btn-sm" onclick="event.stopPropagation(); previewAdminKey('${escapeHtml(k)}')">👁️ 預覽</button>
+                            <button type="button" class="btn-sm btn-sm-danger" onclick="event.stopPropagation(); deleteAdminKey('${escapeHtml(k)}')">清空</button>
                         </div>
                     </summary>
                     <div class="edit-key-content" style="margin-top:10px;">
                         ${cardItems}
                         
-                        <!-- 在特定房號底下直接追加新增照片 -->
-                        <div style="margin-top:12px; padding:10px; background:rgba(182,139,74,0.06); border:1px dashed var(--line); border-radius:6px; display:flex; flex-direction:column; gap:8px;">
-                            <label style="font-size:13px; font-weight:600; color:var(--deep); display:flex; align-items:center; justify-content:space-between;">
-                                <span>➕ 新增照片至「${escapeHtml(k)}」房號：</span>
-                                <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${escapeHtml(k)}', this)" style="font-size:12px; max-width:200px;" />
-                            </label>
-                            <div id="room-upload-progress-${escapeHtml(k)}" style="font-size:12px; color:var(--muted); display:none;"></div>
+                        <!-- 在特定房號底下追加上傳 -->
+                        <div style="margin-top:10px; padding:8px 10px; background:rgba(182,139,74,0.06); border:1px dashed var(--line); border-radius:6px; display:flex; align-items:center; justify-content:space-between; font-size:12px;">
+                            <span>➕ 追加照片至「${escapeHtml(k)}」：</span>
+                            <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${escapeHtml(k)}', this)" style="font-size:11px; max-width:180px;" />
                         </div>
 
                         <div style="margin-top:10px; text-align:center;">
-                            <button type="button" class="primary-button" style="width:100%; padding:10px; font-size:14px; background:var(--accent); border-color:var(--accent); color:#fff;" onclick="saveAllCardsForKey('${escapeHtml(k)}')">💾 一鍵儲存「${escapeHtml(k)}」的所有照片與悄悄話</button>
+                            <button type="button" class="primary-button" style="width:100%; padding:8px; font-size:13px; background:var(--accent); border-color:var(--accent); color:#fff;" onclick="saveAllCardsForKey('${escapeHtml(k)}')">💾 儲存「${escapeHtml(k)}」所有變更</button>
                         </div>
                     </div>
                 </details>
