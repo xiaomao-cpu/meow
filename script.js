@@ -1376,8 +1376,14 @@ async function openSecretPanScreen(key, fromAdmin = false) {
     memories = (memories || []).filter(item => !isDefaultSampleCard(item));
 
     if (memories.length === 0) {
-        // 若該房號完全無自訂照片，僅在畫面上展示預設卡片，絕對不寫入資料庫！
-        memories = DEFAULT_PAN_MEMORIES.map(m => ({ ...m }));
+        if (!fromAdmin) {
+            // 普通玩家輸入未創建或錯誤的密碼，彈出提示並攔截
+            alert("噠噠❌！密碼錯啦！小笨蛋！");
+            return;
+        } else {
+            // 管理員後台預覽未設定的房間時，暫時展示範例
+            memories = DEFAULT_PAN_MEMORIES.map(m => ({ ...m }));
+        }
     }
 
     const wallEl = document.getElementById("polaroid-wall");
