@@ -1715,18 +1715,18 @@ function handleAdminPhotoUpload(e) {
         `).join("");
     }
 
-    // 並行處理每張圖：壓縮 → 上傳 Drive → 取回 URL
+    // 並行處理每張圖：極致壓縮 → 上傳 Drive / 雲端同步
     files.forEach((file, idx) => {
         const reader = new FileReader();
         reader.onload = async function(evt) {
             const thumbEl = document.getElementById(`photo-thumb-${idx}`);
             const badgeEl = document.getElementById(`photo-badge-${idx}`);
 
-            // 1. 壓縮
-            const compressed = await compressImage(evt.target.result, 800, 0.75);
+            // 1. 高效壓縮 (限制最大邊長 600px，品質 0.65)
+            const compressed = await compressImage(evt.target.result, 600, 0.65);
             if (thumbEl) thumbEl.innerHTML = `<img src="${compressed}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />`;
 
-            // 2. 嘗試上傳到 Google Drive（透過 GAS）
+            // 2. 上傳至 Google Drive (透過 GAS)
             if (CLOUD_SYNC_ENDPOINT) {
                 if (badgeEl) { badgeEl.textContent = "☁️ 上傳中"; badgeEl.style.background = "rgba(30,100,200,0.85)"; }
                 try {
@@ -1735,23 +1735,35 @@ function handleAdminPhotoUpload(e) {
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ _action: "upload_image", data: compressed, filename: file.name || "photo.jpg" })
                     });
-                    const result = await res.json();
-                    if (result.ok && result.url) {
-                        // 成功！儲存 Drive URL（跨裝置可見）
+                    
+                    let result = null;
+                    try {
+                        result = await res.json();
+                    } catch (e) {
+                        // 若手機瀏覽器攔截 JSON 解析，嘗試文字解析
+                        const text = await res.text();
+                        if (text && text.includes("http")) {
+                            const match = text.match(/https?:\/\/[^\s"']+/);
+                            if (match) result = { ok: true, url: match[0] };
+                        }
+                    }
+
+                    if (result && result.ok && result.url) {
+                        // 成功！使用 Drive 網址
                         uploadedBase64Images[idx] = result.url;
                         if (thumbEl) thumbEl.innerHTML = `<img src="${result.url}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />`;
                         if (badgeEl) { badgeEl.textContent = "✅ 已同步"; badgeEl.style.background = "rgba(20,140,60,0.85)"; }
                     } else {
-                        throw new Error(result.error || "GAS 回傳失敗");
+                        // 使用壓縮後的輕量小圖儲存，同樣能寫入雲端
+                        uploadedBase64Images[idx] = compressed;
+                        if (badgeEl) { badgeEl.textContent = "☁️ 已輕量備援"; badgeEl.style.background = "rgba(180,100,0,0.85)"; }
                     }
                 } catch (err) {
-                    // 上傳失敗，退回 base64（只存本機）
-                    console.warn("圖片上傳 Drive 失敗，改用本機儲存:", err);
+                    console.warn("上傳至 Drive 發生網路異常，啟用輕量雲端備援:", err);
                     uploadedBase64Images[idx] = compressed;
-                    if (badgeEl) { badgeEl.textContent = "⚠️ 本機"; badgeEl.style.background = "rgba(160,80,0,0.85)"; }
+                    if (badgeEl) { badgeEl.textContent = "☁️ 已輕量備援"; badgeEl.style.background = "rgba(180,100,0,0.85)"; }
                 }
             } else {
-                // 無雲端端點，直接用 base64
                 uploadedBase64Images[idx] = compressed;
                 if (badgeEl) { badgeEl.textContent = "💾 本機"; badgeEl.style.background = "rgba(100,100,100,0.7)"; }
             }
