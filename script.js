@@ -1456,7 +1456,15 @@ function checkAdminAuthAndOpen() {
         return;
     }
 
-    // 2. 彈出密碼驗證 Modal（確保必定跳出密碼驗證選項）
+    // 2. 若先前已登入/免密碼驗證通過，直接開啟後台 Modal
+    try {
+        if (localStorage.getItem(ADMIN_AUTH_KEY) === "true") {
+            openYouquanAdminModal();
+            return;
+        }
+    } catch (e) {}
+
+    // 3. 否則彈出密碼驗證 Modal
     showAdminAuthModal();
 }
 
@@ -1466,15 +1474,7 @@ function showAdminAuthModal() {
     const errorEl = document.getElementById("admin-password-error");
     
     if (pwdInput) {
-        try {
-            if (localStorage.getItem(ADMIN_AUTH_KEY) === "true") {
-                pwdInput.value = ADMIN_PASSWORD;
-            } else {
-                pwdInput.value = "";
-            }
-        } catch (e) {
-            pwdInput.value = "";
-        }
+        pwdInput.value = "";
     }
 
     if (errorEl) {
@@ -1526,6 +1526,13 @@ function submitAdminAuth(forcedPassword) {
 function openYouquanAdminModal() {
     const modal = document.getElementById("youquan-admin-modal");
     if (modal) modal.classList.remove("hidden");
+    
+    // 如果從密語小黑屋進入，自動帶入該密語/房號
+    if (typeof activeSecretKey !== "undefined" && activeSecretKey) {
+        const keyInput = document.getElementById("admin-key-input");
+        if (keyInput) keyInput.value = activeSecretKey;
+    }
+
     renderAdminSavedList();
 }
 
