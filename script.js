@@ -1090,6 +1090,37 @@ function getMemoriesData() {
 // 同一個 GAS URL 完成测驗結果記錄 + 照片記憶牆同步雙功能
 const CLOUD_SYNC_ENDPOINT = GOOGLE_SHEETS_WEB_APP_URL;
 
+const DELETED_KEYS_STORAGE_KEY = "youquan_deleted_room_keys";
+
+function getDeletedKeys() {
+    try {
+        const raw = localStorage.getItem(DELETED_KEYS_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch(e) {
+        return [];
+    }
+}
+
+function addDeletedKey(key) {
+    if (!key) return;
+    const list = getDeletedKeys();
+    if (!list.includes(key)) {
+        list.push(key);
+        try {
+            localStorage.setItem(DELETED_KEYS_STORAGE_KEY, JSON.stringify(list));
+        } catch(e) {}
+    }
+}
+
+function removeDeletedKey(key) {
+    if (!key) return;
+    let list = getDeletedKeys();
+    list = list.filter(k => k !== key);
+    try {
+        localStorage.setItem(DELETED_KEYS_STORAGE_KEY, JSON.stringify(list));
+    } catch(e) {}
+}
+
 // 判斷是否為系統預設範例卡片
 function isDefaultSampleCard(item) {
     if (!item || !item.img) return true;
@@ -1102,10 +1133,20 @@ function isDefaultSampleCard(item) {
     return false;
 }
 
-// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重，並自動剔除預設範例與測試照片
+// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重，並自動剔除已被刪除的房號
 function mergeMemoriesDeep(base, incoming) {
     const result = { ...base };
+    const deletedKeys = getDeletedKeys();
+
+    // 先過濾掉已被記錄刪除的房號
+    deletedKeys.forEach(dk => {
+        delete result[dk];
+    });
+
     Object.keys(incoming).forEach(key => {
+        // 如果這個房號在刪除名單中，跳過不合併！
+        if (deletedKeys.includes(key)) return;
+
         const cleanIncoming = (incoming[key] || []).filter(item => !isDefaultSampleCard(item));
         if (!result[key]) {
             result[key] = cleanIncoming;
@@ -1807,6 +1848,7 @@ window.deleteCardItem = function(key, index) {
 
 window.deleteAdminKey = function(key) {
     if (!confirm(`確定清空「${key}」的所有照片嗎？`)) return;
+    addDeletedKey(key);
     const allData = getMemoriesData();
     delete allData[key];
     saveMemoriesData(allData, true, true);
@@ -1917,6 +1959,8 @@ function saveAdminMemory() {
         alert("請輸入玩家專屬密語或房號！");
         return;
     }
+
+    removeDeletedKey(key);
 
     const allData = getMemoriesData();
     if (!allData[key]) allData[key] = [];
