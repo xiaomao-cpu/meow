@@ -1309,7 +1309,12 @@ function initPolaroidDrag(card, cardIndex) {
     card.addEventListener("touchstart", onPointerDown, { passive: true });
 }
 
-async function openSecretPanScreen(key) {
+let isYouquanAdminMode = false;
+
+async function openSecretPanScreen(key, fromAdmin = false) {
+    if (fromAdmin) {
+        isYouquanAdminMode = true;
+    }
     activeSecretKey = (key || "").trim().toLowerCase();
     
     // 進入時自動先從雲端拉取最新照片
@@ -1378,6 +1383,13 @@ async function openSecretPanScreen(key) {
     }
 
     playUnlockSFX();
+    
+    // 只有從「游泉後台」進入預覽時，才顯示「返回游泉後台」按鈕；普通玩家「畔」看不到
+    const toAdminBtn = document.getElementById("secret-to-admin-button");
+    if (toAdminBtn) {
+        toAdminBtn.style.display = isYouquanAdminMode ? "" : "none";
+    }
+
     showScreen("secret-pan");
 
     // 歡迎問候彈窗：點空白處或 5 秒後自動關閉
@@ -1640,7 +1652,7 @@ function renderAdminSavedList(filterQuery = "") {
 
 window.previewAdminKey = function(key) {
     closeYouquanAdminModal();
-    openSecretPanScreen(key);
+    openSecretPanScreen(key, true);
 };
 
 window.moveCardItem = function(key, index, direction) {
