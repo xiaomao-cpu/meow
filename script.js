@@ -1125,7 +1125,7 @@ function stripBase64ForCloud(data) {
 // 防抖計時器（一秒內多次儲存只推一次）
 let _cloudPushTimer = null;
 
-function saveMemoriesData(data, shouldPushToCloud = true) {
+function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
     try {
         localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
@@ -1138,20 +1138,15 @@ function saveMemoriesData(data, shouldPushToCloud = true) {
         // 防抖 800ms：避免同一秒內發送多次請求
         clearTimeout(_cloudPushTimer);
         _cloudPushTimer = setTimeout(() => {
-            // 只同步 URL 照片，剔除 base64 大圖
             const cloudPayload = stripBase64ForCloud(data);
-            if (Object.keys(cloudPayload).length === 0) {
-                console.info("無 URL 照片可同步，跳過雲端推送");
-                return;
-            }
-            // GAS 用 POST + _action: 'save_memories'
+            const action = isOverride ? "override_memories" : "save_memories";
             fetch(CLOUD_SYNC_ENDPOINT, {
                 method: "POST",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ _action: "save_memories", data: cloudPayload })
+                body: JSON.stringify({ _action: action, data: cloudPayload })
             }).then(res => {
                 if (!res.ok) console.warn("雲端推送回應異常:", res.status);
-                else console.info("雲端同步成功");
+                else console.info("雲端同步成功 (" + action + ")");
             }).catch(err => console.error("雲端自動推播失敗:", err));
         }, 800);
     }
@@ -1789,7 +1784,7 @@ window.deleteCardItem = function(key, index) {
     if (!allData[key]) return;
     allData[key].splice(index, 1);
     if (allData[key].length === 0) delete allData[key];
-    saveMemoriesData(allData);
+    saveMemoriesData(allData, true, true);
     renderAdminSavedList();
 };
 
@@ -1797,7 +1792,7 @@ window.deleteAdminKey = function(key) {
     if (!confirm(`確定清空「${key}」的所有照片嗎？`)) return;
     const allData = getMemoriesData();
     delete allData[key];
-    saveMemoriesData(allData);
+    saveMemoriesData(allData, true, true);
     renderAdminSavedList();
 };
 
