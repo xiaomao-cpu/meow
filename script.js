@@ -1658,7 +1658,17 @@ function renderAdminSavedList(filterQuery = "") {
                     </summary>
                     <div class="edit-key-content" style="margin-top:10px;">
                         ${cardItems}
-                        <div style="margin-top:12px; text-align:center;">
+                        
+                        <!-- 在特定房號底下直接追加新增照片 -->
+                        <div style="margin-top:12px; padding:10px; background:rgba(182,139,74,0.06); border:1px dashed var(--line); border-radius:6px; display:flex; flex-direction:column; gap:8px;">
+                            <label style="font-size:13px; font-weight:600; color:var(--deep); display:flex; align-items:center; justify-content:space-between;">
+                                <span>➕ 新增照片至「${escapeHtml(k)}」房號：</span>
+                                <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${escapeHtml(k)}', this)" style="font-size:12px; max-width:200px;" />
+                            </label>
+                            <div id="room-upload-progress-${escapeHtml(k)}" style="font-size:12px; color:var(--muted); display:none;"></div>
+                        </div>
+
+                        <div style="margin-top:10px; text-align:center;">
                             <button type="button" class="primary-button" style="width:100%; padding:10px; font-size:14px; background:var(--accent); border-color:var(--accent); color:#fff;" onclick="saveAllCardsForKey('${escapeHtml(k)}')">💾 一鍵儲存「${escapeHtml(k)}」的所有照片與悄悄話</button>
                         </div>
                     </div>
@@ -1666,6 +1676,56 @@ function renderAdminSavedList(filterQuery = "") {
             `;
         }).join("");
 }
+
+window.addPhotosToRoomKey = async function(key, inputEl) {
+    const files = Array.from(inputEl.files);
+    if (!files.length) return;
+
+    const progressEl = document.getElementById(`room-upload-progress-${key}`);
+    if (progressEl) {
+        progressEl.style.display = "block";
+        progressEl.textContent = `⏳ 正在上傳與處理 ${files.length} 張照片...`;
+    }
+
+    const allData = getMemoriesData();
+    if (!allData[key]) allData[key] = [];
+
+    let successCount = 0;
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const compressed = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const img = await compressImage(e.target.result, 600, 0.65);
+                resolve(img);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        let photoUrl = compressed;
+        if (CLOUD_SYNC_ENDPOINT) {
+            try {
+                const res = await fetch(CLOUD_SYNC_ENDPOINT, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ _action: "upload_image", data: compressed, filename: file.name || "photo.jpg" })
+                });
+                let result = null;
+                try { result = await res.json(); } catch(e) {}
+                if (result && result.ok && result.url) {
+                    photoUrl = result.url;
+                }
+            } catch(e) {}
+        }
+
+        allData[key].push({ img: photoUrl, text: "" });
+        successCount++;
+    }
+
+    saveMemoriesData(allData);
+    showToast(`✨ 成功新增 ${successCount} 張照片至「${key}」並同步至雲端！`);
+    renderAdminSavedList();
+};
 
 window.saveAllCardsForKey = function(key) {
     const allData = getMemoriesData();
