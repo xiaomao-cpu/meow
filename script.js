@@ -1090,19 +1090,24 @@ function getMemoriesData() {
 // 同一個 GAS URL 完成测驗結果記錄 + 照片記憶牆同步雙功能
 const CLOUD_SYNC_ENDPOINT = GOOGLE_SHEETS_WEB_APP_URL;
 
-// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重，並自動剔除測試照片
+// 判斷是否為系統預設範例卡片
+function isDefaultSampleCard(item) {
+    if (!item || !item.img) return true;
+    if (item.img.includes("dummy_photo_url") || item.text === "手機測試照片") return true;
+    if (item.img.includes("畔（男）.jpg") || item.img.includes("畔（女）.jpg") || item.img.includes("游泉.jpg")) return true;
+    if (item.text && (item.text.includes("向生而死，為你而活") || item.text.includes("微光散盡之處") || item.text.includes("如果罪孽是宿命"))) return true;
+    return false;
+}
+
+// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重，並自動剔除預設範例與測試照片
 function mergeMemoriesDeep(base, incoming) {
     const result = { ...base };
     Object.keys(incoming).forEach(key => {
-        const cleanIncoming = (incoming[key] || []).filter(item => 
-            item && item.img && !item.img.includes("dummy_photo_url") && item.text !== "手機測試照片"
-        );
+        const cleanIncoming = (incoming[key] || []).filter(item => !isDefaultSampleCard(item));
         if (!result[key]) {
             result[key] = cleanIncoming;
         } else {
-            result[key] = result[key].filter(item => 
-                item && item.img && !item.img.includes("dummy_photo_url") && item.text !== "手機測試照片"
-            );
+            result[key] = result[key].filter(item => !isDefaultSampleCard(item));
             const existingImgs = new Set(result[key].map(item => item.img));
             const toAdd = cleanIncoming.filter(item => !existingImgs.has(item.img));
             result[key] = [...result[key], ...toAdd];
@@ -1328,9 +1333,12 @@ async function openSecretPanScreen(key, fromAdmin = false) {
     const allData = getMemoriesData();
     let memories = allData[activeSecretKey];
 
-    if (!memories || memories.length === 0) {
+    // 過濾非預設卡片的真正自訂照片
+    memories = (memories || []).filter(item => !isDefaultSampleCard(item));
+
+    if (memories.length === 0) {
+        // 若該房號完全無自訂照片，僅在畫面上展示預設卡片，絕對不寫入資料庫！
         memories = DEFAULT_PAN_MEMORIES.map(m => ({ ...m }));
-        allData[activeSecretKey] = memories;
     }
 
     const wallEl = document.getElementById("polaroid-wall");
