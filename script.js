@@ -1,5 +1,5 @@
 let quizConfig = null;
-const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyCM1vKdEGcZlfjyNrWBNRRIY8N-Lzia0uTOhjDKl1-zaQifwTAdh1stfDMnTaF9l7N/exec"; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
+const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxOGQQezCDKLjf6PwtQ1w4hSNXSrHmd-l5A9HHdLlKIj7mGqgQo5ZGTEZNX2gSoLGma/exec"; // 在此填入部署後的 Google Apps Script 網頁應用程式網址
 let currentPath = [];
 let currentStep = 0;
 let gender = null;
@@ -851,18 +851,21 @@ function renderResult(highestId, scores, targetIds) {
     // 發送結果至 Google 試算表後台
     if (GOOGLE_SHEETS_WEB_APP_URL) {
         const payload = {
-            "LINE 暱稱": lineNickname,
-            "遊玩時間": playDate,
-            "性別": gender === "M" ? "男" : "女",
-            "愛人特質 (Q1)": getAnswerText(1, userAnswers[1]),
-            "體驗愛情 (Q2)": getAnswerText(2, userAnswers[2]),
-            "不能接受的雷點 (Q3/Q4)": gender === "M" ? getAnswerText(3, userAnswers[3]) : getAnswerText(4, userAnswers[4]),
-            "是否扛壓 (Q5)": getAnswerText(5, userAnswers[5]),
-            "互動輸出 (Q6)": getAnswerText(6, userAnswers[6]),
-            "情感體驗 (Q7/Q8)": gender === "M" ? getAnswerText(8, userAnswers[8]) : getAnswerText(7, userAnswers[7]),
-            "測出角色": character.name,
-            "匹配度": matchPercent + "%",
-            "其他角色分數": otherScoresStr
+            nickname: lineNickname,
+            playDate: playDate,
+            gender: gender === "M" ? "男" : "女",
+            q1: getAnswerText(1, userAnswers[1]),
+            q2: getAnswerText(2, userAnswers[2]),
+            q3_q4: gender === "M" ? getAnswerText(3, userAnswers[3]) : getAnswerText(4, userAnswers[4]),
+            q5: getAnswerText(5, userAnswers[5]),
+            q6: getAnswerText(6, userAnswers[6]),
+            q7_q8: gender === "M" ? getAnswerText(8, userAnswers[8]) : getAnswerText(7, userAnswers[7]),
+            character: character.name,
+            matchPercent: matchPercent + "%",
+            other1: other1,
+            other2: other2,
+            other3: other3,
+            otherScores: otherScoresStr
         };
 
         fetch(GOOGLE_SHEETS_WEB_APP_URL, {
