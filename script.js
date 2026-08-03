@@ -356,28 +356,7 @@ async function init() {
         } catch (e) {}
     }
 
-    // 首頁標題「向生而死」連點 3 下直接切換 DM 模式並跳出提示
-    let clickCount = 0;
-    let clickTimer = null;
-    const titleEl = document.getElementById("main-title");
-    if (titleEl) {
-        titleEl.addEventListener("click", () => {
-            clickCount++;
-            clearTimeout(clickTimer);
-            if (clickCount >= 3) {
-                const nextDm = dmGender === "M" ? "F" : "M";
-                setDmGender(nextDm);
-                if (nextDm === "F") {
-                    showToast("✨ 已切換為：女 DM 模式 ♀（女玩家自動避開「畔」）");
-                } else {
-                    showToast("✨ 已切換為：男 DM 模式 ♂（男玩家自動避開「畔」）");
-                }
-                clickCount = 0;
-            } else {
-                clickTimer = setTimeout(() => { clickCount = 0; }, 700);
-            }
-        });
-    }
+    // 首頁標題切換 DM 模式功能已移除，改由後台切換
 }
 
 let toastTimer = null;
@@ -498,6 +477,11 @@ function renderQuestion() {
     els.options.innerHTML = "";
     question.options.forEach(option => {
         if (option.femaleOnly && gender === "M") return;
+        // 若 GM（游泉）性別與玩家相同，隱藏「畔」的唯一綁定選項：Q1-A / Q2-C
+        if (gender === dmGender) {
+            if ((question.id === 1 && option.val === "A") ||
+                (question.id === 2 && option.val === "C")) return;
+        }
         const button = document.createElement("button");
         button.type = "button";
         button.className = "option-button";
@@ -857,18 +841,18 @@ function renderResult(highestId, scores, targetIds) {
     // 發送結果至 Google 試算表後台
     if (GOOGLE_SHEETS_WEB_APP_URL) {
         const payload = {
-            nickname: lineNickname,
-            playDate: playDate,
-            gender: gender === "M" ? "男" : "女",
-            q1: getAnswerText(1, userAnswers[1]),
-            q2: getAnswerText(2, userAnswers[2]),
-            q3_q4: gender === "M" ? getAnswerText(3, userAnswers[3]) : getAnswerText(4, userAnswers[4]),
-            q5: getAnswerText(5, userAnswers[5]),
-            q6: getAnswerText(6, userAnswers[6]),
-            q7_q8: gender === "M" ? getAnswerText(8, userAnswers[8]) : getAnswerText(7, userAnswers[7]),
-            character: character.name,
-            matchPercent: matchPercent + "%",
-            otherScores: otherScoresStr
+            "LINE 暱稱": lineNickname,
+            "遊玩時間": playDate,
+            "性別": gender === "M" ? "男" : "女",
+            "愛人特質 (Q1)": getAnswerText(1, userAnswers[1]),
+            "體驗愛情 (Q2)": getAnswerText(2, userAnswers[2]),
+            "不能接受的雷點 (Q3/Q4)": gender === "M" ? getAnswerText(3, userAnswers[3]) : getAnswerText(4, userAnswers[4]),
+            "是否扛壓 (Q5)": getAnswerText(5, userAnswers[5]),
+            "互動輸出 (Q6)": getAnswerText(6, userAnswers[6]),
+            "情感體驗 (Q7/Q8)": gender === "M" ? getAnswerText(8, userAnswers[8]) : getAnswerText(7, userAnswers[7]),
+            "測出角色": character.name,
+            "匹配度": matchPercent + "%",
+            "其他角色分數": otherScoresStr
         };
 
         fetch(GOOGLE_SHEETS_WEB_APP_URL, {
@@ -2107,6 +2091,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === "Enter") {
                 e.preventDefault();
                 submitAdminAuth();
+            }
+        });
+    }
+
+    const adminToggleDmGenderBtn = document.getElementById("admin-toggle-dm-gender");
+    if (adminToggleDmGenderBtn) {
+        // 初始狀態顯示
+        adminToggleDmGenderBtn.textContent = dmGender === "M" ? "切換為 女 GM 模式" : "切換為 男 GM 模式";
+        adminToggleDmGenderBtn.addEventListener("click", () => {
+            const nextDm = dmGender === "M" ? "F" : "M";
+            setDmGender(nextDm);
+            if (nextDm === "F") {
+                showToast("✨ 已切換為：女 DM 模式 ♀（女玩家自動避開「畔」）");
+                adminToggleDmGenderBtn.textContent = "切換為 男 GM 模式";
+            } else {
+                showToast("✨ 已切換為：男 DM 模式 ♂（男玩家自動避開「畔」）");
+                adminToggleDmGenderBtn.textContent = "切換為 女 GM 模式";
             }
         });
     }
