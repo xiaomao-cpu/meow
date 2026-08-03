@@ -115,11 +115,11 @@ function fadeBGM(targetVolume, duration = 800) {
 const introQuestions = [
     {
         id: "lineNickname",
-        label: "LINE 暱稱",
-        text: "請輸入你的 LINE 暱稱",
-        placeholder: "例如：小貓",
-        hint: "這會顯示在你的測驗結果裡。",
-        error: "請輸入 LINE 暱稱。"
+        label: "姓名",
+        text: "請輸入你的姓名",
+        placeholder: "例如：王小明",
+        hint: "這會顯示在你的測驗結果與後台紀錄中。",
+        error: "請輸入姓名。"
     },
     {
         id: "playDate",
@@ -836,7 +836,7 @@ function renderResult(highestId, scores, targetIds) {
 
     const lineNickname = userMeta.lineNickname || "未填";
     const playDate = userMeta.playDate || "未填";
-    const copyText = `LINE 暱稱：${lineNickname}\n遊玩時間：${playDate}\n\n我在《向生而死》心測中測到了「${character.name}」\n匹配度：${matchPercent}%\n其他角色：${otherScoresStr}\n\n${character.resultText}\n\n你會走向哪一個角色？`;
+    const copyText = `姓名：${lineNickname}\n遊玩時間：${playDate}\n\n我在《向生而死》心測中測到了「${character.name}」\n匹配度：${matchPercent}%\n其他角色：${otherScoresStr}\n\n${character.resultText}\n\n你會走向哪一個角色？`;
     els.copy.dataset.copyText = copyText;
 
     // 取得選項完整中文內容的輔助函數
@@ -857,6 +857,7 @@ function renderResult(highestId, scores, targetIds) {
     // 發送結果至 Google 試算表後台
     if (GOOGLE_SHEETS_WEB_APP_URL) {
         const payload = {
+            name: lineNickname,
             nickname: lineNickname,
             playDate: playDate,
             gender: gender === "M" ? "男" : "女",
@@ -895,7 +896,7 @@ els.resultContent.innerHTML = `
         </article>
         <section class="result-panel">
             <div class="player-meta">
-                <span>LINE 暱稱｜${escapeHtml(lineNickname)}</span>
+                <span>姓名｜${escapeHtml(lineNickname)}</span>
                 <span>遊玩時間｜${escapeHtml(playDate)}</span>
             </div>
             <p class="result-analysis">${escapeHtml(character.resultText)}</p>
@@ -2327,7 +2328,7 @@ async function generateResultPoster() {
 
     ctx.fillStyle = "rgba(255, 248, 238, 0.65)";
     ctx.font = "20px 'LXGW WenKai TC', sans-serif";
-    ctx.fillText(`LINE 暱稱：${currentResultData.lineNickname}   ｜   遊玩時間：${currentResultData.playDate}`, W / 2, 148);
+    ctx.fillText(`姓名：${currentResultData.lineNickname}   ｜   遊玩時間：${currentResultData.playDate}`, W / 2, 148);
 
     // Main Card Frame (Dark Vintage Parchment Card)
     const cardY = 185;
