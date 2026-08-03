@@ -475,17 +475,27 @@ function renderQuestion() {
     els.next.classList.toggle("hidden", !isMulti);
     els.next.textContent = "下一題";
     els.options.innerHTML = "";
-    question.options.forEach(option => {
-        if (option.femaleOnly && gender === "M") return;
+
+    // 先過濾出要顯示的選項，再重新依序編號，不讓玩家看出缺口
+    const visibleOptions = question.options.filter(option => {
+        if (option.femaleOnly && gender === "M") return false;
         // 若 GM（游泉）性別與玩家相同，隱藏「畔」的唯一綁定選項：Q1-A / Q2-C
         if (gender === dmGender) {
             if ((question.id === 1 && option.val === "A") ||
-                (question.id === 2 && option.val === "C")) return;
+                (question.id === 2 && option.val === "C")) return false;
         }
+        return true;
+    });
+
+    visibleOptions.forEach((option, index) => {
+        const newLabel = String.fromCharCode(65 + index); // A, B, C, D...
+        // 取代選項文字開頭的字母（格式如 "A 內文" 或 "B 內文"）
+        const displayText = option.text.replace(/^[A-Z]\s/, newLabel + " ");
+
         const button = document.createElement("button");
         button.type = "button";
         button.className = "option-button";
-        button.textContent = option.text;
+        button.textContent = displayText;
         button.dataset.value = option.val;
         if (isMulti && multiSelectState.includes(option.val)) {
             button.classList.add("selected");
