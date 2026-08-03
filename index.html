@@ -90,45 +90,52 @@
     <!-- 游泉秘密管理後台 Modal -->
     <div id="youquan-admin-modal" class="modal-overlay hidden">
         <div class="modal-card admin-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="margin: 0;">游泉秘密管理後台</h3>
-                <button id="admin-lock-button" class="btn-sm btn-sm-danger" type="button" title="清除此裝置的免密碼記住狀態">🔒 鎖定後台</button>
-            </div>
-            <div class="admin-form">
-                <label class="form-label">玩家專屬密語 / 房號：</label>
-                <input id="admin-key-input" type="text" class="modal-input" placeholder="例如：0731 或 room1" />
-
-                <label class="form-label">上傳 / 選擇照片（可多選）：</label>
-                <input id="admin-photo-file" type="file" accept="image/*" multiple class="modal-file-input" />
-                <input id="admin-photo-url" type="text" class="modal-input" placeholder="或貼上單張圖片網址 (Image URL)..." style="font-size:13px;" />
-
-                <!-- 每張照片配獨立留言，由 JS 動態生成 -->
-                <div id="admin-photo-preview" class="admin-photo-preview"></div>
-
-                <!-- URL 模式的單則留言 -->
-                <label class="form-label" id="admin-url-msg-label" style="display:none;">留言：</label>
-                <textarea id="admin-message-input" class="modal-textarea" rows="2" placeholder="撰寫給畔的悄悄話..." style="display:none;"></textarea>
-
-                <div class="modal-buttons" style="margin-top: 10px; gap: 8px;">
-                    <button id="admin-save-button" class="primary-button" type="button" style="flex: 2;">💾 儲存照片與留言</button>
-                    <button id="admin-close-button" class="secondary-button" type="button" style="flex: 1;">關閉</button>
+            <div class="admin-top-bar">
+                <div class="admin-title-group">
+                    <h3 style="margin: 0;">游泉秘密管理後台</h3>
+                    <span class="admin-cloud-badge">☁️ 雲端自動同步中</span>
+                </div>
+                <div class="admin-top-actions">
+                    <button type="button" class="btn-sm" onclick="recoverAllHistoryPhotos()" title="救援歷史照片">🚑 救援照片</button>
+                    <button id="admin-lock-button" class="btn-sm btn-sm-danger" type="button" title="鎖定後台（清除記住狀態）">🔒 鎖定</button>
                 </div>
             </div>
 
-            <!-- 高級工具列（折疊或次要） -->
-            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted);">
-                <span>☁️ 雲端自動同步中</span>
-                <div style="display: flex; gap: 8px;">
-                    <button type="button" class="btn-sm" onclick="recoverAllHistoryPhotos()" style="font-size:11px; padding:2px 6px;">🚑 救援照片</button>
-                    <button id="admin-lock-button" class="btn-sm btn-sm-danger" type="button" style="font-size:11px; padding:2px 6px;">🔒 鎖定</button>
+            <div class="admin-panel-container">
+                <!-- 區塊一：新增與上傳 -->
+                <div class="admin-section-box">
+                    <div class="admin-section-header">✨ 新增密語房號 / 上傳照片</div>
+                    <div class="admin-form">
+                        <label class="form-label">玩家專屬密語 / 房號：</label>
+                        <input id="admin-key-input" type="text" class="modal-input" placeholder="例如：0731 或 room1" />
+
+                        <label class="form-label">上傳 / 選擇照片（可多選）：</label>
+                        <input id="admin-photo-file" type="file" accept="image/*" multiple class="modal-file-input" />
+                        <input id="admin-photo-url" type="text" class="modal-input" placeholder="或貼上單張圖片網址 (Image URL)..." style="font-size:13px;" />
+
+                        <!-- 每張照片配獨立留言，由 JS 動態生成 -->
+                        <div id="admin-photo-preview" class="admin-photo-preview"></div>
+
+                        <!-- URL 模式的單則留言 -->
+                        <label class="form-label" id="admin-url-msg-label" style="display:none;">留言：</label>
+                        <textarea id="admin-message-input" class="modal-textarea" rows="2" placeholder="撰寫給畔的悄悄話..." style="display:none;"></textarea>
+
+                        <div class="modal-buttons" style="margin-top: 10px; gap: 8px;">
+                            <button id="admin-save-button" class="primary-button" type="button" style="flex: 2;">💾 儲存照片與留言</button>
+                            <button id="admin-close-button" class="secondary-button" type="button" style="flex: 1;">關閉</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 區塊二：已設定房號與搜尋 -->
+                <div class="admin-section-box" style="margin-top: 16px;">
+                    <div class="admin-section-header">📂 已設定房號與照片管理</div>
+                    <div style="margin-bottom: 12px;">
+                        <input id="admin-search-input" type="text" class="modal-input" placeholder="🔍 搜尋房號 / 密語 / 關鍵字..." style="font-size: 13px; padding: 8px 12px; margin: 0;" />
+                    </div>
+                    <div id="admin-saved-list" class="admin-saved-list"></div>
                 </div>
             </div>
-
-            <div style="margin-top: 10px; margin-bottom: 8px;">
-                <input id="admin-search-input" type="text" class="modal-input" placeholder="🔍 搜尋房號 / 密語 / 關鍵字..." style="font-size: 13px; padding: 6px 10px; margin: 0;" />
-            </div>
-
-            <div id="admin-saved-list" class="admin-saved-list"></div>
         </div>
     </div>
 

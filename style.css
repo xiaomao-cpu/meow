@@ -879,10 +879,61 @@ h1 {
 }
 
 .admin-card {
-    max-width: 580px;
+    max-width: 620px;
     max-height: 90vh;
     overflow-y: auto;
     text-align: left;
+    padding: 24px 22px;
+}
+
+.admin-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+}
+
+.admin-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-cloud-badge {
+    font-size: 11px;
+    background: rgba(182, 139, 74, 0.12);
+    color: var(--gold);
+    border: 1px solid rgba(182, 139, 74, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.admin-top-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.admin-section-box {
+    background: rgba(255, 250, 244, 0.45);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+}
+
+.admin-section-header {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px dashed var(--line);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .admin-form {
@@ -891,10 +942,10 @@ h1 {
 }
 
 .form-label {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--ink);
-    margin: 10px 0 4px;
+    margin: 8px 0 4px;
 }
 
 .modal-file-input {
@@ -914,9 +965,7 @@ h1 {
 }
 
 .admin-saved-list {
-    margin-top: 24px;
-    border-top: 1px solid var(--line);
-    padding-top: 16px;
+    margin-top: 12px;
 }
 
 .admin-photo-item {
