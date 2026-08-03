@@ -868,9 +868,6 @@ function renderResult(highestId, scores, targetIds) {
             q7_q8: gender === "M" ? getAnswerText(8, userAnswers[8]) : getAnswerText(7, userAnswers[7]),
             character: character.name,
             matchPercent: matchPercent + "%",
-            other1: other1,
-            other2: other2,
-            other3: other3,
             otherScores: otherScoresStr
         };
 
