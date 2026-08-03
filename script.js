@@ -13,7 +13,7 @@ let multiSelectState = [];
 let isBgmOn = false;
 let isIntroActive = false;
 let currentIntroStep = 0;
-let dmGender = "M"; // 預設游泉為男 DM
+let dmGender = "F"; // 預設游泉為女 DM
 
 const els = {
     home: document.getElementById("home-screen"),
