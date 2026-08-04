@@ -144,7 +144,7 @@ const FALLBACK_QUIZ_CONFIG = {
   "targetCharacters": { "M": ["1","2","3"], "F": ["4","5","6","7"] },
   "paths": { "M": [0,1,2,3,5,6,8], "F": [0,1,2,4,5,6,7] },
   "mutuallyExclusive": { "3": "I", "4": "K" },
-  "maxScores": { "1": 7, "2": 7, "3": 7, "4": 7, "5": 6, "6": 6, "7": 6 },
+  "maxScores": { "1": 8, "2": 7, "3": 7, "4": 8, "5": 6, "6": 7, "7": 6 },
   "questions": [
     { "id": 0, "type": "single", "text": "請選擇您的性別", "options": [{ "val": "M", "text": "我是男生" }, { "val": "F", "text": "我是女生" }] },
     { "id": 1, "type": "single", "text": "您遇到一個可以為之付出一切的愛人，您希望他是什麼樣的人？", "options": [
@@ -197,22 +197,27 @@ const FALLBACK_QUIZ_CONFIG = {
       { "val": "A", "text": "A NPC 沉浸式戀愛，又戀又陪。" },
       { "val": "B", "text": "B 偏愛。" },
       { "val": "C", "text": "C 強制愛。" },
-      { "val": "D", "text": "D 主動出擊，把高嶺之花拉下神壇。" },
-      { "val": "E", "text": "E 純愛。" },
-      { "val": "F", "text": "F 背刺。" },
-      { "val": "G", "text": "G 被背刺。" },
-      { "val": "H", "text": "H 權謀。" }
+      { "val": "D", "text": "D 被強制愛。" },
+      { "val": "E", "text": "E 主動出擊，把高嶺之花拉下神壇。" },
+      { "val": "F", "text": "F 純愛。" },
+      { "val": "G", "text": "G 背刺。" },
+      { "val": "H", "text": "H 被背刺。" },
+      { "val": "I", "text": "I 權謀。" },
+      { "val": "J", "text": "J 偏執。" },
+      { "val": "K", "text": "K 愧疚。" }
     ]},
     { "id": 8, "type": "multi", "text": "您更喜歡以下哪些情感體驗呢？（多選）", "options": [
       { "val": "A", "text": "A NPC 沉浸式戀愛，又戀又陪。" },
       { "val": "B", "text": "B 偏愛。" },
       { "val": "C", "text": "C 強制愛。" },
-      { "val": "D", "text": "D 隱忍。" },
-      { "val": "E", "text": "E 純愛。" },
-      { "val": "F", "text": "F 背刺。" },
-      { "val": "G", "text": "G 復仇。" },
-      { "val": "H", "text": "H 權謀。" },
-      { "val": "I", "text": "I 偏執。" }
+      { "val": "D", "text": "D 被強制愛。" },
+      { "val": "E", "text": "E 隱忍。" },
+      { "val": "F", "text": "F 純愛。" },
+      { "val": "G", "text": "G 背刺。" },
+      { "val": "H", "text": "H 復仇。" },
+      { "val": "I", "text": "I 權謀。" },
+      { "val": "J", "text": "J 偏執。" },
+      { "val": "K", "text": "K 愧疚。" }
     ]}
   ],
   "scoring": {
@@ -237,13 +242,15 @@ const FALLBACK_QUIZ_CONFIG = {
       { "questionId": 6, "value": "C", "scores": { "1": 1, "2": 1, "3": 1 } },
       { "questionId": 8, "value": "A", "scores": { "1": 1 } },
       { "questionId": 8, "value": "B", "scores": { "1": 1, "2": 1 } },
-      { "questionId": 8, "value": "C", "scores": { "1": 1, "3": 1 } },
-      { "questionId": 8, "value": "D", "scores": { "2": 1 } },
+      { "questionId": 8, "value": "C", "scores": { "3": 1 } },
+      { "questionId": 8, "value": "D", "scores": { "1": 1 } },
       { "questionId": 8, "value": "E", "scores": { "2": 1 } },
-      { "questionId": 8, "value": "F", "scores": { "3": 1 } },
-      { "questionId": 8, "value": "G", "scores": { "2": 1, "3": 1 } },
-      { "questionId": 8, "value": "H", "scores": { "3": 1 } },
-      { "questionId": 8, "value": "I", "scores": { "3": 1 } }
+      { "questionId": 8, "value": "F", "scores": { "2": 1 } },
+      { "questionId": 8, "value": "G", "scores": { "3": 1 } },
+      { "questionId": 8, "value": "H", "scores": { "2": 1, "3": 1 } },
+      { "questionId": 8, "value": "I", "scores": { "3": 1 } },
+      { "questionId": 8, "value": "J", "scores": { "3": 1 } },
+      { "questionId": 8, "value": "K", "scores": { "1": 1 } }
     ],
     "F": [
       { "questionId": 1, "value": "A", "scores": { "4": 1 } },
@@ -271,12 +278,15 @@ const FALLBACK_QUIZ_CONFIG = {
       { "questionId": 6, "value": "C", "scores": { "5": 1, "6": 1, "7": 1 } },
       { "questionId": 7, "value": "A", "scores": { "4": 1, "7": 1 } },
       { "questionId": 7, "value": "B", "scores": { "4": 1, "5": 1, "7": 1 } },
-      { "questionId": 7, "value": "C", "scores": { "4": 1, "7": 1 } },
-      { "questionId": 7, "value": "D", "scores": { "7": 1 } },
-      { "questionId": 7, "value": "E", "scores": { "4": 1, "5": 1, "7": 1 } },
-      { "questionId": 7, "value": "F", "scores": { "6": 1 } },
-      { "questionId": 7, "value": "G", "scores": { "5": 1 } },
-      { "questionId": 7, "value": "H", "scores": { "6": 1 } }
+      { "questionId": 7, "value": "C", "scores": { "7": 1 } },
+      { "questionId": 7, "value": "D", "scores": { "4": 1 } },
+      { "questionId": 7, "value": "E", "scores": { "7": 1 } },
+      { "questionId": 7, "value": "F", "scores": { "4": 1, "5": 1, "7": 1 } },
+      { "questionId": 7, "value": "G", "scores": { "6": 1 } },
+      { "questionId": 7, "value": "H", "scores": { "5": 1 } },
+      { "questionId": 7, "value": "I", "scores": { "6": 1 } },
+      { "questionId": 7, "value": "J", "scores": { "6": 1 } },
+      { "questionId": 7, "value": "K", "scores": { "4": 1 } }
     ]
   }
 };
