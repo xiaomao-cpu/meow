@@ -156,41 +156,9 @@
       background: rgba(214, 28, 78, 0.12); border: 1px solid var(--primary-color);
       padding: 0.6rem 1.2rem; border-radius: 10px; margin-bottom: 1.2rem; flex-wrap: wrap;
     }
-    /* Toast Notification */
-    #toast-container {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      pointer-events: none;
-    }
-    .toast-msg {
-      background: rgba(214, 28, 78, 0.95);
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-      animation: toastFadeIn 0.3s ease, toastFadeOut 0.3s ease 2.2s forwards;
-    }
-    @keyframes toastFadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes toastFadeOut {
-      from { opacity: 1; transform: translateY(0); }
-      to { opacity: 0; transform: translateY(-20px); }
-    }
   </style>
 </head>
 <body class="">
-
-  <div id="toast-container"></div>
 
   <header>
     <div>
@@ -1781,6 +1749,19 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
+        <div class="track-card " data-search="Large Glass Smash Sound Effects 103 📌 默默羽翼碎裂音效 (梅林喊「伽涅，是時候了」切進伽涅大卡) 第六幕_告白與自裁 09.5">
+          <div>
+            <div class="track-title" spellcheck="false">音效. 《Large Glass……Smash》</div>
+            <div class="track-artist" spellcheck="false">Sound Effects 103</div>
+            <div class="track-use" spellcheck="false">📌 默默高光結束羽翼碎裂音效 (切BGM進伽涅大卡)</div>
+          </div>
+          <div class="track-actions">
+            <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/09.5_Large_Glass_Smash_Sound_Effects_103.mp3', '《Large Glass……Smash》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
+            <button class="btn-loop" onclick="playAudioWithLoop('音樂庫/07_第六幕_告白與自裁/09.5_Large_Glass_Smash_Sound_Effects_103.mp3', '《Large Glass……Smash》', '【第六幕_告白與自裁】', this)">🔁 循環</button>
+            <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
+            <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
+          </div>
+        </div>
         <div class="track-card " data-search="CAROUSEL Neoni 📌 第六幕伽涅搞事音樂 [已更正對齊網易雲 1919713821] 第六幕_告白與自裁 10">
           <div>
             <div class="track-title" spellcheck="false">10. 《CAROUSEL》（Neoni / AViVA）</div>
@@ -2147,18 +2128,6 @@
       }
     }
 
-    function showToast(message) {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-      const toast = document.createElement('div');
-      toast.className = 'toast-msg';
-      toast.innerText = message;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.remove();
-      }, 2500);
-    }
-
     function playAudio(src, title, act, element) {
       if (fadeTimer) clearInterval(fadeTimer);
 
@@ -2167,34 +2136,9 @@
       player.loop = isLoop;
       player.volume = document.getElementById('sb-volume').value / 100;
 
-      if (element) {
-        const originalText = element.innerText;
-        element.innerText = "⏳ 載入中...";
-        element.disabled = true;
-        
-        player.play().then(() => {
-          document.getElementById('sb-play-btn').innerText = "⏸";
-          element.innerText = "▶ 正在播放";
-          showToast(`🎵 正在播放: ${title}`);
-          
-          setTimeout(() => {
-            element.innerText = originalText;
-            element.disabled = false;
-          }, 2500);
-        }).catch(err => {
-          console.log(err);
-          element.innerText = "❌ 播放失敗";
-          setTimeout(() => {
-            element.innerText = originalText;
-            element.disabled = false;
-          }, 2500);
-        });
-      } else {
-        player.play().then(() => {
-          document.getElementById('sb-play-btn').innerText = "⏸";
-          showToast(`🎵 正在播放: ${title}`);
-        }).catch(err => console.log(err));
-      }
+      player.play().then(() => {
+        document.getElementById('sb-play-btn').innerText = "⏸";
+      }).catch(err => console.log(err));
 
       // Update card active styling
       const allCards = Array.from(document.querySelectorAll('.track-card'));
