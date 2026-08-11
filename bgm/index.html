@@ -245,9 +245,9 @@
       <h1 spellcheck="false">向生而死BGM</h1>
       <p spellcheck="false">天才小貓到此一遊＾＾</p>
     </div>
-    <div style="font-size: 0.85rem; opacity: 0.8; text-align: right; line-height: 1.5;">
-      按 <code>Space</code> 播放/暫停 | 按 <code>N</code> 下一首 | 按 <code>P</code> 上一首<br>
-      按 <code>L</code> 重複播放開關 | 按 <code>M</code> 靜音
+    <div style="font-size: 0.85rem; opacity: 0.85; text-align: right; line-height: 1.5;">
+      按 <code>Space</code> 播放/暫停 | 按 <code>Esc</code> 3秒淡出 | 按 <code>←</code> / <code>→</code> ±5秒<br>
+      按 <code>N</code> 下一首 | 按 <code>P</code> 上一首 | 按 <code>L</code> 單曲循環 | 按 <code>M</code> 靜音
     </div>
   </header>
 
@@ -2465,8 +2465,8 @@
       });
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT') return;
+        document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       if (e.code === 'Space') {
         e.preventDefault();
         togglePlay();
