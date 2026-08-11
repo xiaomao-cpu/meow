@@ -5,67 +5,154 @@
   <title>向生而死BGM</title>
   <style>
     :root {
-      --bg-color: #0d060d;
-      --panel-bg: rgba(29, 13, 29, 0.9);
+      --bg-color: #0b060b;
+      --bg-gradient: linear-gradient(135deg, #0b060b 0%, #170917 50%, #200718 100%);
+      --panel-bg: rgba(24, 12, 24, 0.85);
+      --card-bg: rgba(32, 14, 32, 0.7);
       --text-color: #f5eef5;
       --primary-color: #d61c4e;
-      --accent-color: #e07a5f;
+      --accent-color: #ffd700;
+      --alert-color: #ff3b5c;
       --youquan-color: #ff3366;
       --liddell-color: #a855f7;
       --border-color: rgba(214, 28, 78, 0.3);
-      --font-family: 'PingFang SC', 'PingFang TC', sans-serif;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Helvetica Neue", sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--bg-color);
-      background-image: linear-gradient(135deg, #0d060d 0%, #1a081a 100%);
+      background-image: var(--bg-gradient);
       color: var(--text-color);
       font-family: var(--font-family);
-      padding: 1.5rem 2rem 6rem 2rem;
+      padding: 1.5rem 2rem 7rem 2rem;
       min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%; left: -20%; width: 140%; height: 140%;
+      background: radial-gradient(circle at 50% 20%, rgba(214, 28, 78, 0.08) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
     }
 
     header {
-      display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 2px solid var(--primary-color); padding-bottom: 1rem; margin-bottom: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(214, 28, 78, 0.2);
     }
-    header h1 { font-size: 1.6rem; color: var(--primary-color); font-weight: 800; }
-    header p { font-size: 0.85rem; opacity: 0.8; }
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      font-weight: 900;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-shadow: 0 0 12px rgba(214, 28, 78, 0.5);
+    }
+    header p {
+      font-size: 0.9rem;
+      opacity: 0.85;
+      color: #cbd5e1;
+    }
+
+    .badge-xiang {
+      background: rgba(214, 28, 78, 0.18);
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .count-badge {
+      background: rgba(255, 215, 0, 0.15);
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      backdrop-filter: blur(8px);
+    }
+    .stat-chip strong { color: var(--primary-color); }
 
     /* View Switcher Tabs */
     .view-switcher {
-      display: flex; gap: 0.75rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+      display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;
     }
     .tab-btn {
       background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-color);
-      padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.92rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
+      padding: 0.65rem 1.25rem; border-radius: 10px; font-size: 0.92rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
     }
     .tab-btn:hover { background: rgba(255,255,255,0.15); }
     .tab-btn.active {
       background: var(--primary-color); color: #fff; border-color: var(--primary-color);
-      box-shadow: 0 0 15px rgba(214, 28, 78, 0.4);
+      box-shadow: 0 0 15px rgba(214, 28, 78, 0.5);
     }
     .tab-btn.tab-youquan.active {
       background: var(--youquan-color); border-color: var(--youquan-color);
-      box-shadow: 0 0 15px rgba(255, 51, 102, 0.4);
+      box-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
     }
     .tab-btn.tab-liddell.active {
       background: var(--liddell-color); border-color: var(--liddell-color);
-      box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
     }
 
-    .search-box {
-      width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);
-      background: rgba(255,255,255,0.05); color: #fff; font-size: 0.95rem; margin-bottom: 1.5rem; outline: none;
+    .controls-row {
+      display: flex; gap: 1rem; margin-bottom: 1.8rem; align-items: center; flex-wrap: wrap;
     }
-    .search-box:focus { border-color: var(--primary-color); }
+    .search-box {
+      flex: 1; min-width: 250px; padding: 0.75rem 1.2rem; border-radius: 10px; border: 1px solid var(--border-color);
+      background: rgba(20, 10, 20, 0.9); color: #fff; font-size: 0.95rem; outline: none; transition: all 0.25s ease;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .search-box:focus {
+      border-color: var(--primary-color); box-shadow: 0 0 15px rgba(214, 28, 78, 0.3), inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .btn-global-stop {
+      background: rgba(255, 59, 92, 0.2); border: 1px solid var(--alert-color); color: var(--alert-color);
+      padding: 0.75rem 1.2rem; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9rem;
+      transition: all 0.2s ease; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .btn-global-stop:hover {
+      background: var(--alert-color); color: #fff; box-shadow: 0 0 15px rgba(255, 59, 92, 0.4);
+    }
 
     .act-group { margin-bottom: 2.2rem; }
     .act-title {
-      font-size: 1.25rem; font-weight: 700; color: var(--accent-color);
-      border-left: 4px solid var(--primary-color); padding-left: 0.6rem; margin-bottom: 0.85rem;
+      font-size: 1.3rem; font-weight: 800; color: var(--accent-color);
+      border-left: 4px solid var(--primary-color); padding-left: 0.75rem; margin-bottom: 1rem;
     }
 
     /* Dual Column Layout */
@@ -73,183 +160,125 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;
     }
     .column-panel {
-      background: rgba(20, 10, 20, 0.6); border-radius: 12px; padding: 1.2rem; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(20, 10, 20, 0.6); border-radius: 14px; padding: 1.2rem; border: 1px solid rgba(255,255,255,0.1);
     }
     .column-panel.panel-youquan { border-color: rgba(255, 51, 102, 0.4); }
     .column-panel.panel-liddell { border-color: rgba(168, 85, 247, 0.4); }
     .column-header {
-      font-size: 1.2rem; font-weight: 800; padding-bottom: 0.8rem; margin-bottom: 1rem; border-bottom: 2px solid;
+      font-size: 1.25rem; font-weight: 800; padding-bottom: 0.8rem; margin-bottom: 1rem; border-bottom: 2px solid;
       display: flex; align-items: center; justify-content: space-between;
     }
     .panel-youquan .column-header { color: var(--youquan-color); border-color: var(--youquan-color); }
     .panel-liddell .column-header { color: var(--liddell-color); border-color: var(--liddell-color); }
 
     .track-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.2rem;
     }
     .single-col-grid {
-      display: grid; grid-template-columns: 1fr; gap: 1rem;
+      display: grid; grid-template-columns: 1fr; gap: 1.2rem;
     }
 
+    /* Track Cards matching 捉鬼 layout */
     .track-card {
-      background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px;
-      padding: 1rem; backdrop-filter: blur(10px); transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between;
+      background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 1.2rem; backdrop-filter: blur(10px); transition: all 0.25s ease; display: flex; flex-direction: column; justify-content: space-between;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4); position: relative; overflow: hidden;
     }
-    .track-card:hover { border-color: var(--primary-color); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(214, 28, 78, 0.2); }
+    .track-card:hover {
+      border-color: var(--primary-color); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(214, 28, 78, 0.3);
+    }
     .track-card.playing {
       border-color: #ff2e63 !important;
       background: rgba(214, 28, 78, 0.25) !important;
-      box-shadow: 0 0 20px rgba(214, 28, 78, 0.5) !important;
-      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(214, 28, 78, 0.6) !important;
+      transform: translateY(-3px);
     }
     .track-card.card-youquan { border-left: 4px solid var(--youquan-color); }
     .track-card.card-liddell { border-left: 4px solid var(--liddell-color); }
 
-    .track-title { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
-    .track-artist { font-size: 0.82rem; opacity: 0.7; color: var(--accent-color); margin-bottom: 0.4rem; }
-    .track-use { font-size: 0.82rem; opacity: 0.9; margin-bottom: 0.85rem; line-height: 1.4; background: rgba(255,255,255,0.03); padding: 0.4rem 0.6rem; border-radius: 4px; }
+    .act-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.65rem; border-radius: 6px;
+      font-size: 0.78rem; font-weight: bold; background: rgba(214, 28, 78, 0.15); color: var(--primary-color);
+      border: 1px solid rgba(214, 28, 78, 0.3); margin-bottom: 0.6rem; width: fit-content;
+    }
 
-    .track-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .track-title { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .track-artist { font-size: 0.85rem; opacity: 0.8; color: var(--accent-color); margin-bottom: 0.6rem; font-weight: 600; }
+    .track-use {
+      font-size: 0.85rem; opacity: 0.92; margin-bottom: 1rem; line-height: 1.5;
+      background: rgba(214, 28, 78, 0.08); border-left: 3px solid var(--primary-color); padding: 0.5rem 0.75rem; border-radius: 4px; color: #e2f1f8;
+    }
+
+    .track-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
     .btn-play {
-      flex: 1.2; background: var(--primary-color); border: none; color: white; padding: 0.45rem 0.6rem;
-      border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: background 0.2s;
+      flex: 1.2; background: var(--primary-color); border: none; color: #fff; padding: 0.55rem 0.9rem;
+      border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 0.88rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+      box-shadow: 0 0 10px rgba(214, 28, 78, 0.3);
     }
-    .btn-play:hover { background: #f23b6c; }
-    .btn-loop, .btn-next {
+    .btn-play:hover { background: #f23b6c; transform: scale(1.02); }
+    .btn-loop, .btn-fade, .btn-next {
       background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-color);
-      padding: 0.45rem 0.55rem; border-radius: 6px; font-size: 0.78rem; cursor: pointer; font-weight: bold; transition: all 0.2s;
+      padding: 0.55rem 0.75rem; border-radius: 8px; font-size: 0.82rem; cursor: pointer; font-weight: bold; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.3rem;
     }
-    .btn-loop:hover, .btn-next:hover { background: rgba(214, 28, 78, 0.3); border-color: var(--primary-color); color: #fff; }
-    .btn-fade {
-      background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-color);
-      padding: 0.45rem 0.55rem; border-radius: 6px; font-size: 0.78rem; cursor: pointer;
-    }
-    .btn-fade:hover { background: rgba(255,255,255,0.2); }
+    .btn-loop:hover, .btn-fade:hover, .btn-next:hover { background: rgba(214, 28, 78, 0.3); border-color: var(--primary-color); color: #fff; }
 
-    
+    /* Sticky Bottom Player Bar matching 捉鬼 */
     .ctrl-btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid var(--border-color);
-      color: #fff;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
+      background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: #fff;
+      width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease;
     }
-    .ctrl-btn:hover {
-      background: rgba(214, 28, 78, 0.25);
-      border-color: var(--primary-color);
-    }
+    .ctrl-btn:hover { background: rgba(214, 28, 78, 0.25); border-color: var(--primary-color); }
     .ctrl-btn.play-main {
-      width: 44px; height: 44px;
-      background: var(--primary-color) !important;
-      color: #fff !important;
-      font-size: 1.1rem !important;
-      border: none !important;
-      box-shadow: 0 0 15px rgba(214, 28, 78, 0.5) !important;
+      width: 44px; height: 44px; background: var(--primary-color) !important; color: #fff !important;
+      font-size: 1.1rem !important; border: none !important; box-shadow: 0 0 15px rgba(214, 28, 78, 0.5) !important;
     }
-    .ctrl-btn.play-main:hover {
-      background: #f23b6c !important;
-      transform: scale(1.05);
-    }
+    .ctrl-btn.play-main:hover { background: #f23b6c !important; transform: scale(1.05); }
 
-    .eq-bars {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 18px;
-    }
-    .eq-bar {
-      width: 3px;
-      background: var(--primary-color);
-      border-radius: 2px;
-      animation: bounce 1s ease-in-out infinite alternate;
-    }
+    .eq-bars { display: flex; align-items: flex-end; gap: 3px; height: 18px; }
+    .eq-bar { width: 3px; background: var(--primary-color); border-radius: 2px; animation: bounce 1s ease-in-out infinite alternate; }
     .eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
     .eq-bar:nth-child(2) { height: 80%; animation-delay: 0.3s; }
     .eq-bar:nth-child(3) { height: 100%; animation-delay: 0.2s; }
     .eq-bar:nth-child(4) { height: 60%; animation-delay: 0.4s; }
 
-    @keyframes bounce {
-      0% { height: 20%; }
-      100% { height: 100%; }
-    }
-    .paused .eq-bar {
-      animation: none !important;
-      height: 30% !important;
-    }
+    @keyframes bounce { 0% { height: 20%; } 100% { height: 100%; } }
+    .paused .eq-bar { animation: none !important; height: 30% !important; }
 
     .shortcuts-hint {
-      margin-top: 2rem;
-      margin-bottom: 5rem;
-      padding: 1rem;
-      background: rgba(255,255,255,0.03);
-      border-radius: 10px;
-      border: 1px dashed var(--border-color);
-      font-size: 0.8rem;
-      color: #94a3b8;
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      gap: 0.5rem;
+      margin-top: 2rem; margin-bottom: 5rem; padding: 1rem; background: rgba(255,255,255,0.03);
+      border-radius: 10px; border: 1px dashed var(--border-color); font-size: 0.8rem; color: #cbd5e1;
+      display: flex; justify-content: space-around; flex-wrap: wrap; gap: 0.5rem;
     }
     .kbd {
-      background: rgba(255,255,255,0.1);
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      color: var(--primary-color);
-      font-family: monospace;
-      font-weight: bold;
+      background: rgba(255,255,255,0.1); padding: 0.15rem 0.4rem; border-radius: 4px; color: var(--primary-color); font-family: monospace; font-weight: bold;
     }
 
-    /* Sticky Player Bar */
-    #soundboard-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
-      background: rgba(18, 8, 18, 0.98); border-top: 2px solid var(--primary-color);
-      box-shadow: 0 -4px 25px rgba(0,0,0,0.6); backdrop-filter: blur(15px);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; z-index: 1000;
+    @media (max-width: 768px) {
+      body { padding: 1rem 1rem 7rem 1rem; }
+      header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+      .dual-container { grid-template-columns: 1fr; gap: 1rem; }
+      .track-grid { grid-template-columns: 1fr; }
+      .shortcuts-hint { flex-direction: column; gap: 0.3rem; }
     }
 
-    /* Editable Fields Styling */
-    .editing-active [contenteditable="true"] {
-      outline: 1px dashed rgba(255, 255, 255, 0.3);
-      border-radius: 4px;
-      padding: 2px 4px;
-      transition: all 0.2s;
-    }
-    .editing-active [contenteditable="true"]:hover {
-      background: rgba(255, 255, 255, 0.12);
-      outline: 1px dashed var(--accent-color);
-      cursor: text;
-    }
-    .editing-active [contenteditable="true"]:focus {
-      background: rgba(255, 255, 255, 0.2);
-      outline: 2px solid var(--primary-color);
-      box-shadow: 0 0 10px rgba(214, 28, 78, 0.4);
-    }
-    .edit-toolbar {
-      display: flex; gap: 0.75rem; align-items: center;
-      background: rgba(214, 28, 78, 0.12); border: 1px solid var(--primary-color);
-      padding: 0.6rem 1.2rem; border-radius: 10px; margin-bottom: 1.2rem; flex-wrap: wrap;
-    }
   </style>
 </head>
 <body class="">
 
   <header>
     <div>
-      <h1 spellcheck="false">向生而死BGM</h1>
-      <p spellcheck="false">天才小貓到此一遊＾＾</p>
+      <h1>💀 《向生而死》 DM 專用一鍵音樂控台 <span class="badge-xiang">BGM Soundboard</span></h1>
+      <p>劇本殺《向生而死》主持人獨立背景音樂專用播控系統（fp665 原廠手冊版）</p>
     </div>
-    <div style="font-size: 0.85rem; opacity: 0.85; text-align: right; line-height: 1.5;">
-      按 <code>Space</code> 播放/暫停 | 按 <code>Esc</code> 3秒淡出 | 按 <code>←</code> / <code>→</code> ±5秒<br>
-      按 <code>N</code> 下一首 | 按 <code>P</code> 上一首 | 按 <code>L</code> 單曲循環 | 按 <code>M</code> 靜音
-    </div>
+    <div class="count-badge">共 79 首精選背景音樂</div>
   </header>
+
+  <div class="quick-stats">
+    <div class="stat-chip">📍 目前狀態: <strong id="status-playing-text">⏸ 暫停中: 請點擊音軌播放</strong></div>
+    <div class="stat-chip">🎛️ Web Audio API 淡入淡出: <strong style="color: var(--primary-color);">已啟用 (3秒)</strong></div>
+    <div class="stat-chip">🔊 音訊目錄: <strong>向生而死BGM/音樂庫/</strong></div>
+  </div>
 
   <!-- View Switcher -->
   <div class="view-switcher">
@@ -259,12 +288,7 @@
     <button class="tab-btn" onclick="switchView('all')">📋 10 幕全劇完整流程 (79首)</button>
   </div>
 
-  <div class="controls-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap;">
-    <input type="text" class="search-box" id="search-input" style="flex: 1; min-width: 250px; padding: 0.75rem 1.2rem; border-radius: 10px; border: 1px solid var(--border-color); background: rgba(15, 23, 32, 0.9); color: #fff; font-size: 0.95rem; outline: none; transition: all 0.25s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);" placeholder="🔍 快速搜尋歌名、歌手、小黑屋、游泉、利德爾或卡點用途..." oninput="filterTracks(this.value)">
-    <button class="btn-global-stop" onclick="fadeOutAudio(3)" style="background: rgba(214, 28, 78, 0.2); border: 1px solid var(--primary-color); color: var(--primary-color); padding: 0.75rem 1.2rem; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.4rem;">
-      <span>⏹️</span> 柔和淡出停止 (3秒)
-    </button>
-  </div>
+  <input type="text" class="search-box" id="search-input" placeholder="🔍 快速搜尋歌名、歌手、小黑屋或卡點用途..." oninput="filterTracks(this.value)">
 
   <!-- View 1: Dual Column (Default) -->
   <div id="view-dual" class="dual-container" style="display: grid;">
@@ -2135,55 +2159,37 @@
   </div>
 
   <!-- Soundboard Sticky Bar -->
-  <div id="soundboard-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: rgba(9, 14, 20, 0.96); border-top: 2px solid var(--primary-color); box-shadow: 0 -4px 30px rgba(0,0,0,0.8); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; z-index: 1000;">
-    <div class="player-left" style="display: flex; align-items: center; gap: 1rem; width: 28%;">
-      <div class="track-icon-wrapper" style="width: 44px; height: 44px; border-radius: 10px; background: rgba(214, 28, 78, 0.15); border: 1px solid var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--primary-color);">🎵</div>
-      <div class="player-track-info" style="display: flex; flex-direction: column; overflow: hidden;">
-        <div id="sb-track-title" style="font-size: 0.95rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">未在播放音樂</div>
-        <div id="sb-track-act" style="font-size: 0.78rem; color: var(--primary-color); opacity: 0.9;">點擊上方任何音軌即可隨時切歌</div>
-      </div>
-    </div>
+  <div id="soundboard-bar">
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
+      <button id="sb-prev-btn" onclick="playPrev()" title="上一首 (P / ←)" style="
+        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: white; width: 40px; height: 40px;
+        border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      ">⏮</button>
+      
+      <button id="sb-play-btn" onclick="togglePlay()" title="播放/暫停 (Space)" style="
+        background: var(--primary-color); border: none; color: white; width: 48px; height: 48px;
+        border-radius: 50%; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
+      ">▶</button>
+      
+      <button id="sb-stop-btn" onclick="stopAudio()" title="停止" style="
+        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: white; width: 40px; height: 40px;
+        border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      ">⏹</button>
 
-    <div class="player-center" style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 44%;">
-      <div class="player-controls" style="display: flex; align-items: center; gap: 0.8rem;">
-        <button class="ctrl-btn" onclick="playPrev()" title="上一首 (P)">⏮</button>
-        <button class="ctrl-btn" onclick="seekBy(-5)" title="倒退 5 秒 (←)">⏪</button>
-        <button class="ctrl-btn play-main" id="sb-play-btn" onclick="togglePlay()" title="播放/暫停 (Space)">▶</button>
-        <button class="ctrl-btn" onclick="seekBy(5)" title="快進 5 秒 (→)">⏩</button>
-        <button class="ctrl-btn" onclick="playNext()" title="下一首 (N)">⏭</button>
-        <button class="ctrl-btn" id="sb-loop-btn" onclick="toggleLoop()" title="單曲循環 (L)">🔁</button>
-      </div>
+      <button id="sb-next-btn" onclick="playNext()" title="下一首 (N / →)" style="
+        background: var(--primary-color); border: none; color: white; padding: 0.45rem 0.95rem;
+        border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; gap: 0.3rem;
+      ">⏭ 下一首</button>
 
-      <div class="progress-row" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
-        <span class="time-lbl" id="sb-time-cur" style="font-size: 0.75rem; font-family: monospace; color: #94a3b8; min-width: 38px;">0:00</span>
-        <input type="range" id="sb-seek" class="progress-bar" value="0" min="0" max="100" style="flex: 1; height: 8px; accent-color: var(--primary-color); cursor: pointer; border-radius: 4px;">
-        <span class="time-lbl" id="sb-time-tot" style="font-size: 0.75rem; font-family: monospace; color: #94a3b8; min-width: 38px;">0:00</span>
-      </div>
-    </div>
+      <button id="sb-loop-btn" onclick="toggleLoop()" title="開關重複播放 / 單曲循環 (L)" style="
+        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-color);
+        padding: 0.45rem 0.95rem; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
+      ">🔁 重複播放：關</button>
 
-    <div class="player-right" style="display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; width: 28%;">
-      <div class="eq-bars paused" id="eq-visualizer">
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
+      <div style="margin-left: 0.5rem;">
+        <div id="sb-track-title" style="font-weight: bold; font-size: 1.05rem; color: #fff;">未在播放音樂</div>
+        <div id="sb-track-act" style="font-size: 0.8rem; opacity: 0.7; color: var(--accent-color);">點擊上方任何音軌即可隨時切歌</div>
       </div>
-
-      <div class="vol-row" style="display: flex; align-items: center; gap: 0.5rem;">
-        <button class="ctrl-btn" id="sb-mute-btn" onclick="toggleMute()" title="靜音 (M)">🔊</button>
-        <input type="range" id="sb-volume" class="vol-bar" min="0" max="100" value="85" oninput="setVolume(this.value)" style="width: 90px; height: 5px; accent-color: var(--primary-color); cursor: pointer;">
-      </div>
-    </div>
-  </div>
-
-  <div class="shortcuts-hint">
-    <span><span class="kbd">Space</span> 播放 / 暫停</span>
-    <span><span class="kbd">Esc</span> 3秒柔和淡出停止</span>
-    <span><span class="kbd">M</span> 靜音 / 恢復</span>
-    <span><span class="kbd">←</span> / <span class="kbd">→</span> 後退 / 前進 5 秒</span>
-    <span><span class="kbd">N</span> 下一首</span>
-    <span><span class="kbd">P</span> 上一首</span>
-  </div>
     </div>
 
     <div style="display: flex; align-items: center; gap: 1.5rem;">
@@ -2208,51 +2214,26 @@
     let fadeTimer = null;
     let currentTrackIndex = -1;
     let isLoop = false;
-    let isSeeking = false;
-    let isMuted = false;
-    let savedVolume = 0.85;
 
-    const eqVisualizer = document.getElementById('eq-visualizer');
-    const sbSeek = document.getElementById('sb-seek');
-    const sbMuteBtn = document.getElementById('sb-mute-btn');
+    function switchView(mode) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('view-dual').style.display = 'none';
+      document.getElementById('view-youquan').style.display = 'none';
+      document.getElementById('view-liddell').style.display = 'none';
+      document.getElementById('view-all').style.display = 'none';
 
-    if (sbSeek) {
-      sbSeek.addEventListener('mousedown', () => { isSeeking = true; });
-      sbSeek.addEventListener('touchstart', () => { isSeeking = true; });
-      sbSeek.addEventListener('input', (e) => {
-        isSeeking = true;
-        if (player.duration && !isNaN(player.duration)) {
-          const val = parseFloat(e.target.value);
-          const targetTime = (val / 100) * player.duration;
-          document.getElementById('sb-time-cur').innerText = formatTime(targetTime);
-          try { player.currentTime = targetTime; } catch(err) {}
-        }
-      });
-      const applySeek = (val) => {
-        if (player.duration && !isNaN(player.duration)) {
-          const targetTime = (parseFloat(val) / 100) * player.duration;
-          try { player.currentTime = targetTime; } catch(err) {}
-        }
-        setTimeout(() => { isSeeking = false; }, 150);
-      };
-      sbSeek.addEventListener('change', (e) => applySeek(e.target.value));
-      sbSeek.addEventListener('mouseup', (e) => applySeek(e.target.value));
-      sbSeek.addEventListener('touchend', (e) => applySeek(e.target.value));
-    }
-
-    function formatTime(seconds) {
-      if (isNaN(seconds)) return "0:00";
-      const m = Math.floor(seconds / 60);
-      const s = Math.floor(seconds % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-
-    function updatePlayStateUI(isPlaying) {
-      const mainBtn = document.getElementById('sb-play-btn');
-      if (mainBtn) mainBtn.innerText = isPlaying ? "⏸" : "▶";
-      if (eqVisualizer) {
-        if (isPlaying) eqVisualizer.classList.remove('paused');
-        else eqVisualizer.classList.add('paused');
+      if (mode === 'dual') {
+        document.getElementById('view-dual').style.display = 'grid';
+        event.target.classList.add('active');
+      } else if (mode === 'youquan') {
+        document.getElementById('view-youquan').style.display = 'block';
+        event.target.classList.add('active');
+      } else if (mode === 'liddell') {
+        document.getElementById('view-liddell').style.display = 'block';
+        event.target.classList.add('active');
+      } else if (mode === 'all') {
+        document.getElementById('view-all').style.display = 'block';
+        event.target.classList.add('active');
       }
     }
 
@@ -2260,14 +2241,15 @@
       if (fadeTimer) clearInterval(fadeTimer);
 
       player.pause();
-      player.src = encodeURI(src);
+      player.src = src;
       player.loop = isLoop;
-      player.volume = parseFloat(document.getElementById('sb-volume').value) / 100;
+      player.volume = document.getElementById('sb-volume').value / 100;
 
       player.play().then(() => {
-        updatePlayStateUI(true);
+        document.getElementById('sb-play-btn').innerText = "⏸";
       }).catch(err => console.log(err));
 
+      // Update card active styling
       const allCards = Array.from(document.querySelectorAll('.track-card'));
       allCards.forEach(c => c.classList.remove('playing'));
 
@@ -2362,9 +2344,16 @@
       isLoop = !isLoop;
       player.loop = isLoop;
       const loopBtn = document.getElementById('sb-loop-btn');
-      if (loopBtn) {
-        loopBtn.style.color = isLoop ? 'var(--primary-color)' : '#fff';
-        loopBtn.style.borderColor = isLoop ? 'var(--primary-color)' : 'var(--border-color)';
+      if (isLoop) {
+        loopBtn.innerText = "🔂 單曲重複：開";
+        loopBtn.style.background = "var(--primary-color)";
+        loopBtn.style.color = "#fff";
+        loopBtn.style.borderColor = "var(--primary-color)";
+      } else {
+        loopBtn.innerText = "🔁 重複播放：關";
+        loopBtn.style.background = "rgba(255,255,255,0.1)";
+        loopBtn.style.color = "var(--text-color)";
+        loopBtn.style.borderColor = "var(--border-color)";
       }
     }
 
@@ -2372,30 +2361,10 @@
       if (!player.src) return;
       if (player.paused) {
         player.play();
-        updatePlayStateUI(true);
+        document.getElementById('sb-play-btn').innerText = "⏸";
       } else {
         player.pause();
-        updatePlayStateUI(false);
-      }
-    }
-
-    function seekBy(seconds) {
-      if (!player.duration || isNaN(player.duration)) return;
-      player.currentTime = Math.min(Math.max(player.currentTime + seconds, 0), player.duration);
-    }
-
-    function toggleMute() {
-      if (isMuted) {
-        setVolume(savedVolume * 100);
-        document.getElementById('sb-volume').value = savedVolume * 100;
-        isMuted = false;
-        if (sbMuteBtn) sbMuteBtn.innerText = '🔊';
-      } else {
-        savedVolume = player.volume;
-        setVolume(0);
-        document.getElementById('sb-volume').value = 0;
-        isMuted = true;
-        if (sbMuteBtn) sbMuteBtn.innerText = '🔇';
+        document.getElementById('sb-play-btn').innerText = "▶";
       }
     }
 
@@ -2403,7 +2372,7 @@
       if (fadeTimer) clearInterval(fadeTimer);
       player.pause();
       player.currentTime = 0;
-      updatePlayStateUI(false);
+      document.getElementById('sb-play-btn').innerText = "▶";
       document.getElementById('sb-track-title').innerText = "未在播放音樂";
       document.getElementById('sb-track-act').innerText = "點擊任意音軌即可切歌";
       document.querySelectorAll('.track-card').forEach(c => c.classList.remove('playing'));
@@ -2412,7 +2381,7 @@
     function fadeOutAudio(durationSec) {
       if (player.paused) return;
       if (fadeTimer) clearInterval(fadeTimer);
-      let stepTime = 50;
+      let stepTime = 100;
       let steps = (durationSec * 1000) / stepTime;
       let volStep = player.volume / steps;
 
@@ -2423,26 +2392,21 @@
           player.volume = 0;
           player.pause();
           clearInterval(fadeTimer);
-          updatePlayStateUI(false);
-          player.volume = parseFloat(document.getElementById('sb-volume').value) / 100;
+          document.getElementById('sb-play-btn').innerText = "▶";
         }
       }, stepTime);
     }
 
-    function setVolume(v) {
-      const vol = parseFloat(v) / 100;
-      player.volume = vol;
-      isMuted = vol === 0;
-      if (sbMuteBtn) sbMuteBtn.innerText = isMuted ? '🔇' : (vol < 0.5 ? '🔉' : '🔊');
-    }
+    function setVolume(v) { player.volume = v / 100; }
+    function seekAudio(v) { if (player.duration) player.currentTime = (v / 100) * player.duration; }
 
     player.addEventListener('timeupdate', () => {
-      if (player.duration && !isNaN(player.duration)) {
-        if (!isSeeking) {
-          document.getElementById('sb-time-cur').innerText = formatTime(player.currentTime);
-          document.getElementById('sb-seek').value = (player.currentTime / player.duration) * 100;
-        }
-        document.getElementById('sb-time-tot').innerText = formatTime(player.duration);
+      if (player.duration) {
+        let cur = Math.floor(player.currentTime);
+        let tot = Math.floor(player.duration);
+        document.getElementById('sb-time-cur').innerText = String(Math.floor(cur/60)).padStart(2,'0') + ":" + String(cur%60).padStart(2,'0');
+        document.getElementById('sb-time-tot').innerText = String(Math.floor(tot/60)).padStart(2,'0') + ":" + String(tot%60).padStart(2,'0');
+        document.getElementById('sb-seek').value = (player.currentTime / player.duration) * 100;
       }
     });
 

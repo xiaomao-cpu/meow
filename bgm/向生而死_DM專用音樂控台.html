@@ -1,72 +1,158 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
+<html lang="zh-Hant"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>《向生而死》DM 專用一鍵音樂控台（fp665 原廠手冊版）</title>
+  <title>向生而死BGM</title>
   <style>
     :root {
-      --bg-color: #0d060d;
-      --panel-bg: rgba(29, 13, 29, 0.9);
+      --bg-color: #0b060b;
+      --bg-gradient: linear-gradient(135deg, #0b060b 0%, #170917 50%, #200718 100%);
+      --panel-bg: rgba(24, 12, 24, 0.85);
+      --card-bg: rgba(32, 14, 32, 0.7);
       --text-color: #f5eef5;
       --primary-color: #d61c4e;
-      --accent-color: #e07a5f;
+      --accent-color: #ffd700;
+      --alert-color: #ff3b5c;
       --youquan-color: #ff3366;
       --liddell-color: #a855f7;
       --border-color: rgba(214, 28, 78, 0.3);
-      --font-family: 'PingFang SC', 'PingFang TC', sans-serif;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Helvetica Neue", sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--bg-color);
-      background-image: linear-gradient(135deg, #0d060d 0%, #1a081a 100%);
+      background-image: var(--bg-gradient);
       color: var(--text-color);
       font-family: var(--font-family);
-      padding: 1.5rem 2rem 6rem 2rem;
+      padding: 1.5rem 2rem 7rem 2rem;
       min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -20%; left: -20%; width: 140%; height: 140%;
+      background: radial-gradient(circle at 50% 20%, rgba(214, 28, 78, 0.08) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
     }
 
     header {
-      display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 2px solid var(--primary-color); padding-bottom: 1rem; margin-bottom: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(214, 28, 78, 0.2);
     }
-    header h1 { font-size: 1.6rem; color: var(--primary-color); font-weight: 800; }
-    header p { font-size: 0.85rem; opacity: 0.8; }
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      font-weight: 900;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-shadow: 0 0 12px rgba(214, 28, 78, 0.5);
+    }
+    header p {
+      font-size: 0.9rem;
+      opacity: 0.85;
+      color: #cbd5e1;
+    }
+
+    .badge-xiang {
+      background: rgba(214, 28, 78, 0.18);
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .count-badge {
+      background: rgba(255, 215, 0, 0.15);
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      backdrop-filter: blur(8px);
+    }
+    .stat-chip strong { color: var(--primary-color); }
 
     /* View Switcher Tabs */
     .view-switcher {
-      display: flex; gap: 0.75rem; margin-bottom: 1.2rem; flex-wrap: wrap;
+      display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;
     }
     .tab-btn {
       background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-color);
-      padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.92rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
+      padding: 0.65rem 1.25rem; border-radius: 10px; font-size: 0.92rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
     }
     .tab-btn:hover { background: rgba(255,255,255,0.15); }
     .tab-btn.active {
       background: var(--primary-color); color: #fff; border-color: var(--primary-color);
-      box-shadow: 0 0 15px rgba(214, 28, 78, 0.4);
+      box-shadow: 0 0 15px rgba(214, 28, 78, 0.5);
     }
     .tab-btn.tab-youquan.active {
       background: var(--youquan-color); border-color: var(--youquan-color);
-      box-shadow: 0 0 15px rgba(255, 51, 102, 0.4);
+      box-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
     }
     .tab-btn.tab-liddell.active {
       background: var(--liddell-color); border-color: var(--liddell-color);
-      box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
     }
 
-    .search-box {
-      width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);
-      background: rgba(255,255,255,0.05); color: #fff; font-size: 0.95rem; margin-bottom: 1.5rem; outline: none;
+    .controls-row {
+      display: flex; gap: 1rem; margin-bottom: 1.8rem; align-items: center; flex-wrap: wrap;
     }
-    .search-box:focus { border-color: var(--primary-color); }
+    .search-box {
+      flex: 1; min-width: 250px; padding: 0.75rem 1.2rem; border-radius: 10px; border: 1px solid var(--border-color);
+      background: rgba(20, 10, 20, 0.9); color: #fff; font-size: 0.95rem; outline: none; transition: all 0.25s ease;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .search-box:focus {
+      border-color: var(--primary-color); box-shadow: 0 0 15px rgba(214, 28, 78, 0.3), inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .btn-global-stop {
+      background: rgba(255, 59, 92, 0.2); border: 1px solid var(--alert-color); color: var(--alert-color);
+      padding: 0.75rem 1.2rem; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9rem;
+      transition: all 0.2s ease; display: flex; align-items: center; gap: 0.4rem;
+    }
+    .btn-global-stop:hover {
+      background: var(--alert-color); color: #fff; box-shadow: 0 0 15px rgba(255, 59, 92, 0.4);
+    }
 
     .act-group { margin-bottom: 2.2rem; }
     .act-title {
-      font-size: 1.25rem; font-weight: 700; color: var(--accent-color);
-      border-left: 4px solid var(--primary-color); padding-left: 0.6rem; margin-bottom: 0.85rem;
+      font-size: 1.3rem; font-weight: 800; color: var(--accent-color);
+      border-left: 4px solid var(--primary-color); padding-left: 0.75rem; margin-bottom: 1rem;
     }
 
     /* Dual Column Layout */
@@ -74,206 +160,149 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;
     }
     .column-panel {
-      background: rgba(20, 10, 20, 0.6); border-radius: 12px; padding: 1.2rem; border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(20, 10, 20, 0.6); border-radius: 14px; padding: 1.2rem; border: 1px solid rgba(255,255,255,0.1);
     }
     .column-panel.panel-youquan { border-color: rgba(255, 51, 102, 0.4); }
     .column-panel.panel-liddell { border-color: rgba(168, 85, 247, 0.4); }
     .column-header {
-      font-size: 1.2rem; font-weight: 800; padding-bottom: 0.8rem; margin-bottom: 1rem; border-bottom: 2px solid;
+      font-size: 1.25rem; font-weight: 800; padding-bottom: 0.8rem; margin-bottom: 1rem; border-bottom: 2px solid;
       display: flex; align-items: center; justify-content: space-between;
     }
     .panel-youquan .column-header { color: var(--youquan-color); border-color: var(--youquan-color); }
     .panel-liddell .column-header { color: var(--liddell-color); border-color: var(--liddell-color); }
 
     .track-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.2rem;
     }
     .single-col-grid {
-      display: grid; grid-template-columns: 1fr; gap: 1rem;
+      display: grid; grid-template-columns: 1fr; gap: 1.2rem;
     }
 
+    /* Track Cards matching 捉鬼 layout */
     .track-card {
-      background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px;
-      padding: 1rem; backdrop-filter: blur(10px); transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between;
+      background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px;
+      padding: 1.2rem; backdrop-filter: blur(10px); transition: all 0.25s ease; display: flex; flex-direction: column; justify-content: space-between;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4); position: relative; overflow: hidden;
     }
-    .track-card:hover { border-color: var(--primary-color); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(214, 28, 78, 0.2); }
+    .track-card:hover {
+      border-color: var(--primary-color); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(214, 28, 78, 0.3);
+    }
     .track-card.playing {
       border-color: #ff2e63 !important;
       background: rgba(214, 28, 78, 0.25) !important;
-      box-shadow: 0 0 20px rgba(214, 28, 78, 0.5) !important;
-      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(214, 28, 78, 0.6) !important;
+      transform: translateY(-3px);
     }
     .track-card.card-youquan { border-left: 4px solid var(--youquan-color); }
     .track-card.card-liddell { border-left: 4px solid var(--liddell-color); }
 
-    .track-title { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
-    .track-artist { font-size: 0.82rem; opacity: 0.7; color: var(--accent-color); margin-bottom: 0.4rem; }
-    .track-use { font-size: 0.82rem; opacity: 0.9; margin-bottom: 0.85rem; line-height: 1.4; background: rgba(255,255,255,0.03); padding: 0.4rem 0.6rem; border-radius: 4px; }
+    .act-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.65rem; border-radius: 6px;
+      font-size: 0.78rem; font-weight: bold; background: rgba(214, 28, 78, 0.15); color: var(--primary-color);
+      border: 1px solid rgba(214, 28, 78, 0.3); margin-bottom: 0.6rem; width: fit-content;
+    }
 
-    .track-actions { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+    .track-title { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .track-artist { font-size: 0.85rem; opacity: 0.8; color: var(--accent-color); margin-bottom: 0.6rem; font-weight: 600; }
+    .track-use {
+      font-size: 0.85rem; opacity: 0.92; margin-bottom: 1rem; line-height: 1.5;
+      background: rgba(214, 28, 78, 0.08); border-left: 3px solid var(--primary-color); padding: 0.5rem 0.75rem; border-radius: 4px; color: #e2f1f8;
+    }
+
+    .track-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
     .btn-play {
-      flex: 1.2; background: var(--primary-color); border: none; color: white; padding: 0.45rem 0.6rem;
-      border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: background 0.2s;
+      flex: 1.2; background: var(--primary-color); border: none; color: #fff; padding: 0.55rem 0.9rem;
+      border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 0.88rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+      box-shadow: 0 0 10px rgba(214, 28, 78, 0.3);
     }
-    .btn-play:hover { background: #f23b6c; }
-    .btn-loop, .btn-next {
+    .btn-play:hover { background: #f23b6c; transform: scale(1.02); }
+    .btn-loop, .btn-fade, .btn-next {
       background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: var(--text-color);
-      padding: 0.45rem 0.55rem; border-radius: 6px; font-size: 0.78rem; cursor: pointer; font-weight: bold; transition: all 0.2s;
+      padding: 0.55rem 0.75rem; border-radius: 8px; font-size: 0.82rem; cursor: pointer; font-weight: bold; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.3rem;
     }
-    .btn-loop:hover, .btn-next:hover { background: rgba(214, 28, 78, 0.3); border-color: var(--primary-color); color: #fff; }
-    .btn-fade {
-      background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-color);
-      padding: 0.45rem 0.55rem; border-radius: 6px; font-size: 0.78rem; cursor: pointer;
-    }
-    .btn-fade:hover { background: rgba(255,255,255,0.2); }
+    .btn-loop:hover, .btn-fade:hover, .btn-next:hover { background: rgba(214, 28, 78, 0.3); border-color: var(--primary-color); color: #fff; }
 
-    
+    /* Sticky Bottom Player Bar matching 捉鬼 */
     .ctrl-btn {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid var(--border-color);
-      color: #fff;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
+      background: rgba(255,255,255,0.08); border: 1px solid var(--border-color); color: #fff;
+      width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease;
     }
-    .ctrl-btn:hover {
-      background: rgba(214, 28, 78, 0.25);
-      border-color: var(--primary-color);
-    }
+    .ctrl-btn:hover { background: rgba(214, 28, 78, 0.25); border-color: var(--primary-color); }
     .ctrl-btn.play-main {
-      width: 44px; height: 44px;
-      background: var(--primary-color) !important;
-      color: #fff !important;
-      font-size: 1.1rem !important;
-      border: none !important;
-      box-shadow: 0 0 15px rgba(214, 28, 78, 0.5) !important;
+      width: 44px; height: 44px; background: var(--primary-color) !important; color: #fff !important;
+      font-size: 1.1rem !important; border: none !important; box-shadow: 0 0 15px rgba(214, 28, 78, 0.5) !important;
     }
-    .ctrl-btn.play-main:hover {
-      background: #f23b6c !important;
-      transform: scale(1.05);
-    }
+    .ctrl-btn.play-main:hover { background: #f23b6c !important; transform: scale(1.05); }
 
-    .eq-bars {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 18px;
-    }
-    .eq-bar {
-      width: 3px;
-      background: var(--primary-color);
-      border-radius: 2px;
-      animation: bounce 1s ease-in-out infinite alternate;
-    }
+    .eq-bars { display: flex; align-items: flex-end; gap: 3px; height: 18px; }
+    .eq-bar { width: 3px; background: var(--primary-color); border-radius: 2px; animation: bounce 1s ease-in-out infinite alternate; }
     .eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
     .eq-bar:nth-child(2) { height: 80%; animation-delay: 0.3s; }
     .eq-bar:nth-child(3) { height: 100%; animation-delay: 0.2s; }
     .eq-bar:nth-child(4) { height: 60%; animation-delay: 0.4s; }
 
-    @keyframes bounce {
-      0% { height: 20%; }
-      100% { height: 100%; }
-    }
-    .paused .eq-bar {
-      animation: none !important;
-      height: 30% !important;
-    }
+    @keyframes bounce { 0% { height: 20%; } 100% { height: 100%; } }
+    .paused .eq-bar { animation: none !important; height: 30% !important; }
 
     .shortcuts-hint {
-      margin-top: 2rem;
-      margin-bottom: 5rem;
-      padding: 1rem;
-      background: rgba(255,255,255,0.03);
-      border-radius: 10px;
-      border: 1px dashed var(--border-color);
-      font-size: 0.8rem;
-      color: #94a3b8;
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      gap: 0.5rem;
+      margin-top: 2rem; margin-bottom: 5rem; padding: 1rem; background: rgba(255,255,255,0.03);
+      border-radius: 10px; border: 1px dashed var(--border-color); font-size: 0.8rem; color: #cbd5e1;
+      display: flex; justify-content: space-around; flex-wrap: wrap; gap: 0.5rem;
     }
     .kbd {
-      background: rgba(255,255,255,0.1);
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      color: var(--primary-color);
-      font-family: monospace;
-      font-weight: bold;
+      background: rgba(255,255,255,0.1); padding: 0.15rem 0.4rem; border-radius: 4px; color: var(--primary-color); font-family: monospace; font-weight: bold;
     }
 
-    /* Sticky Player Bar */
-    #soundboard-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
-      background: rgba(18, 8, 18, 0.98); border-top: 2px solid var(--primary-color);
-      box-shadow: 0 -4px 25px rgba(0,0,0,0.6); backdrop-filter: blur(15px);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; z-index: 1000;
-    }
-
-
-
-    /* Mobile Responsive Layout */
     @media (max-width: 768px) {
-      body { padding: 1rem 1rem 6.5rem 1rem; }
+      body { padding: 1rem 1rem 7rem 1rem; }
       header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-      header div:last-child { text-align: left !important; }
       .dual-container { grid-template-columns: 1fr; gap: 1rem; }
       .track-grid { grid-template-columns: 1fr; }
-      #soundboard-bar { padding: 0.4rem 0.8rem; height: auto; min-height: 75px; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
-      .tab-btn { flex: 1 1 auto; text-align: center; }
-      .track-actions { justify-content: space-between; }
+      .shortcuts-hint { flex-direction: column; gap: 0.3rem; }
     }
+
   </style>
 </head>
-<body>
+<body class="">
 
   <header>
     <div>
-      <h1>《向生而死》DM 專用一鍵音樂控台（fp665 原廠手冊版）</h1>
-      <p>完全對齊 fp665 原廠 PDF 手冊音軌流程，支援小黑屋「游泉 vs 利德爾」雙欄分開對照。</p>
+      <h1>💀 《向生而死》 DM 專用一鍵音樂控台 <span class="badge-xiang">BGM Soundboard</span></h1>
+      <p>劇本殺《向生而死》主持人獨立背景音樂專用播控系統（fp665 原廠手冊版）</p>
     </div>
-    <div style="font-size: 0.85rem; opacity: 0.85; text-align: right; line-height: 1.5;">
-      按 <code>Space</code> 播放/暫停 | 按 <code>Esc</code> 3秒淡出 | 按 <code>←</code> / <code>→</code> ±5秒<br>
-      按 <code>N</code> 下一首 | 按 <code>P</code> 上一首 | 按 <code>L</code> 單曲循環 | 按 <code>M</code> 靜音
-    </div>
+    <div class="count-badge">共 79 首精選背景音樂</div>
   </header>
 
-
+  <div class="quick-stats">
+    <div class="stat-chip">📍 目前狀態: <strong id="status-playing-text">⏸ 暫停中: 請點擊音軌播放</strong></div>
+    <div class="stat-chip">🎛️ Web Audio API 淡入淡出: <strong style="color: var(--primary-color);">已啟用 (3秒)</strong></div>
+    <div class="stat-chip">🔊 音訊目錄: <strong>向生而死BGM/音樂庫/</strong></div>
+  </div>
 
   <!-- View Switcher -->
   <div class="view-switcher">
-    <button class="tab-btn active" onclick="switchView('dual')">⚡ 游泉 vs 利德爾 小黑屋雙欄分開對照</button>
+    <button class="tab-btn active" onclick="switchView('dual')">游泉、利德爾 小黑屋雙開</button>
     <button class="tab-btn tab-youquan" onclick="switchView('youquan')">🔴 游泉專用小黑屋/高光區 (14首)</button>
     <button class="tab-btn tab-liddell" onclick="switchView('liddell')">🟣 利德爾專用小黑屋/高光區 (12首)</button>
     <button class="tab-btn" onclick="switchView('all')">📋 10 幕全劇完整流程 (79首)</button>
   </div>
 
-  <div class="controls-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap;">
-    <input type="text" class="search-box" id="search-input" style="flex: 1; min-width: 250px; padding: 0.75rem 1.2rem; border-radius: 10px; border: 1px solid var(--border-color); background: rgba(15, 23, 32, 0.9); color: #fff; font-size: 0.95rem; outline: none; transition: all 0.25s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);" placeholder="🔍 快速搜尋歌名、歌手、小黑屋、游泉、利德爾或卡點用途..." oninput="filterTracks(this.value)">
-    <button class="btn-global-stop" onclick="fadeOutAudio(3)" style="background: rgba(214, 28, 78, 0.2); border: 1px solid var(--primary-color); color: var(--primary-color); padding: 0.75rem 1.2rem; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.4rem;">
-      <span>⏹️</span> 柔和淡出停止 (3秒)
-    </button>
-  </div>
+  <input type="text" class="search-box" id="search-input" placeholder="🔍 快速搜尋歌名、歌手、小黑屋或卡點用途..." oninput="filterTracks(this.value)">
 
   <!-- View 1: Dual Column (Default) -->
-  <div id="view-dual" class="dual-container">
+  <div id="view-dual" class="dual-container" style="display: grid;">
     <div class="column-panel panel-youquan">
       <div class="column-header">
-        <span>🔴 游泉 小黑屋與高光音軌 (14首)</span>
-        <span style="font-size: 0.8rem; opacity: 0.7;">色慾之罪 · 畔</span>
+        <span spellcheck="false">🔴 游泉 小黑屋與高光音軌 (14首)</span>
       </div>
       <div class="single-col-grid">
         <div class="track-card card-youquan" data-search="《TWISTED》 AViVA 📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮) 序幕 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【序幕】</div>
-            <div class="track-title">05. 《TWISTED》</div>
-            <div class="track-artist">AViVA</div>
-            <div class="track-use">📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮)</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【序幕】</div>
+            <div class="track-title" spellcheck="false">05. 《TWISTED》</div>
+            <div class="track-artist" spellcheck="false">AViVA</div>
+            <div class="track-use" spellcheck="false">📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/05_TWISTED_AViVA.mp3', '《TWISTED》', '【序幕 · 游泉】', this)">▶ 播放</button>
@@ -282,12 +311,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 序幕游泉&畔小黑屋溫柔表白與解銬拉扯 序幕 游泉 小黑屋">
+        <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 序幕游泉&amp;畔小黑屋溫柔表白與解銬拉扯 序幕 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【序幕】</div>
-            <div class="track-title">06. 《Why Do You Love Me》</div>
-            <div class="track-artist">Charlotte Lawrence</div>
-            <div class="track-use">📌 序幕游泉&畔小黑屋溫柔表白與解銬拉扯</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【序幕】</div>
+            <div class="track-title" spellcheck="false">06. 《Why Do You Love Me》</div>
+            <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+            <div class="track-use" spellcheck="false">📌 序幕游泉&amp;畔小黑屋溫柔表白與解銬拉扯</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/06_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【序幕 · 游泉】', this)">▶ 播放</button>
@@ -298,10 +327,10 @@
         </div>
         <div class="track-card card-youquan" data-search="《Bon Voyage》 Jo Blankenburg 📌 游泉登場卡點/入座大廳 第一幕_醉生夢死 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第一幕_醉生夢死】</div>
-            <div class="track-title">04. 《Bon Voyage》</div>
-            <div class="track-artist">Jo Blankenburg</div>
-            <div class="track-use">📌 游泉登場卡點/入座大廳</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第一幕_醉生夢死】</div>
+            <div class="track-title" spellcheck="false">04. 《Bon Voyage》</div>
+            <div class="track-artist" spellcheck="false">Jo Blankenburg</div>
+            <div class="track-use" spellcheck="false">📌 游泉登場卡點/入座大廳</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/04_Bon_Voyage_Jo_Blankenburg.mp3', '《Bon Voyage》', '【第一幕_醉生夢死 · 游泉】', this)">▶ 播放</button>
@@ -312,10 +341,10 @@
         </div>
         <div class="track-card card-youquan" data-search="《COPYCAT》 Billie Eilish 📌 游泉登場卡點 (00:09黑暗盲行抓手腕) 第一幕_醉生夢死 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第一幕_醉生夢死】</div>
-            <div class="track-title">05. 《COPYCAT》</div>
-            <div class="track-artist">Billie Eilish</div>
-            <div class="track-use">📌 游泉登場卡點 (00:09黑暗盲行抓手腕)</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第一幕_醉生夢死】</div>
+            <div class="track-title" spellcheck="false">05. 《COPYCAT》</div>
+            <div class="track-artist" spellcheck="false">Billie Eilish</div>
+            <div class="track-use" spellcheck="false">📌 游泉登場卡點 (00:09黑暗盲行抓手腕)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/05_COPYCAT_Billie_Eilish.mp3', '《COPYCAT》', '【第一幕_醉生夢死 · 游泉】', this)">▶ 播放</button>
@@ -326,10 +355,10 @@
         </div>
         <div class="track-card card-youquan" data-search="《LOST MY MIND IN PARIS》 Faouzia 📌 芙羅拉/游泉大廳環節 第一幕_醉生夢死 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第一幕_醉生夢死】</div>
-            <div class="track-title">07. 《LOST MY MIND IN PARIS》</div>
-            <div class="track-artist">Faouzia</div>
-            <div class="track-use">📌 芙羅拉/游泉大廳環節</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第一幕_醉生夢死】</div>
+            <div class="track-title" spellcheck="false">07. 《LOST MY MIND IN PARIS》</div>
+            <div class="track-artist" spellcheck="false">Faouzia</div>
+            <div class="track-use" spellcheck="false">📌 芙羅拉/游泉大廳環節</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/07_LOST_MY_MIND_IN_PARIS_Faouzia.mp3', '《LOST MY MIND IN PARIS》', '【第一幕_醉生夢死 · 游泉】', this)">▶ 播放</button>
@@ -338,12 +367,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 第二幕游泉&畔超大小黑屋 7副手銬獨白 第二幕_紙醉金迷 游泉 小黑屋">
+        <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 第二幕游泉&amp;畔超大小黑屋 7副手銬獨白 第二幕_紙醉金迷 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第二幕_紙醉金迷】</div>
-            <div class="track-title">02. 《Why Do You Love Me》</div>
-            <div class="track-artist">Charlotte Lawrence</div>
-            <div class="track-use">📌 第二幕游泉&畔超大小黑屋 7副手銬獨白</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第二幕_紙醉金迷】</div>
+            <div class="track-title" spellcheck="false">02. 《Why Do You Love Me》</div>
+            <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+            <div class="track-use" spellcheck="false">📌 第二幕游泉&amp;畔超大小黑屋 7副手銬獨白</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/02_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【第二幕_紙醉金迷 · 游泉】', this)">▶ 播放</button>
@@ -354,10 +383,10 @@
         </div>
         <div class="track-card card-youquan" data-search="《Viva La Vida》 David Garrett 📌 利德爾舉報游泉聲明 第二幕_紙醉金迷 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第二幕_紙醉金迷】</div>
-            <div class="track-title">09. 《Viva La Vida》</div>
-            <div class="track-artist">David Garrett</div>
-            <div class="track-use">📌 利德爾舉報游泉聲明</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第二幕_紙醉金迷】</div>
+            <div class="track-title" spellcheck="false">09. 《Viva La Vida》</div>
+            <div class="track-artist" spellcheck="false">David Garrett</div>
+            <div class="track-use" spellcheck="false">📌 利德爾舉報游泉聲明</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/09_Viva_La_Vida_David_Garrett.mp3', '《Viva La Vida》', '【第二幕_紙醉金迷 · 游泉】', this)">▶ 播放</button>
@@ -368,10 +397,10 @@
         </div>
         <div class="track-card card-youquan" data-search="《Devil May Cry》 Apashe 📌 游泉爆料墮落城假象 (01:15 反轉狂笑) 第四幕_情報共享 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第四幕_情報共享】</div>
-            <div class="track-title">02. 《Devil May Cry》</div>
-            <div class="track-artist">Apashe</div>
-            <div class="track-use">📌 游泉爆料墮落城假象 (01:15 反轉狂笑)</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第四幕_情報共享】</div>
+            <div class="track-title" spellcheck="false">02. 《Devil May Cry》</div>
+            <div class="track-artist" spellcheck="false">Apashe</div>
+            <div class="track-use" spellcheck="false">📌 游泉爆料墮落城假象 (01:15 反轉狂笑)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/05_第四幕_情報共享/02_Devil_May_Cry_Apashe.mp3', '《Devil May Cry》', '【第四幕_情報共享 · 游泉】', this)">▶ 播放</button>
@@ -380,12 +409,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="《1to2》 Elaine 📌 第五幕游泉&芙羅拉換乘小黑屋 第五幕_CP換乘與覺醒 游泉 小黑屋">
+        <div class="track-card card-youquan" data-search="《1to2》 Elaine 📌 第五幕游泉&amp;芙羅拉換乘小黑屋 第五幕_CP換乘與覺醒 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第五幕_CP換乘與覺醒】</div>
-            <div class="track-title">02. 《1to2》</div>
-            <div class="track-artist">Elaine</div>
-            <div class="track-use">📌 第五幕游泉&芙羅拉換乘小黑屋</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第五幕_CP換乘與覺醒】</div>
+            <div class="track-title" spellcheck="false">02. 《1to2》</div>
+            <div class="track-artist" spellcheck="false">Elaine</div>
+            <div class="track-use" spellcheck="false">📌 第五幕游泉&amp;芙羅拉換乘小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/02_1to2_Elaine.mp3', '《1to2》', '【第五幕_CP換乘與覺醒 · 游泉】', this)">▶ 播放</button>
@@ -396,10 +425,10 @@
         </div>
         <div class="track-card card-youquan" data-search="《HEARTBEAT》 Isabel LaRosa 📌 游泉大廳高調換乘坐芙羅拉身邊 第五幕_CP換乘與覺醒 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第五幕_CP換乘與覺醒】</div>
-            <div class="track-title">05. 《HEARTBEAT》</div>
-            <div class="track-artist">Isabel LaRosa</div>
-            <div class="track-use">📌 游泉大廳高調換乘坐芙羅拉身邊</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第五幕_CP換乘與覺醒】</div>
+            <div class="track-title" spellcheck="false">05. 《HEARTBEAT》</div>
+            <div class="track-artist" spellcheck="false">Isabel LaRosa</div>
+            <div class="track-use" spellcheck="false">📌 游泉大廳高調換乘坐芙羅拉身邊</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/05_HEARTBEAT_Isabel_LaRosa.mp3', '《HEARTBEAT》', '【第五幕_CP換乘與覺醒 · 游泉】', this)">▶ 播放</button>
@@ -408,12 +437,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 游泉&畔第六幕小黑屋真心告白 第六幕_告白與自裁 游泉 小黑屋">
+        <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 游泉&amp;畔第六幕小黑屋真心告白 第六幕_告白與自裁 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-            <div class="track-title">02. 《Why Do You Love Me》</div>
-            <div class="track-artist">Charlotte Lawrence</div>
-            <div class="track-use">📌 游泉&畔第六幕小黑屋真心告白</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+            <div class="track-title" spellcheck="false">02. 《Why Do You Love Me》</div>
+            <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+            <div class="track-use" spellcheck="false">📌 游泉&amp;畔第六幕小黑屋真心告白</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/02_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【第六幕_告白與自裁 · 游泉】', this)">▶ 播放</button>
@@ -424,10 +453,10 @@
         </div>
         <div class="track-card card-youquan" data-search="《偏執面》 張惠妹_蛋堡 📌 游泉舞台自裁名場面 (00:39阿妹唱完拉小音量，低語「我只想要你愛我」) [已更正對齊網易雲 28754100] 第六幕_告白與自裁 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-            <div class="track-title">08. 《偏執面》（張惠妹 / 蛋堡）</div>
-            <div class="track-artist">張惠妹_蛋堡</div>
-            <div class="track-use">📌 游泉舞台自裁名場面 (00:39阿妹唱完拉小音量，低語「我只想要你愛我」) [已更正對齊網易雲 28754100]</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+            <div class="track-title" spellcheck="false">08. 《偏執面》（張惠妹 / 蛋堡）</div>
+            <div class="track-artist" spellcheck="false">張惠妹_蛋堡</div>
+            <div class="track-use" spellcheck="false">📌 游泉舞台自裁</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/08_偏執面_張惠妹_蛋堡.mp3', '《偏執面》', '【第六幕_告白與自裁 · 游泉】', this)">▶ 播放</button>
@@ -438,10 +467,10 @@
         </div>
         <div class="track-card card-youquan" data-search="《分身》 單依純 📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人) 第六幕_告白與自裁 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-            <div class="track-title">09. 《分身》</div>
-            <div class="track-artist">單依純</div>
-            <div class="track-use">📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人)</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+            <div class="track-title" spellcheck="false">09. 《分身》</div>
+            <div class="track-artist" spellcheck="false">單依純</div>
+            <div class="track-use" spellcheck="false">📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/09_分身_單依純.mp3', '《分身》', '【第六幕_告白與自裁 · 游泉】', this)">▶ 播放</button>
@@ -450,12 +479,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="《分身》 單依純 📌 畔&游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘) 結局大卡與謝幕 游泉 小黑屋">
+        <div class="track-card card-youquan" data-search="《分身》 單依純 📌 畔&amp;游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘) 結局大卡與謝幕 游泉 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【結局大卡與謝幕】</div>
-            <div class="track-title">05. 《分身》</div>
-            <div class="track-artist">單依純</div>
-            <div class="track-use">📌 畔&游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘)</div>
+            <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局大卡與謝幕】</div>
+            <div class="track-title" spellcheck="false">05. 《分身》</div>
+            <div class="track-artist" spellcheck="false">單依純</div>
+            <div class="track-use" spellcheck="false">📌 畔&amp;游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/05_分身_單依純.mp3', '《分身》', '【結局大卡與謝幕 · 游泉】', this)">▶ 播放</button>
@@ -469,16 +498,15 @@
 
     <div class="column-panel panel-liddell">
       <div class="column-header">
-        <span>🟣 利德爾 小黑屋與高光音軌 (12首)</span>
-        <span style="font-size: 0.8rem; opacity: 0.7;">傲慢之罪 · 芙羅拉</span>
+        <span spellcheck="false">🟣 利德爾 小黑屋與高光音軌 (12首)</span>
       </div>
       <div class="single-col-grid">
         <div class="track-card card-liddell" data-search="《Click Clack》(剪輯前8秒版) RAYE 📌 芙羅拉台詞畢，利德爾進場 (已裁切前8秒音軌，即點即播進高潮) 序幕 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【序幕】</div>
-            <div class="track-title">04. 《Click Clack》(剪輯前8秒版)</div>
-            <div class="track-artist">RAYE</div>
-            <div class="track-use">📌 芙羅拉台詞畢，利德爾進場 (已裁切前8秒音軌，即點即播進高潮)</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【序幕】</div>
+            <div class="track-title" spellcheck="false">04. 《Click Clack》(剪輯前8秒版)</div>
+            <div class="track-artist" spellcheck="false">RAYE</div>
+            <div class="track-use" spellcheck="false">📌 芙羅拉台詞畢，利德爾進場&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this)">▶ 播放</button>
@@ -487,12 +515,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="《Cupe Ha（塞壬）》 polnalyubvi 📌 第一幕芙羅拉&利德爾小黑屋暴食臣服 [已更正對齊網易雲 2108540565] 第一幕_醉生夢死 利德爾 利德尔 小黑屋">
+        <div class="track-card card-liddell" data-search="《Cupe Ha（塞壬）》 polnalyubvi 📌 第一幕芙羅拉&amp;利德爾小黑屋暴食臣服 第一幕_醉生夢死 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第一幕_醉生夢死】</div>
-            <div class="track-title">03. 《Сирена》（塞壬 - polnalyubvi）</div>
-            <div class="track-artist">polnalyubvi</div>
-            <div class="track-use">📌 第一幕芙羅拉&利德爾小黑屋暴食臣服 [已更正對齊網易雲 2108540565]</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第一幕_醉生夢死】</div>
+            <div class="track-title" spellcheck="false">03. 《Cupe Ha（塞壬）》</div>
+            <div class="track-artist" spellcheck="false">polnalyubvi</div>
+            <div class="track-use" spellcheck="false">📌 第一幕芙羅拉&amp;利德爾小黑屋暴食臣服</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/03_Cupe_Ha（塞壬）_polnalyubvi.mp3', '《Cupe Ha（塞壬）》', '【第一幕_醉生夢死 · 利德爾】', this)">▶ 播放</button>
@@ -501,12 +529,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="《張凌赫進行曲》 派大星 📌 利德爾發布會登場 (已更正為《Fast Cars & Superstars》SONY Remix 正式版) 第二幕_紙醉金迷 利德爾 利德尔 小黑屋">
+        <div class="track-card card-liddell" data-search="《張凌赫進行曲》 派大星 📌 利德爾發布會登場 (已更正為《Fast Cars &amp; Superstars》SONY Remix 正式版) 第二幕_紙醉金迷 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第二幕_紙醉金迷】</div>
-            <div class="track-title">06. 《Fast Cars & Superstars》(張凌赫進行曲)</div>
-            <div class="track-artist">派大星</div>
-            <div class="track-use">📌 利德爾發布會登場 (已更正為《Fast Cars & Superstars》SONY Remix 正式版)</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第二幕_紙醉金迷】</div>
+            <div class="track-title" spellcheck="false">06. 《Fast Cars &amp; Superstars》(張凌赫進行曲)</div>
+            <div class="track-artist" spellcheck="false">派大星</div>
+            <div class="track-use" spellcheck="false">📌 利德爾發布會登場</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/06_張凌赫進行曲_派大星.mp3', '《張凌赫進行曲》', '【第二幕_紙醉金迷 · 利德爾】', this)">▶ 播放</button>
@@ -517,10 +545,10 @@
         </div>
         <div class="track-card card-liddell" data-search="《Viva La Vida》 David Garrett 📌 利德爾舉報游泉聲明 第二幕_紙醉金迷 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第二幕_紙醉金迷】</div>
-            <div class="track-title">09. 《Viva La Vida》</div>
-            <div class="track-artist">David Garrett</div>
-            <div class="track-use">📌 利德爾舉報游泉聲明</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第二幕_紙醉金迷】</div>
+            <div class="track-title" spellcheck="false">09. 《Viva La Vida》</div>
+            <div class="track-artist" spellcheck="false">David Garrett</div>
+            <div class="track-use" spellcheck="false">📌 利德爾舉報游泉聲明</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/09_Viva_La_Vida_David_Garrett.mp3', '《Viva La Vida》', '【第二幕_紙醉金迷 · 利德爾】', this)">▶ 播放</button>
@@ -529,12 +557,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="《倦鳥》 胡夏 📌 第三幕芙羅拉&利德爾心建對質小黑屋 第三幕_十字架拷問 利德爾 利德尔 小黑屋">
+        <div class="track-card card-liddell" data-search="《倦鳥》 胡夏 📌 第三幕芙羅拉&amp;利德爾心建對質小黑屋 第三幕_十字架拷問 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第三幕_十字架拷問】</div>
-            <div class="track-title">04. 《倦鳥》</div>
-            <div class="track-artist">胡夏</div>
-            <div class="track-use">📌 第三幕芙羅拉&利德爾心建對質小黑屋</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第三幕_十字架拷問】</div>
+            <div class="track-title" spellcheck="false">04. 《倦鳥》</div>
+            <div class="track-artist" spellcheck="false">胡夏</div>
+            <div class="track-use" spellcheck="false">📌 第三幕芙羅拉&amp;利德爾心建對質小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/04_倦鳥_胡夏.mp3', '《倦鳥》', '【第三幕_十字架拷問 · 利德爾】', this)">▶ 播放</button>
@@ -543,12 +571,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="《Destroy Myself For You》 Isabel LaRosa 📌 芙羅拉&利德爾爭執小黑屋 第五幕_CP換乘與覺醒 利德爾 利德尔 小黑屋">
+        <div class="track-card card-liddell" data-search="《Destroy Myself For You》 Isabel LaRosa 📌 芙羅拉&amp;利德爾爭執小黑屋 第五幕_CP換乘與覺醒 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第五幕_CP換乘與覺醒】</div>
-            <div class="track-title">04. 《Destroy Myself For You》</div>
-            <div class="track-artist">Isabel LaRosa</div>
-            <div class="track-use">📌 芙羅拉&利德爾爭執小黑屋</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第五幕_CP換乘與覺醒】</div>
+            <div class="track-title" spellcheck="false">04. 《Destroy Myself For You》</div>
+            <div class="track-artist" spellcheck="false">Isabel LaRosa</div>
+            <div class="track-use" spellcheck="false">📌 芙羅拉&amp;利德爾爭執小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/04_Destroy_Myself_For_You_Isabel_LaRosa.mp3', '《Destroy Myself For You》', '【第五幕_CP換乘與覺醒 · 利德爾】', this)">▶ 播放</button>
@@ -557,12 +585,12 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="《1to2》 Elaine 📌 利德爾&芙羅拉第六幕小黑屋 第六幕_告白與自裁 利德爾 利德尔 小黑屋">
+        <div class="track-card card-liddell" data-search="《1to2》 Elaine 📌 利德爾&amp;芙羅拉第六幕小黑屋 第六幕_告白與自裁 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-            <div class="track-title">03. 《1to2》</div>
-            <div class="track-artist">Elaine</div>
-            <div class="track-use">📌 利德爾&芙羅拉第六幕小黑屋</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+            <div class="track-title" spellcheck="false">03. 《1to2》</div>
+            <div class="track-artist" spellcheck="false">Elaine</div>
+            <div class="track-use" spellcheck="false">📌 利德爾&amp;芙羅拉第六幕小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/03_1to2_Elaine.mp3', '《1to2》', '【第六幕_告白與自裁 · 利德爾】', this)">▶ 播放</button>
@@ -573,10 +601,10 @@
         </div>
         <div class="track-card card-liddell" data-search="《門鎖》 莫非定律樂團 📌 第六幕利德爾告別演繹 第六幕_告白與自裁 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-            <div class="track-title">11. 《門鎖》</div>
-            <div class="track-artist">莫非定律樂團</div>
-            <div class="track-use">📌 第六幕利德爾告別演繹</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+            <div class="track-title" spellcheck="false">11. 《門鎖》</div>
+            <div class="track-artist" spellcheck="false">莫非定律樂團</div>
+            <div class="track-use" spellcheck="false">📌 第六幕利德爾告別演繹</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/11_門鎖_莫非定律樂團.mp3', '《門鎖》', '【第六幕_告白與自裁 · 利德爾】', this)">▶ 播放</button>
@@ -587,10 +615,10 @@
         </div>
         <div class="track-card card-liddell" data-search="《門鎖》 莫非定律樂團 📌 結局幕利德爾小黑屋獨白 結局幕 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【結局幕】</div>
-            <div class="track-title">02. 《門鎖》</div>
-            <div class="track-artist">莫非定律樂團</div>
-            <div class="track-use">📌 結局幕利德爾小黑屋獨白</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局幕】</div>
+            <div class="track-title" spellcheck="false">02. 《門鎖》</div>
+            <div class="track-artist" spellcheck="false">莫非定律樂團</div>
+            <div class="track-use" spellcheck="false">📌 結局幕利德爾小黑屋獨白</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/02_門鎖_莫非定律樂團.mp3', '《門鎖》', '【結局幕 · 利德爾】', this)">▶ 播放</button>
@@ -601,10 +629,10 @@
         </div>
         <div class="track-card card-liddell" data-search="《倦鳥》 胡夏 📌 結局幕利德爾死亡演繹音樂 結局幕 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【結局幕】</div>
-            <div class="track-title">06. 《倦鳥》</div>
-            <div class="track-artist">胡夏</div>
-            <div class="track-use">📌 結局幕利德爾死亡演繹音樂</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局幕】</div>
+            <div class="track-title" spellcheck="false">06. 《倦鳥》</div>
+            <div class="track-artist" spellcheck="false">胡夏</div>
+            <div class="track-use" spellcheck="false">📌 結局幕利德爾死亡演繹音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/06_倦鳥_胡夏.mp3', '《倦鳥》', '【結局幕 · 利德爾】', this)">▶ 播放</button>
@@ -615,10 +643,10 @@
         </div>
         <div class="track-card card-liddell" data-search="《不見高樓》 羔羊羔兒 📌 結局大卡幕利德爾反轉音樂前奏 [已更正對齊網易雲 3316564781] 結局大卡與謝幕 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【結局大卡與謝幕】</div>
-            <div class="track-title">07. 《不見高樓》（蒸羊羔兒）</div>
-            <div class="track-artist">羔羊羔兒</div>
-            <div class="track-use">📌 結局大卡幕利德爾反轉音樂前奏 [已更正對齊網易雲 3316564781]</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局大卡與謝幕】</div>
+            <div class="track-title" spellcheck="false">07. 《不見高樓》（蒸羊羔兒）</div>
+            <div class="track-artist" spellcheck="false">羔羊羔兒</div>
+            <div class="track-use" spellcheck="false">📌 結局大卡幕利德爾反轉音樂前奏&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/07_不見高樓_蒸羊羔兒.mp3', '《不見高樓》', '【結局大卡與謝幕 · 利德爾】', this)">▶ 播放</button>
@@ -629,10 +657,10 @@
         </div>
         <div class="track-card card-liddell" data-search="《抓蝴蝶》 艾怡良 📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈) 結局大卡與謝幕 利德爾 利德尔 小黑屋">
           <div>
-            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【結局大卡與謝幕】</div>
-            <div class="track-title">08. 《抓蝴蝶》</div>
-            <div class="track-artist">艾怡良</div>
-            <div class="track-use">📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈)</div>
+            <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局大卡與謝幕】</div>
+            <div class="track-title" spellcheck="false">08. 《抓蝴蝶》</div>
+            <div class="track-artist" spellcheck="false">艾怡良</div>
+            <div class="track-use" spellcheck="false">📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/08_抓蝴蝶_艾怡良.mp3', '《抓蝴蝶》', '【結局大卡與謝幕 · 利德爾】', this)">▶ 播放</button>
@@ -647,14 +675,14 @@
 
   <!-- View 2: Youquan Only -->
   <div id="view-youquan" class="view-panel" style="display: none;">
-    <div class="act-title" style="color: var(--youquan-color); border-color: var(--youquan-color);">🔴 游泉 小黑屋與高光專用音軌庫</div>
+    <div class="act-title" style="color: var(--youquan-color); border-color: var(--youquan-color);" spellcheck="false">🔴 游泉 小黑屋與高光專用音軌庫</div>
     <div class="track-grid">
       <div class="track-card card-youquan" data-search="《TWISTED》 AViVA 📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮) 序幕 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【序幕】</div>
-          <div class="track-title">05. 《TWISTED》</div>
-          <div class="track-artist">AViVA</div>
-          <div class="track-use">📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮)</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【序幕】</div>
+          <div class="track-title" spellcheck="false">05. 《TWISTED》</div>
+          <div class="track-artist" spellcheck="false">AViVA</div>
+          <div class="track-use" spellcheck="false">📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮)</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/05_TWISTED_AViVA.mp3', '《TWISTED》', '【序幕 · 游泉】', this)">▶ 播放</button>
@@ -663,12 +691,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 序幕游泉&畔小黑屋溫柔表白與解銬拉扯 序幕 游泉 小黑屋">
+      <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 序幕游泉&amp;畔小黑屋溫柔表白與解銬拉扯 序幕 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【序幕】</div>
-          <div class="track-title">06. 《Why Do You Love Me》</div>
-          <div class="track-artist">Charlotte Lawrence</div>
-          <div class="track-use">📌 序幕游泉&畔小黑屋溫柔表白與解銬拉扯</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【序幕】</div>
+          <div class="track-title" spellcheck="false">06. 《Why Do You Love Me》</div>
+          <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+          <div class="track-use" spellcheck="false">📌 序幕游泉&amp;畔小黑屋溫柔表白與解銬拉扯</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/06_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【序幕 · 游泉】', this)">▶ 播放</button>
@@ -679,10 +707,10 @@
       </div>
       <div class="track-card card-youquan" data-search="《Bon Voyage》 Jo Blankenburg 📌 游泉登場卡點/入座大廳 第一幕_醉生夢死 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第一幕_醉生夢死】</div>
-          <div class="track-title">04. 《Bon Voyage》</div>
-          <div class="track-artist">Jo Blankenburg</div>
-          <div class="track-use">📌 游泉登場卡點/入座大廳</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第一幕_醉生夢死】</div>
+          <div class="track-title" spellcheck="false">04. 《Bon Voyage》</div>
+          <div class="track-artist" spellcheck="false">Jo Blankenburg</div>
+          <div class="track-use" spellcheck="false">📌 游泉登場卡點/入座大廳</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/04_Bon_Voyage_Jo_Blankenburg.mp3', '《Bon Voyage》', '【第一幕_醉生夢死 · 游泉】', this)">▶ 播放</button>
@@ -693,10 +721,10 @@
       </div>
       <div class="track-card card-youquan" data-search="《COPYCAT》 Billie Eilish 📌 游泉登場卡點 (00:09黑暗盲行抓手腕) 第一幕_醉生夢死 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第一幕_醉生夢死】</div>
-          <div class="track-title">05. 《COPYCAT》</div>
-          <div class="track-artist">Billie Eilish</div>
-          <div class="track-use">📌 游泉登場卡點 (00:09黑暗盲行抓手腕)</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第一幕_醉生夢死】</div>
+          <div class="track-title" spellcheck="false">05. 《COPYCAT》</div>
+          <div class="track-artist" spellcheck="false">Billie Eilish</div>
+          <div class="track-use" spellcheck="false">📌 游泉登場卡點 (00:09黑暗盲行抓手腕)</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/05_COPYCAT_Billie_Eilish.mp3', '《COPYCAT》', '【第一幕_醉生夢死 · 游泉】', this)">▶ 播放</button>
@@ -707,10 +735,10 @@
       </div>
       <div class="track-card card-youquan" data-search="《LOST MY MIND IN PARIS》 Faouzia 📌 芙羅拉/游泉大廳環節 第一幕_醉生夢死 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第一幕_醉生夢死】</div>
-          <div class="track-title">07. 《LOST MY MIND IN PARIS》</div>
-          <div class="track-artist">Faouzia</div>
-          <div class="track-use">📌 芙羅拉/游泉大廳環節</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第一幕_醉生夢死】</div>
+          <div class="track-title" spellcheck="false">07. 《LOST MY MIND IN PARIS》</div>
+          <div class="track-artist" spellcheck="false">Faouzia</div>
+          <div class="track-use" spellcheck="false">📌 芙羅拉/游泉大廳環節</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/07_LOST_MY_MIND_IN_PARIS_Faouzia.mp3', '《LOST MY MIND IN PARIS》', '【第一幕_醉生夢死 · 游泉】', this)">▶ 播放</button>
@@ -719,12 +747,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 第二幕游泉&畔超大小黑屋 7副手銬獨白 第二幕_紙醉金迷 游泉 小黑屋">
+      <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 第二幕游泉&amp;畔超大小黑屋 7副手銬獨白 第二幕_紙醉金迷 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第二幕_紙醉金迷】</div>
-          <div class="track-title">02. 《Why Do You Love Me》</div>
-          <div class="track-artist">Charlotte Lawrence</div>
-          <div class="track-use">📌 第二幕游泉&畔超大小黑屋 7副手銬獨白</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第二幕_紙醉金迷】</div>
+          <div class="track-title" spellcheck="false">02. 《Why Do You Love Me》</div>
+          <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+          <div class="track-use" spellcheck="false">📌 第二幕游泉&amp;畔超大小黑屋 7副手銬獨白</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/02_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【第二幕_紙醉金迷 · 游泉】', this)">▶ 播放</button>
@@ -735,10 +763,10 @@
       </div>
       <div class="track-card card-youquan" data-search="《Viva La Vida》 David Garrett 📌 利德爾舉報游泉聲明 第二幕_紙醉金迷 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第二幕_紙醉金迷】</div>
-          <div class="track-title">09. 《Viva La Vida》</div>
-          <div class="track-artist">David Garrett</div>
-          <div class="track-use">📌 利德爾舉報游泉聲明</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第二幕_紙醉金迷】</div>
+          <div class="track-title" spellcheck="false">09. 《Viva La Vida》</div>
+          <div class="track-artist" spellcheck="false">David Garrett</div>
+          <div class="track-use" spellcheck="false">📌 利德爾舉報游泉聲明</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/09_Viva_La_Vida_David_Garrett.mp3', '《Viva La Vida》', '【第二幕_紙醉金迷 · 游泉】', this)">▶ 播放</button>
@@ -749,10 +777,10 @@
       </div>
       <div class="track-card card-youquan" data-search="《Devil May Cry》 Apashe 📌 游泉爆料墮落城假象 (01:15 反轉狂笑) 第四幕_情報共享 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第四幕_情報共享】</div>
-          <div class="track-title">02. 《Devil May Cry》</div>
-          <div class="track-artist">Apashe</div>
-          <div class="track-use">📌 游泉爆料墮落城假象 (01:15 反轉狂笑)</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第四幕_情報共享】</div>
+          <div class="track-title" spellcheck="false">02. 《Devil May Cry》</div>
+          <div class="track-artist" spellcheck="false">Apashe</div>
+          <div class="track-use" spellcheck="false">📌 游泉爆料墮落城假象 (01:15 反轉狂笑)</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/05_第四幕_情報共享/02_Devil_May_Cry_Apashe.mp3', '《Devil May Cry》', '【第四幕_情報共享 · 游泉】', this)">▶ 播放</button>
@@ -761,12 +789,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-youquan" data-search="《1to2》 Elaine 📌 第五幕游泉&芙羅拉換乘小黑屋 第五幕_CP換乘與覺醒 游泉 小黑屋">
+      <div class="track-card card-youquan" data-search="《1to2》 Elaine 📌 第五幕游泉&amp;芙羅拉換乘小黑屋 第五幕_CP換乘與覺醒 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第五幕_CP換乘與覺醒】</div>
-          <div class="track-title">02. 《1to2》</div>
-          <div class="track-artist">Elaine</div>
-          <div class="track-use">📌 第五幕游泉&芙羅拉換乘小黑屋</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第五幕_CP換乘與覺醒】</div>
+          <div class="track-title" spellcheck="false">02. 《1to2》</div>
+          <div class="track-artist" spellcheck="false">Elaine</div>
+          <div class="track-use" spellcheck="false">📌 第五幕游泉&amp;芙羅拉換乘小黑屋</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/02_1to2_Elaine.mp3', '《1to2》', '【第五幕_CP換乘與覺醒 · 游泉】', this)">▶ 播放</button>
@@ -777,10 +805,10 @@
       </div>
       <div class="track-card card-youquan" data-search="《HEARTBEAT》 Isabel LaRosa 📌 游泉大廳高調換乘坐芙羅拉身邊 第五幕_CP換乘與覺醒 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第五幕_CP換乘與覺醒】</div>
-          <div class="track-title">05. 《HEARTBEAT》</div>
-          <div class="track-artist">Isabel LaRosa</div>
-          <div class="track-use">📌 游泉大廳高調換乘坐芙羅拉身邊</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第五幕_CP換乘與覺醒】</div>
+          <div class="track-title" spellcheck="false">05. 《HEARTBEAT》</div>
+          <div class="track-artist" spellcheck="false">Isabel LaRosa</div>
+          <div class="track-use" spellcheck="false">📌 游泉大廳高調換乘坐芙羅拉身邊</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/05_HEARTBEAT_Isabel_LaRosa.mp3', '《HEARTBEAT》', '【第五幕_CP換乘與覺醒 · 游泉】', this)">▶ 播放</button>
@@ -789,12 +817,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 游泉&畔第六幕小黑屋真心告白 第六幕_告白與自裁 游泉 小黑屋">
+      <div class="track-card card-youquan" data-search="《Why Do You Love Me》 Charlotte Lawrence 📌 游泉&amp;畔第六幕小黑屋真心告白 第六幕_告白與自裁 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-          <div class="track-title">02. 《Why Do You Love Me》</div>
-          <div class="track-artist">Charlotte Lawrence</div>
-          <div class="track-use">📌 游泉&畔第六幕小黑屋真心告白</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+          <div class="track-title" spellcheck="false">02. 《Why Do You Love Me》</div>
+          <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+          <div class="track-use" spellcheck="false">📌 游泉&amp;畔第六幕小黑屋真心告白</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/02_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【第六幕_告白與自裁 · 游泉】', this)">▶ 播放</button>
@@ -805,10 +833,10 @@
       </div>
       <div class="track-card card-youquan" data-search="《偏執面》 張惠妹_蛋堡 📌 游泉舞台自裁名場面 (00:39阿妹唱完拉小音量，低語「我只想要你愛我」) [已更正對齊網易雲 28754100] 第六幕_告白與自裁 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-          <div class="track-title">08. 《偏執面》（張惠妹 / 蛋堡）</div>
-          <div class="track-artist">張惠妹_蛋堡</div>
-          <div class="track-use">📌 游泉舞台自裁名場面 (00:39阿妹唱完拉小音量，低語「我只想要你愛我」) [已更正對齊網易雲 28754100]</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+          <div class="track-title" spellcheck="false">08. 《偏執面》（張惠妹 / 蛋堡）</div>
+          <div class="track-artist" spellcheck="false">張惠妹_蛋堡</div>
+          <div class="track-use" spellcheck="false">📌 游泉舞台自裁</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/08_偏執面_張惠妹_蛋堡.mp3', '《偏執面》', '【第六幕_告白與自裁 · 游泉】', this)">▶ 播放</button>
@@ -819,10 +847,10 @@
       </div>
       <div class="track-card card-youquan" data-search="《分身》 單依純 📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人) 第六幕_告白與自裁 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-          <div class="track-title">09. 《分身》</div>
-          <div class="track-artist">單依純</div>
-          <div class="track-use">📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人)</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+          <div class="track-title" spellcheck="false">09. 《分身》</div>
+          <div class="track-artist" spellcheck="false">單依純</div>
+          <div class="track-use" spellcheck="false">📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人)</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/09_分身_單依純.mp3', '《分身》', '【第六幕_告白與自裁 · 游泉】', this)">▶ 播放</button>
@@ -831,12 +859,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-youquan" data-search="《分身》 單依純 📌 畔&游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘) 結局大卡與謝幕 游泉 小黑屋">
+      <div class="track-card card-youquan" data-search="《分身》 單依純 📌 畔&amp;游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘) 結局大卡與謝幕 游泉 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;">【結局大卡與謝幕】</div>
-          <div class="track-title">05. 《分身》</div>
-          <div class="track-artist">單依純</div>
-          <div class="track-use">📌 畔&游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘)</div>
+          <div style="font-size: 0.78rem; color: var(--youquan-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局大卡與謝幕】</div>
+          <div class="track-title" spellcheck="false">05. 《分身》</div>
+          <div class="track-artist" spellcheck="false">單依純</div>
+          <div class="track-use" spellcheck="false">📌 畔&amp;游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘)</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/05_分身_單依純.mp3', '《分身》', '【結局大卡與謝幕 · 游泉】', this)">▶ 播放</button>
@@ -850,14 +878,14 @@
 
   <!-- View 3: Liddell Only -->
   <div id="view-liddell" class="view-panel" style="display: none;">
-    <div class="act-title" style="color: var(--liddell-color); border-color: var(--liddell-color);">🟣 利德爾 小黑屋與高光專用音軌庫</div>
+    <div class="act-title" style="color: var(--liddell-color); border-color: var(--liddell-color);" spellcheck="false">🟣 利德爾 小黑屋與高光專用音軌庫</div>
     <div class="track-grid">
       <div class="track-card card-liddell" data-search="《Click Clack》(剪輯前8秒版) RAYE 📌 芙羅拉台詞畢，利德爾進場 (已裁切前8秒音軌，即點即播進高潮) 序幕 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【序幕】</div>
-          <div class="track-title">04. 《Click Clack》(剪輯前8秒版)</div>
-          <div class="track-artist">RAYE</div>
-          <div class="track-use">📌 芙羅拉台詞畢，利德爾進場 (已裁切前8秒音軌，即點即播進高潮)</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【序幕】</div>
+          <div class="track-title" spellcheck="false">04. 《Click Clack》(剪輯前8秒版)</div>
+          <div class="track-artist" spellcheck="false">RAYE</div>
+          <div class="track-use" spellcheck="false">📌 芙羅拉台詞畢，利德爾進場&nbsp;</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕 · 利德爾】', this)">▶ 播放</button>
@@ -866,12 +894,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-liddell" data-search="《Cupe Ha（塞壬）》 polnalyubvi 📌 第一幕芙羅拉&利德爾小黑屋暴食臣服 [已更正對齊網易雲 2108540565] 第一幕_醉生夢死 利德爾 利德尔 小黑屋">
+      <div class="track-card card-liddell" data-search="《Cupe Ha（塞壬）》 polnalyubvi 📌 第一幕芙羅拉&amp;利德爾小黑屋暴食臣服 第一幕_醉生夢死 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第一幕_醉生夢死】</div>
-          <div class="track-title">03. 《Сирена》（塞壬 - polnalyubvi）</div>
-          <div class="track-artist">polnalyubvi</div>
-          <div class="track-use">📌 第一幕芙羅拉&利德爾小黑屋暴食臣服 [已更正對齊網易雲 2108540565]</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第一幕_醉生夢死】</div>
+          <div class="track-title" spellcheck="false">03. 《Cupe Ha（塞壬）》</div>
+          <div class="track-artist" spellcheck="false">polnalyubvi</div>
+          <div class="track-use" spellcheck="false">📌 第一幕芙羅拉&amp;利德爾小黑屋暴食臣服</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/03_Cupe_Ha（塞壬）_polnalyubvi.mp3', '《Cupe Ha（塞壬）》', '【第一幕_醉生夢死 · 利德爾】', this)">▶ 播放</button>
@@ -880,12 +908,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-liddell" data-search="《張凌赫進行曲》 派大星 📌 利德爾發布會登場 (已更正為《Fast Cars & Superstars》SONY Remix 正式版) 第二幕_紙醉金迷 利德爾 利德尔 小黑屋">
+      <div class="track-card card-liddell" data-search="《張凌赫進行曲》 派大星 📌 利德爾發布會登場 (已更正為《Fast Cars &amp; Superstars》SONY Remix 正式版) 第二幕_紙醉金迷 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第二幕_紙醉金迷】</div>
-          <div class="track-title">06. 《Fast Cars & Superstars》(張凌赫進行曲)</div>
-          <div class="track-artist">派大星</div>
-          <div class="track-use">📌 利德爾發布會登場 (已更正為《Fast Cars & Superstars》SONY Remix 正式版)</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第二幕_紙醉金迷】</div>
+          <div class="track-title" spellcheck="false">06. 《Fast Cars &amp; Superstars》(張凌赫進行曲)</div>
+          <div class="track-artist" spellcheck="false">派大星</div>
+          <div class="track-use" spellcheck="false">📌 利德爾發布會登場</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/06_張凌赫進行曲_派大星.mp3', '《張凌赫進行曲》', '【第二幕_紙醉金迷 · 利德爾】', this)">▶ 播放</button>
@@ -896,10 +924,10 @@
       </div>
       <div class="track-card card-liddell" data-search="《Viva La Vida》 David Garrett 📌 利德爾舉報游泉聲明 第二幕_紙醉金迷 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第二幕_紙醉金迷】</div>
-          <div class="track-title">09. 《Viva La Vida》</div>
-          <div class="track-artist">David Garrett</div>
-          <div class="track-use">📌 利德爾舉報游泉聲明</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第二幕_紙醉金迷】</div>
+          <div class="track-title" spellcheck="false">09. 《Viva La Vida》</div>
+          <div class="track-artist" spellcheck="false">David Garrett</div>
+          <div class="track-use" spellcheck="false">📌 利德爾舉報游泉聲明</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/09_Viva_La_Vida_David_Garrett.mp3', '《Viva La Vida》', '【第二幕_紙醉金迷 · 利德爾】', this)">▶ 播放</button>
@@ -908,12 +936,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-liddell" data-search="《倦鳥》 胡夏 📌 第三幕芙羅拉&利德爾心建對質小黑屋 第三幕_十字架拷問 利德爾 利德尔 小黑屋">
+      <div class="track-card card-liddell" data-search="《倦鳥》 胡夏 📌 第三幕芙羅拉&amp;利德爾心建對質小黑屋 第三幕_十字架拷問 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第三幕_十字架拷問】</div>
-          <div class="track-title">04. 《倦鳥》</div>
-          <div class="track-artist">胡夏</div>
-          <div class="track-use">📌 第三幕芙羅拉&利德爾心建對質小黑屋</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第三幕_十字架拷問】</div>
+          <div class="track-title" spellcheck="false">04. 《倦鳥》</div>
+          <div class="track-artist" spellcheck="false">胡夏</div>
+          <div class="track-use" spellcheck="false">📌 第三幕芙羅拉&amp;利德爾心建對質小黑屋</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/04_倦鳥_胡夏.mp3', '《倦鳥》', '【第三幕_十字架拷問 · 利德爾】', this)">▶ 播放</button>
@@ -922,12 +950,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-liddell" data-search="《Destroy Myself For You》 Isabel LaRosa 📌 芙羅拉&利德爾爭執小黑屋 第五幕_CP換乘與覺醒 利德爾 利德尔 小黑屋">
+      <div class="track-card card-liddell" data-search="《Destroy Myself For You》 Isabel LaRosa 📌 芙羅拉&amp;利德爾爭執小黑屋 第五幕_CP換乘與覺醒 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第五幕_CP換乘與覺醒】</div>
-          <div class="track-title">04. 《Destroy Myself For You》</div>
-          <div class="track-artist">Isabel LaRosa</div>
-          <div class="track-use">📌 芙羅拉&利德爾爭執小黑屋</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第五幕_CP換乘與覺醒】</div>
+          <div class="track-title" spellcheck="false">04. 《Destroy Myself For You》</div>
+          <div class="track-artist" spellcheck="false">Isabel LaRosa</div>
+          <div class="track-use" spellcheck="false">📌 芙羅拉&amp;利德爾爭執小黑屋</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/04_Destroy_Myself_For_You_Isabel_LaRosa.mp3', '《Destroy Myself For You》', '【第五幕_CP換乘與覺醒 · 利德爾】', this)">▶ 播放</button>
@@ -936,12 +964,12 @@
           <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
         </div>
       </div>
-      <div class="track-card card-liddell" data-search="《1to2》 Elaine 📌 利德爾&芙羅拉第六幕小黑屋 第六幕_告白與自裁 利德爾 利德尔 小黑屋">
+      <div class="track-card card-liddell" data-search="《1to2》 Elaine 📌 利德爾&amp;芙羅拉第六幕小黑屋 第六幕_告白與自裁 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-          <div class="track-title">03. 《1to2》</div>
-          <div class="track-artist">Elaine</div>
-          <div class="track-use">📌 利德爾&芙羅拉第六幕小黑屋</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+          <div class="track-title" spellcheck="false">03. 《1to2》</div>
+          <div class="track-artist" spellcheck="false">Elaine</div>
+          <div class="track-use" spellcheck="false">📌 利德爾&amp;芙羅拉第六幕小黑屋</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/03_1to2_Elaine.mp3', '《1to2》', '【第六幕_告白與自裁 · 利德爾】', this)">▶ 播放</button>
@@ -952,10 +980,10 @@
       </div>
       <div class="track-card card-liddell" data-search="《門鎖》 莫非定律樂團 📌 第六幕利德爾告別演繹 第六幕_告白與自裁 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【第六幕_告白與自裁】</div>
-          <div class="track-title">11. 《門鎖》</div>
-          <div class="track-artist">莫非定律樂團</div>
-          <div class="track-use">📌 第六幕利德爾告別演繹</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【第六幕_告白與自裁】</div>
+          <div class="track-title" spellcheck="false">11. 《門鎖》</div>
+          <div class="track-artist" spellcheck="false">莫非定律樂團</div>
+          <div class="track-use" spellcheck="false">📌 第六幕利德爾告別演繹</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/11_門鎖_莫非定律樂團.mp3', '《門鎖》', '【第六幕_告白與自裁 · 利德爾】', this)">▶ 播放</button>
@@ -966,10 +994,10 @@
       </div>
       <div class="track-card card-liddell" data-search="《門鎖》 莫非定律樂團 📌 結局幕利德爾小黑屋獨白 結局幕 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【結局幕】</div>
-          <div class="track-title">02. 《門鎖》</div>
-          <div class="track-artist">莫非定律樂團</div>
-          <div class="track-use">📌 結局幕利德爾小黑屋獨白</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局幕】</div>
+          <div class="track-title" spellcheck="false">02. 《門鎖》</div>
+          <div class="track-artist" spellcheck="false">莫非定律樂團</div>
+          <div class="track-use" spellcheck="false">📌 結局幕利德爾小黑屋獨白</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/02_門鎖_莫非定律樂團.mp3', '《門鎖》', '【結局幕 · 利德爾】', this)">▶ 播放</button>
@@ -980,10 +1008,10 @@
       </div>
       <div class="track-card card-liddell" data-search="《倦鳥》 胡夏 📌 結局幕利德爾死亡演繹音樂 結局幕 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【結局幕】</div>
-          <div class="track-title">06. 《倦鳥》</div>
-          <div class="track-artist">胡夏</div>
-          <div class="track-use">📌 結局幕利德爾死亡演繹音樂</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局幕】</div>
+          <div class="track-title" spellcheck="false">06. 《倦鳥》</div>
+          <div class="track-artist" spellcheck="false">胡夏</div>
+          <div class="track-use" spellcheck="false">📌 結局幕利德爾死亡演繹音樂</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/06_倦鳥_胡夏.mp3', '《倦鳥》', '【結局幕 · 利德爾】', this)">▶ 播放</button>
@@ -994,10 +1022,10 @@
       </div>
       <div class="track-card card-liddell" data-search="《不見高樓》 羔羊羔兒 📌 結局大卡幕利德爾反轉音樂前奏 [已更正對齊網易雲 3316564781] 結局大卡與謝幕 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【結局大卡與謝幕】</div>
-          <div class="track-title">07. 《不見高樓》（蒸羊羔兒）</div>
-          <div class="track-artist">羔羊羔兒</div>
-          <div class="track-use">📌 結局大卡幕利德爾反轉音樂前奏 [已更正對齊網易雲 3316564781]</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局大卡與謝幕】</div>
+          <div class="track-title" spellcheck="false">07. 《不見高樓》（蒸羊羔兒）</div>
+          <div class="track-artist" spellcheck="false">羔羊羔兒</div>
+          <div class="track-use" spellcheck="false">📌 結局大卡幕利德爾反轉音樂前奏&nbsp;</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/07_不見高樓_蒸羊羔兒.mp3', '《不見高樓》', '【結局大卡與謝幕 · 利德爾】', this)">▶ 播放</button>
@@ -1008,10 +1036,10 @@
       </div>
       <div class="track-card card-liddell" data-search="《抓蝴蝶》 艾怡良 📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈) 結局大卡與謝幕 利德爾 利德尔 小黑屋">
         <div>
-          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;">【結局大卡與謝幕】</div>
-          <div class="track-title">08. 《抓蝴蝶》</div>
-          <div class="track-artist">艾怡良</div>
-          <div class="track-use">📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈)</div>
+          <div style="font-size: 0.78rem; color: var(--liddell-color); font-weight: bold; margin-bottom: 0.2rem;" spellcheck="false">【結局大卡與謝幕】</div>
+          <div class="track-title" spellcheck="false">08. 《抓蝴蝶》</div>
+          <div class="track-artist" spellcheck="false">艾怡良</div>
+          <div class="track-use" spellcheck="false">📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈)</div>
         </div>
         <div class="track-actions">
           <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/08_抓蝴蝶_艾怡良.mp3', '《抓蝴蝶》', '【結局大卡與謝幕 · 利德爾】', this)">▶ 播放</button>
@@ -1026,13 +1054,13 @@
   <!-- View 4: Full All Acts Sequential -->
   <div id="view-all" class="view-panel" style="display: none;">
     <div class="act-group" data-act="開場前與暖場">
-      <div class="act-title">【開場前與暖場】</div>
+      <div class="act-title" spellcheck="false">【開場前與暖場】</div>
       <div class="track-grid">
         <div class="track-card " data-search="Alone Becoming Niko Jarell 📌 循環播放暖場 BGM 開場前與暖場 01">
           <div>
-            <div class="track-title">01. 《Alone Becoming》</div>
-            <div class="track-artist">Niko Jarell</div>
-            <div class="track-use">📌 循環播放暖場 BGM</div>
+            <div class="track-title" spellcheck="false">01. 《Alone Becoming》</div>
+            <div class="track-artist" spellcheck="false">Niko Jarell</div>
+            <div class="track-use" spellcheck="false">📌 循環播放暖場 BGM</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/00_開場前與暖場/01_Alone_Becoming_Niko_Jarell.mp3', '《Alone Becoming》', '【開場前與暖場】', this)">▶ 播放</button>
@@ -1044,13 +1072,13 @@
       </div>
     </div>
     <div class="act-group" data-act="序幕">
-      <div class="act-title">【序幕】</div>
+      <div class="act-title" spellcheck="false">【序幕】</div>
       <div class="track-grid">
         <div class="track-card " data-search="Saline Brian Cheng 📌 序幕演繹：開白色燈打梅林宣讀判詞與面光切換 序幕 01">
           <div>
-            <div class="track-title">01. 《Saline》</div>
-            <div class="track-artist">Brian Cheng</div>
-            <div class="track-use">📌 序幕演繹：開白色燈打梅林宣讀判詞與面光切換</div>
+            <div class="track-title" spellcheck="false">01. 《Saline》</div>
+            <div class="track-artist" spellcheck="false">Brian Cheng</div>
+            <div class="track-use" spellcheck="false">📌 序幕演繹：開白色燈打梅林宣讀判詞與面光切換</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/01_Saline_Brian_Cheng.mp3', '《Saline》', '【序幕】', this)">▶ 播放</button>
@@ -1061,9 +1089,9 @@
         </div>
         <div class="track-card " data-search="Farspace Colonel 林句句 📌 序幕讀本背景音樂 序幕 02">
           <div>
-            <div class="track-title">02. 《Farspace Colonel》</div>
-            <div class="track-artist">林句句</div>
-            <div class="track-use">📌 序幕讀本背景音樂</div>
+            <div class="track-title" spellcheck="false">02. 《Farspace Colonel》</div>
+            <div class="track-artist" spellcheck="false">林句句</div>
+            <div class="track-use" spellcheck="false">📌 序幕讀本背景音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/02_Farspace_Colonel_林句句.mp3', '《Farspace Colonel》', '【序幕】', this)">▶ 播放</button>
@@ -1074,9 +1102,9 @@
         </div>
         <div class="track-card " data-search="Saint 聖女 鹽酸 📌 序幕流程音樂：DM主神梅林登場 (網易雲 3324961790 已更正套用) 序幕 03">
           <div>
-            <div class="track-title">03. 《Saint 聖女》</div>
-            <div class="track-artist">鹽酸</div>
-            <div class="track-use">📌 序幕流程音樂：DM主神梅林登場 (網易雲 3324961790 已更正套用)</div>
+            <div class="track-title" spellcheck="false">03. 《Saint 聖女》</div>
+            <div class="track-artist" spellcheck="false">鹽酸</div>
+            <div class="track-use" spellcheck="false">📌 序幕流程音樂：DM主神梅林登場&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/03_Saint_聖女_鹽酸.mp3', '《Saint 聖女》', '【序幕】', this)">▶ 播放</button>
@@ -1087,9 +1115,9 @@
         </div>
         <div class="track-card card-liddell" data-search="Click Clack RAYE 📌 芙羅拉台詞畢，利德爾進場 (已裁切前8秒音軌，即點即播進高潮) 序幕 04">
           <div>
-            <div class="track-title">04. 《Click Clack》(剪輯前8秒版)</div>
-            <div class="track-artist">RAYE</div>
-            <div class="track-use">📌 芙羅拉台詞畢，利德爾進場 (已裁切前8秒音軌，即點即播進高潮)</div>
+            <div class="track-title" spellcheck="false">04. 《Click Clack》(剪輯前8秒版)</div>
+            <div class="track-artist" spellcheck="false">RAYE</div>
+            <div class="track-use" spellcheck="false">📌 芙羅拉台詞畢，利德爾進場&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/04_Click_Clack_RAYE.mp3', '《Click Clack》(剪輯前8秒版)', '【序幕】', this)">▶ 播放</button>
@@ -1100,9 +1128,9 @@
         </div>
         <div class="track-card card-youquan" data-search="TWISTED AViVA 📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮) 序幕 05">
           <div>
-            <div class="track-title">05. 《TWISTED》</div>
-            <div class="track-artist">AViVA</div>
-            <div class="track-use">📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮)</div>
+            <div class="track-title" spellcheck="false">05. 《TWISTED》</div>
+            <div class="track-artist" spellcheck="false">AViVA</div>
+            <div class="track-use" spellcheck="false">📌 游泉帶鎖鏈登場放逐切紅燈 (00:43高潮)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/05_TWISTED_AViVA.mp3', '《TWISTED》', '【序幕】', this)">▶ 播放</button>
@@ -1111,11 +1139,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="Why Do You Love Me Charlotte Lawrence 📌 序幕游泉&畔小黑屋溫柔表白與解銬拉扯 序幕 06">
+        <div class="track-card card-youquan" data-search="Why Do You Love Me Charlotte Lawrence 📌 序幕游泉&amp;畔小黑屋溫柔表白與解銬拉扯 序幕 06">
           <div>
-            <div class="track-title">06. 《Why Do You Love Me》</div>
-            <div class="track-artist">Charlotte Lawrence</div>
-            <div class="track-use">📌 序幕游泉&畔小黑屋溫柔表白與解銬拉扯</div>
+            <div class="track-title" spellcheck="false">06. 《Why Do You Love Me》</div>
+            <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+            <div class="track-use" spellcheck="false">📌 序幕游泉&amp;畔小黑屋溫柔表白與解銬拉扯</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/01_序幕/06_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【序幕】', this)">▶ 播放</button>
@@ -1127,13 +1155,13 @@
       </div>
     </div>
     <div class="act-group" data-act="第一幕_醉生夢死">
-      <div class="act-title">【第一幕_醉生夢死】</div>
+      <div class="act-title" spellcheck="false">【第一幕_醉生夢死】</div>
       <div class="track-grid">
         <div class="track-card " data-search="Sand Dove Cameron 📌 第一幕破冰讀本背景 第一幕_醉生夢死 01">
           <div>
-            <div class="track-title">01. 《Sand》</div>
-            <div class="track-artist">Dove Cameron</div>
-            <div class="track-use">📌 第一幕破冰讀本背景</div>
+            <div class="track-title" spellcheck="false">01. 《Sand》</div>
+            <div class="track-artist" spellcheck="false">Dove Cameron</div>
+            <div class="track-use" spellcheck="false">📌 第一幕破冰讀本背景</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/01_Sand_Dove_Cameron.mp3', '《Sand》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1144,9 +1172,9 @@
         </div>
         <div class="track-card " data-search="Why Do You Love Me Charlotte Lawrence 📌 第一幕讀本插曲音樂 第一幕_醉生夢死 02">
           <div>
-            <div class="track-title">02. 《Why Do You Love Me》</div>
-            <div class="track-artist">Charlotte Lawrence</div>
-            <div class="track-use">📌 第一幕讀本插曲音樂</div>
+            <div class="track-title" spellcheck="false">02. 《Why Do You Love Me》</div>
+            <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+            <div class="track-use" spellcheck="false">📌 第一幕讀本插曲音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/02_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1155,11 +1183,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="Cupe Ha（塞壬） polnalyubvi 📌 第一幕芙羅拉&利德爾小黑屋暴食臣服 [已更正對齊網易雲 2108540565] 第一幕_醉生夢死 03">
+        <div class="track-card card-liddell" data-search="Cupe Ha（塞壬） polnalyubvi 📌 第一幕芙羅拉&amp;利德爾小黑屋暴食臣服 第一幕_醉生夢死 03">
           <div>
-            <div class="track-title">03. 《Сирена》（塞壬 - polnalyubvi）</div>
-            <div class="track-artist">polnalyubvi</div>
-            <div class="track-use">📌 第一幕芙羅拉&利德爾小黑屋暴食臣服 [已更正對齊網易雲 2108540565]</div>
+            <div class="track-title" spellcheck="false">03. 《Cupe Ha（塞壬）》</div>
+            <div class="track-artist" spellcheck="false">polnalyubvi</div>
+            <div class="track-use" spellcheck="false">📌 第一幕芙羅拉&amp;利德爾小黑屋暴食臣服</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/03_Cupe_Ha（塞壬）_polnalyubvi.mp3', '《Cupe Ha（塞壬）》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1170,9 +1198,9 @@
         </div>
         <div class="track-card card-youquan" data-search="Bon Voyage Jo Blankenburg 📌 游泉登場卡點/入座大廳 第一幕_醉生夢死 04">
           <div>
-            <div class="track-title">04. 《Bon Voyage》</div>
-            <div class="track-artist">Jo Blankenburg</div>
-            <div class="track-use">📌 游泉登場卡點/入座大廳</div>
+            <div class="track-title" spellcheck="false">04. 《Bon Voyage》</div>
+            <div class="track-artist" spellcheck="false">Jo Blankenburg</div>
+            <div class="track-use" spellcheck="false">📌 游泉登場卡點/入座大廳</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/04_Bon_Voyage_Jo_Blankenburg.mp3', '《Bon Voyage》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1183,9 +1211,9 @@
         </div>
         <div class="track-card card-youquan" data-search="COPYCAT Billie Eilish 📌 游泉登場卡點 (00:09黑暗盲行抓手腕) 第一幕_醉生夢死 05">
           <div>
-            <div class="track-title">05. 《COPYCAT》</div>
-            <div class="track-artist">Billie Eilish</div>
-            <div class="track-use">📌 游泉登場卡點 (00:09黑暗盲行抓手腕)</div>
+            <div class="track-title" spellcheck="false">05. 《COPYCAT》</div>
+            <div class="track-artist" spellcheck="false">Billie Eilish</div>
+            <div class="track-use" spellcheck="false">📌 游泉登場卡點 (00:09黑暗盲行抓手腕)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/05_COPYCAT_Billie_Eilish.mp3', '《COPYCAT》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1196,9 +1224,9 @@
         </div>
         <div class="track-card " data-search="Saint 聖女 鹽酸 📌 梅林主控第一幕暴食與懶惰洗禮儀式 (網易雲 3324961790 已更正套用) 第一幕_醉生夢死 06">
           <div>
-            <div class="track-title">06. 《Saint 聖女》</div>
-            <div class="track-artist">鹽酸</div>
-            <div class="track-use">📌 梅林主控第一幕暴食與懶惰洗禮儀式 (網易雲 3324961790 已更正套用)</div>
+            <div class="track-title" spellcheck="false">06. 《Saint 聖女》</div>
+            <div class="track-artist" spellcheck="false">鹽酸</div>
+            <div class="track-use" spellcheck="false">📌 梅林主控第一幕暴食與懶惰洗禮儀式&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/06_Saint_聖女_鹽酸.mp3', '《Saint 聖女》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1209,9 +1237,9 @@
         </div>
         <div class="track-card " data-search="LOST MY MIND IN PARIS Faouzia 📌 芙羅拉/游泉大廳環節 第一幕_醉生夢死 07">
           <div>
-            <div class="track-title">07. 《LOST MY MIND IN PARIS》</div>
-            <div class="track-artist">Faouzia</div>
-            <div class="track-use">📌 芙羅拉/游泉大廳環節</div>
+            <div class="track-title" spellcheck="false">07. 《LOST MY MIND IN PARIS》</div>
+            <div class="track-artist" spellcheck="false">Faouzia</div>
+            <div class="track-use" spellcheck="false">📌 芙羅拉/游泉大廳環節</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/07_LOST_MY_MIND_IN_PARIS_Faouzia.mp3', '《LOST MY MIND IN PARIS》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1222,9 +1250,9 @@
         </div>
         <div class="track-card " data-search="Prelude Andria Rose 📌 舞台第一幕夫妻小劇場對質 第一幕_醉生夢死 08">
           <div>
-            <div class="track-title">08. 《Prelude》</div>
-            <div class="track-artist">Andria Rose</div>
-            <div class="track-use">📌 舞台第一幕夫妻小劇場對質</div>
+            <div class="track-title" spellcheck="false">08. 《Prelude》</div>
+            <div class="track-artist" spellcheck="false">Andria Rose</div>
+            <div class="track-use" spellcheck="false">📌 舞台第一幕夫妻小劇場對質</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/08_Prelude_Andria_Rose.mp3', '《Prelude》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1233,24 +1261,24 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card " data-search="nuits d’ete Oscar Anton 📌 舞台互動對質音樂 第一幕_醉生夢死 09">
+        <div class="track-card " data-search="nuits d'ete Oscar Anton 📌 舞台互動對質音樂 第一幕_醉生夢死 09">
           <div>
-            <div class="track-title">09. 《nuits d’ete》</div>
-            <div class="track-artist">Oscar Anton</div>
-            <div class="track-use">📌 舞台互動對質音樂</div>
+            <div class="track-title" spellcheck="false">09. 《nuits d'ete》</div>
+            <div class="track-artist" spellcheck="false">Oscar Anton</div>
+            <div class="track-use" spellcheck="false">📌 舞台互動對質音樂</div>
           </div>
           <div class="track-actions">
-            <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/09_nuits_dete_Oscar_Anton.mp3', '《nuits d’ete》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
-            <button class="btn-loop" onclick="playAudioWithLoop('音樂庫/02_第一幕_醉生夢死/09_nuits_dete_Oscar_Anton.mp3', '《nuits d’ete》', '【第一幕_醉生夢死】', this)">🔁 循環</button>
+            <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/09_nuits_dete_Oscar_Anton.mp3', '《nuits d'ete》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
+            <button class="btn-loop" onclick="playAudioWithLoop('音樂庫/02_第一幕_醉生夢死/09_nuits_dete_Oscar_Anton.mp3', '《nuits d'ete》', '【第一幕_醉生夢死】', this)">🔁 循環</button>
             <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
         <div class="track-card " data-search="Silence Between Songs Madison Beer 📌 第一幕小黑屋音樂 第一幕_醉生夢死 10">
           <div>
-            <div class="track-title">10. 《Silence Between Songs》</div>
-            <div class="track-artist">Madison Beer</div>
-            <div class="track-use">📌 第一幕小黑屋音樂</div>
+            <div class="track-title" spellcheck="false">10. 《Silence Between Songs》</div>
+            <div class="track-artist" spellcheck="false">Madison Beer</div>
+            <div class="track-use" spellcheck="false">📌 第一幕小黑屋音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/02_第一幕_醉生夢死/10_Silence_Between_Songs_Madison_Beer.mp3', '《Silence Between Songs》', '【第一幕_醉生夢死】', this)">▶ 播放</button>
@@ -1262,13 +1290,13 @@
       </div>
     </div>
     <div class="act-group" data-act="第二幕_紙醉金迷">
-      <div class="act-title">【第二幕_紙醉金迷】</div>
+      <div class="act-title" spellcheck="false">【第二幕_紙醉金迷】</div>
       <div class="track-grid">
         <div class="track-card " data-search="Everybody Feel Like Dancing 梁永泰 📌 第二幕讀本與發布會背景 第二幕_紙醉金迷 01">
           <div>
-            <div class="track-title">01. 《Everybody Feel Like Dancing》</div>
-            <div class="track-artist">梁永泰</div>
-            <div class="track-use">📌 第二幕讀本與發布會背景</div>
+            <div class="track-title" spellcheck="false">01. 《Everybody Feel Like Dancing》</div>
+            <div class="track-artist" spellcheck="false">梁永泰</div>
+            <div class="track-use" spellcheck="false">📌 第二幕讀本與發布會背景</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/01_Everybody_Feel_Like_Dancing_梁永泰.mp3', '《Everybody Feel Like Dancing》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1277,11 +1305,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="Why Do You Love Me Charlotte Lawrence 📌 第二幕游泉&畔超大小黑屋 7副手銬獨白 第二幕_紙醉金迷 02">
+        <div class="track-card card-youquan" data-search="Why Do You Love Me Charlotte Lawrence 📌 第二幕游泉&amp;畔超大小黑屋 7副手銬獨白 第二幕_紙醉金迷 02">
           <div>
-            <div class="track-title">02. 《Why Do You Love Me》</div>
-            <div class="track-artist">Charlotte Lawrence</div>
-            <div class="track-use">📌 第二幕游泉&畔超大小黑屋 7副手銬獨白</div>
+            <div class="track-title" spellcheck="false">02. 《Why Do You Love Me》</div>
+            <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+            <div class="track-use" spellcheck="false">📌 第二幕游泉&amp;畔超大小黑屋 7副手銬獨白</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/02_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1292,9 +1320,9 @@
         </div>
         <div class="track-card " data-search="Hero Family of the Year 📌 發布會氣氛音樂 第二幕_紙醉金迷 03">
           <div>
-            <div class="track-title">03. 《Hero》</div>
-            <div class="track-artist">Family of the Year</div>
-            <div class="track-use">📌 發布會氣氛音樂</div>
+            <div class="track-title" spellcheck="false">03. 《Hero》</div>
+            <div class="track-artist" spellcheck="false">Family of the Year</div>
+            <div class="track-use" spellcheck="false">📌 發布會氣氛音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/03_Hero_Family_of_the_Year.mp3', '《Hero》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1305,9 +1333,9 @@
         </div>
         <div class="track-card " data-search="The Show Must Go On Brian May 📌 記者發布會入場 第二幕_紙醉金迷 04">
           <div>
-            <div class="track-title">04. 《The Show Must Go On》</div>
-            <div class="track-artist">Brian May</div>
-            <div class="track-use">📌 記者發布會入場</div>
+            <div class="track-title" spellcheck="false">04. 《The Show Must Go On》</div>
+            <div class="track-artist" spellcheck="false">Brian May</div>
+            <div class="track-use" spellcheck="false">📌 記者發布會入場</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/04_The_Show_Must_Go_On_Brian_May.mp3', '《The Show Must Go On》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1318,9 +1346,9 @@
         </div>
         <div class="track-card " data-search="Csardas Gypsy Dance David Garrett 📌 艾蕾舞會秀 第二幕_紙醉金迷 05">
           <div>
-            <div class="track-title">05. 《Csardas Gypsy Dance》</div>
-            <div class="track-artist">David Garrett</div>
-            <div class="track-use">📌 艾蕾舞會秀</div>
+            <div class="track-title" spellcheck="false">05. 《Csardas Gypsy Dance》</div>
+            <div class="track-artist" spellcheck="false">David Garrett</div>
+            <div class="track-use" spellcheck="false">📌 艾蕾舞會秀</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/05_Csardas_Gypsy_Dance_David_Garrett.mp3', '《Csardas Gypsy Dance》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1329,11 +1357,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="張凌赫進行曲 派大星 📌 利德爾發布會登場 (已更正為《Fast Cars & Superstars》SONY Remix 正式版) 第二幕_紙醉金迷 06">
+        <div class="track-card card-liddell" data-search="張凌赫進行曲 派大星 📌 利德爾發布會登場 (已更正為《Fast Cars &amp; Superstars》SONY Remix 正式版) 第二幕_紙醉金迷 06">
           <div>
-            <div class="track-title">06. 《Fast Cars & Superstars》(張凌赫進行曲)</div>
-            <div class="track-artist">派大星</div>
-            <div class="track-use">📌 利德爾發布會登場 (已更正為《Fast Cars & Superstars》SONY Remix 正式版)</div>
+            <div class="track-title" spellcheck="false">06. 《Fast Cars &amp; Superstars》(張凌赫進行曲)</div>
+            <div class="track-artist" spellcheck="false">派大星</div>
+            <div class="track-use" spellcheck="false">📌 利德爾發布會登場&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/06_張凌赫進行曲_派大星.mp3', '《張凌赫進行曲》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1344,9 +1372,9 @@
         </div>
         <div class="track-card " data-search="時間煮雨 夢境里的算法 📌 伽涅小鮮肉告白 (已更正套用網易雲 3361225311 正式深情男聲版) 第二幕_紙醉金迷 07">
           <div>
-            <div class="track-title">07. 《時間煮雨》（深情男聲版）</div>
-            <div class="track-artist">夢境里的算法</div>
-            <div class="track-use">📌 伽涅小鮮肉告白 (已更正套用網易雲 3361225311 正式深情男聲版)</div>
+            <div class="track-title" spellcheck="false">07. 《時間煮雨》（深情男聲版）</div>
+            <div class="track-artist" spellcheck="false">夢境里的算法</div>
+            <div class="track-use" spellcheck="false">📌 伽涅告白</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/07_時間煮雨_夢境里的算法.mp3', '《時間煮雨》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1357,9 +1385,9 @@
         </div>
         <div class="track-card " data-search="我好想你 蘇打綠 📌 伽涅深情背刺芙羅拉 第二幕_紙醉金迷 08">
           <div>
-            <div class="track-title">08. 《我好想你》</div>
-            <div class="track-artist">蘇打綠</div>
-            <div class="track-use">📌 伽涅深情背刺芙羅拉</div>
+            <div class="track-title" spellcheck="false">08. 《我好想你》</div>
+            <div class="track-artist" spellcheck="false">蘇打綠</div>
+            <div class="track-use" spellcheck="false">📌 伽涅深情背刺芙羅拉</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/08_我好想你_蘇打綠.mp3', '《我好想你》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1370,9 +1398,9 @@
         </div>
         <div class="track-card card-liddell" data-search="Viva La Vida David Garrett 📌 利德爾舉報游泉聲明 第二幕_紙醉金迷 09">
           <div>
-            <div class="track-title">09. 《Viva La Vida》</div>
-            <div class="track-artist">David Garrett</div>
-            <div class="track-use">📌 利德爾舉報游泉聲明</div>
+            <div class="track-title" spellcheck="false">09. 《Viva La Vida》</div>
+            <div class="track-artist" spellcheck="false">David Garrett</div>
+            <div class="track-use" spellcheck="false">📌 利德爾舉報游泉聲明</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/09_Viva_La_Vida_David_Garrett.mp3', '《Viva La Vida》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1383,9 +1411,9 @@
         </div>
         <div class="track-card " data-search="O Come O Come Emmanuel Tommee Profitt 📌 默大卡紅燈拉最大 第二幕_紙醉金迷 10">
           <div>
-            <div class="track-title">10. 《O Come O Come Emmanuel》</div>
-            <div class="track-artist">Tommee Profitt</div>
-            <div class="track-use">📌 默大卡紅燈拉最大</div>
+            <div class="track-title" spellcheck="false">10. 《O Come O Come Emmanuel》</div>
+            <div class="track-artist" spellcheck="false">Tommee Profitt</div>
+            <div class="track-use" spellcheck="false">📌 默大卡紅燈拉最大</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/10_O_Come_O_Come_Emmanuel_Tommee_Profitt.mp3', '《O Come O Come Emmanuel》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1396,9 +1424,9 @@
         </div>
         <div class="track-card " data-search="Prelude Andria Rose 📌 默對質音樂 第二幕_紙醉金迷 11">
           <div>
-            <div class="track-title">11. 《Prelude》</div>
-            <div class="track-artist">Andria Rose</div>
-            <div class="track-use">📌 默對質音樂</div>
+            <div class="track-title" spellcheck="false">11. 《Prelude》</div>
+            <div class="track-artist" spellcheck="false">Andria Rose</div>
+            <div class="track-use" spellcheck="false">📌 默對質音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/11_Prelude_Andria_Rose.mp3', '《Prelude》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1409,9 +1437,9 @@
         </div>
         <div class="track-card " data-search="囚籠 北晝 📌 第二幕洗禮儀式 (31秒開燈) 第二幕_紙醉金迷 12">
           <div>
-            <div class="track-title">12. 《囚籠》</div>
-            <div class="track-artist">北晝</div>
-            <div class="track-use">📌 第二幕洗禮儀式 (31秒開燈)</div>
+            <div class="track-title" spellcheck="false">12. 《囚籠》</div>
+            <div class="track-artist" spellcheck="false">北晝</div>
+            <div class="track-use" spellcheck="false">📌 第二幕洗禮儀式 (31秒開燈)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/12_囚籠_北晝.mp3', '《囚籠》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1422,9 +1450,9 @@
         </div>
         <div class="track-card " data-search="Saint 聖女 鹽酸 📌 洗禮儀式梅林收尾 第二幕_紙醉金迷 13">
           <div>
-            <div class="track-title">13. 《Saint 聖女》</div>
-            <div class="track-artist">鹽酸</div>
-            <div class="track-use">📌 洗禮儀式梅林收尾</div>
+            <div class="track-title" spellcheck="false">13. 《Saint 聖女》</div>
+            <div class="track-artist" spellcheck="false">鹽酸</div>
+            <div class="track-use" spellcheck="false">📌 洗禮儀式梅林收尾</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/03_第二幕_紙醉金迷/13_Saint_聖女_鹽酸.mp3', '《Saint 聖女》', '【第二幕_紙醉金迷】', this)">▶ 播放</button>
@@ -1436,13 +1464,13 @@
       </div>
     </div>
     <div class="act-group" data-act="第三幕_十字架拷問">
-      <div class="act-title">【第三幕_十字架拷問】</div>
+      <div class="act-title" spellcheck="false">【第三幕_十字架拷問】</div>
       <div class="track-grid">
         <div class="track-card " data-search="Ojos Tristes Selena Gomez 📌 第三幕讀本背景 第三幕_十字架拷問 01">
           <div>
-            <div class="track-title">01. 《Ojos Tristes》</div>
-            <div class="track-artist">Selena Gomez</div>
-            <div class="track-use">📌 第三幕讀本背景</div>
+            <div class="track-title" spellcheck="false">01. 《Ojos Tristes》</div>
+            <div class="track-artist" spellcheck="false">Selena Gomez</div>
+            <div class="track-use" spellcheck="false">📌 第三幕讀本背景</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/01_Ojos_Tristes_Selena_Gomez.mp3', '《Ojos Tristes》', '【第三幕_十字架拷問】', this)">▶ 播放</button>
@@ -1451,11 +1479,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card " data-search="Fur Elise Faouzia 📌 梅林&明昔小黑屋搖晃高腳杯 第三幕_十字架拷問 02">
+        <div class="track-card " data-search="Fur Elise Faouzia 📌 梅林&amp;明昔小黑屋搖晃高腳杯 第三幕_十字架拷問 02">
           <div>
-            <div class="track-title">02. 《Fur Elise》</div>
-            <div class="track-artist">Faouzia</div>
-            <div class="track-use">📌 梅林&明昔小黑屋搖晃高腳杯</div>
+            <div class="track-title" spellcheck="false">02. 《Fur Elise》</div>
+            <div class="track-artist" spellcheck="false">Faouzia</div>
+            <div class="track-use" spellcheck="false">📌 梅林&amp;明昔小黑屋搖晃高腳杯</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/02_Fur_Elise_Faouzia.mp3', '《Fur Elise》', '【第三幕_十字架拷問】', this)">▶ 播放</button>
@@ -1466,9 +1494,9 @@
         </div>
         <div class="track-card " data-search="1to2 Elaine 📌 梅林心建背景 第三幕_十字架拷問 03">
           <div>
-            <div class="track-title">03. 《1to2》</div>
-            <div class="track-artist">Elaine</div>
-            <div class="track-use">📌 梅林心建背景</div>
+            <div class="track-title" spellcheck="false">03. 《1to2》</div>
+            <div class="track-artist" spellcheck="false">Elaine</div>
+            <div class="track-use" spellcheck="false">📌 梅林心建背景</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/03_1to2_Elaine.mp3', '《1to2》', '【第三幕_十字架拷問】', this)">▶ 播放</button>
@@ -1477,11 +1505,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="倦鳥 胡夏 📌 第三幕芙羅拉&利德爾心建對質小黑屋 第三幕_十字架拷問 04">
+        <div class="track-card card-liddell" data-search="倦鳥 胡夏 📌 第三幕芙羅拉&amp;利德爾心建對質小黑屋 第三幕_十字架拷問 04">
           <div>
-            <div class="track-title">04. 《倦鳥》</div>
-            <div class="track-artist">胡夏</div>
-            <div class="track-use">📌 第三幕芙羅拉&利德爾心建對質小黑屋</div>
+            <div class="track-title" spellcheck="false">04. 《倦鳥》</div>
+            <div class="track-artist" spellcheck="false">胡夏</div>
+            <div class="track-use" spellcheck="false">📌 第三幕芙羅拉&amp;利德爾心建對質小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/04_倦鳥_胡夏.mp3', '《倦鳥》', '【第三幕_十字架拷問】', this)">▶ 播放</button>
@@ -1492,9 +1520,9 @@
         </div>
         <div class="track-card " data-search="Moonsea Phildel 📌 第三幕舞台拷問前奏 第三幕_十字架拷問 05">
           <div>
-            <div class="track-title">05. 《Moonsea》</div>
-            <div class="track-artist">Phildel</div>
-            <div class="track-use">📌 第三幕舞台拷問前奏</div>
+            <div class="track-title" spellcheck="false">05. 《Moonsea》</div>
+            <div class="track-artist" spellcheck="false">Phildel</div>
+            <div class="track-use" spellcheck="false">📌 第三幕舞台拷問前奏</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/05_Moonsea_Phildel.mp3', '《Moonsea》', '【第三幕_十字架拷問】', this)">▶ 播放</button>
@@ -1505,9 +1533,9 @@
         </div>
         <div class="track-card " data-search="Doin’Time Lana Del Rey 📌 舞台十字架真心話拷問 (借位接吻與擁抱) 第三幕_十字架拷問 06">
           <div>
-            <div class="track-title">06. 《Doin’Time》</div>
-            <div class="track-artist">Lana Del Rey</div>
-            <div class="track-use">📌 舞台十字架真心話拷問 (借位接吻與擁抱)</div>
+            <div class="track-title" spellcheck="false">06. 《Doin’Time》</div>
+            <div class="track-artist" spellcheck="false">Lana Del Rey</div>
+            <div class="track-use" spellcheck="false">📌 舞台十字架真心話拷問 (借位接吻與擁抱)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/06_Doin’Time_Lana_Del_Rey.mp3', '《Doin’Time》', '【第三幕_十字架拷問】', this)">▶ 播放</button>
@@ -1518,9 +1546,9 @@
         </div>
         <div class="track-card " data-search="Still Here Digital Daggers 📌 第三幕伽涅孽主深情輸出 第三幕_十字架拷問 07">
           <div>
-            <div class="track-title">07. 《Still Here》</div>
-            <div class="track-artist">Digital Daggers</div>
-            <div class="track-use">📌 第三幕伽涅孽主深情輸出</div>
+            <div class="track-title" spellcheck="false">07. 《Still Here》</div>
+            <div class="track-artist" spellcheck="false">Digital Daggers</div>
+            <div class="track-use" spellcheck="false">📌 第三幕伽涅孽主深情輸出</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/07_Still_Here_Digital_Daggers.mp3', '《Still Here》', '【第三幕_十字架拷問】', this)">▶ 播放</button>
@@ -1531,9 +1559,9 @@
         </div>
         <div class="track-card " data-search="Saint 聖女 鹽酸 📌 洗禮儀式梅林收尾 第三幕_十字架拷問 08">
           <div>
-            <div class="track-title">08. 《Saint 聖女》</div>
-            <div class="track-artist">鹽酸</div>
-            <div class="track-use">📌 洗禮儀式梅林收尾</div>
+            <div class="track-title" spellcheck="false">08. 《Saint 聖女》</div>
+            <div class="track-artist" spellcheck="false">鹽酸</div>
+            <div class="track-use" spellcheck="false">📌 洗禮儀式梅林收尾</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/04_第三幕_十字架拷問/08_Saint_聖女_鹽酸.mp3', '《Saint 聖女》', '【第三幕_十字架拷問】', this)">▶ 播放</button>
@@ -1545,13 +1573,13 @@
       </div>
     </div>
     <div class="act-group" data-act="第四幕_情報共享">
-      <div class="act-title">【第四幕_情報共享】</div>
+      <div class="act-title" spellcheck="false">【第四幕_情報共享】</div>
       <div class="track-grid">
         <div class="track-card " data-search="Funny Mouth Charli xcx 📌 第四幕大廳情報共享背景 第四幕_情報共享 01">
           <div>
-            <div class="track-title">01. 《Funny Mouth》</div>
-            <div class="track-artist">Charli xcx</div>
-            <div class="track-use">📌 第四幕大廳情報共享背景</div>
+            <div class="track-title" spellcheck="false">01. 《Funny Mouth》</div>
+            <div class="track-artist" spellcheck="false">Charli xcx</div>
+            <div class="track-use" spellcheck="false">📌 第四幕大廳情報共享背景</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/05_第四幕_情報共享/01_Funny_Mouth_Charli_xcx.mp3', '《Funny Mouth》', '【第四幕_情報共享】', this)">▶ 播放</button>
@@ -1562,9 +1590,9 @@
         </div>
         <div class="track-card card-youquan" data-search="Devil May Cry Apashe 📌 游泉爆料墮落城假象 (01:15 反轉狂笑) 第四幕_情報共享 02">
           <div>
-            <div class="track-title">02. 《Devil May Cry》</div>
-            <div class="track-artist">Apashe</div>
-            <div class="track-use">📌 游泉爆料墮落城假象 (01:15 反轉狂笑)</div>
+            <div class="track-title" spellcheck="false">02. 《Devil May Cry》</div>
+            <div class="track-artist" spellcheck="false">Apashe</div>
+            <div class="track-use" spellcheck="false">📌 游泉爆料墮落城假象 (01:15 反轉狂笑)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/05_第四幕_情報共享/02_Devil_May_Cry_Apashe.mp3', '《Devil May Cry》', '【第四幕_情報共享】', this)">▶ 播放</button>
@@ -1575,9 +1603,9 @@
         </div>
         <div class="track-card " data-search="Downfall Brian Cheng 📌 第四幕結尾真相浮現 第四幕_情報共享 03">
           <div>
-            <div class="track-title">03. 《Downfall》</div>
-            <div class="track-artist">Brian Cheng</div>
-            <div class="track-use">📌 第四幕結尾真相浮現</div>
+            <div class="track-title" spellcheck="false">03. 《Downfall》</div>
+            <div class="track-artist" spellcheck="false">Brian Cheng</div>
+            <div class="track-use" spellcheck="false">📌 第四幕結尾真相浮現</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/05_第四幕_情報共享/03_Downfall_Brian_Cheng.mp3', '《Downfall》', '【第四幕_情報共享】', this)">▶ 播放</button>
@@ -1589,13 +1617,13 @@
       </div>
     </div>
     <div class="act-group" data-act="第五幕_CP換乘與覺醒">
-      <div class="act-title">【第五幕_CP換乘與覺醒】</div>
+      <div class="act-title" spellcheck="false">【第五幕_CP換乘與覺醒】</div>
       <div class="track-grid">
         <div class="track-card " data-search="羅曼蒂克烏托邦 門尼 📌 第五幕讀本背景 第五幕_CP換乘與覺醒 01">
           <div>
-            <div class="track-title">01. 《羅曼蒂克烏托邦》</div>
-            <div class="track-artist">門尼</div>
-            <div class="track-use">📌 第五幕讀本背景</div>
+            <div class="track-title" spellcheck="false">01. 《羅曼蒂克烏托邦》</div>
+            <div class="track-artist" spellcheck="false">門尼</div>
+            <div class="track-use" spellcheck="false">📌 第五幕讀本背景</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/01_羅曼蒂克烏托邦_門尼.mp3', '《羅曼蒂克烏托邦》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1604,11 +1632,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="1to2 Elaine 📌 第五幕游泉&芙羅拉換乘小黑屋 第五幕_CP換乘與覺醒 02">
+        <div class="track-card card-youquan" data-search="1to2 Elaine 📌 第五幕游泉&amp;芙羅拉換乘小黑屋 第五幕_CP換乘與覺醒 02">
           <div>
-            <div class="track-title">02. 《1to2》</div>
-            <div class="track-artist">Elaine</div>
-            <div class="track-use">📌 第五幕游泉&芙羅拉換乘小黑屋</div>
+            <div class="track-title" spellcheck="false">02. 《1to2》</div>
+            <div class="track-artist" spellcheck="false">Elaine</div>
+            <div class="track-use" spellcheck="false">📌 第五幕游泉&amp;芙羅拉換乘小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/02_1to2_Elaine.mp3', '《1to2》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1619,9 +1647,9 @@
         </div>
         <div class="track-card " data-search="Fur Elise Faouzia 📌 換乘對質音樂 第五幕_CP換乘與覺醒 03">
           <div>
-            <div class="track-title">03. 《Fur Elise》</div>
-            <div class="track-artist">Faouzia</div>
-            <div class="track-use">📌 換乘對質音樂</div>
+            <div class="track-title" spellcheck="false">03. 《Fur Elise》</div>
+            <div class="track-artist" spellcheck="false">Faouzia</div>
+            <div class="track-use" spellcheck="false">📌 換乘對質音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/03_Fur_Elise_Faouzia.mp3', '《Fur Elise》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1630,11 +1658,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="Destroy Myself For You Isabel LaRosa 📌 芙羅拉&利德爾爭執小黑屋 第五幕_CP換乘與覺醒 04">
+        <div class="track-card card-liddell" data-search="Destroy Myself For You Isabel LaRosa 📌 芙羅拉&amp;利德爾爭執小黑屋 第五幕_CP換乘與覺醒 04">
           <div>
-            <div class="track-title">04. 《Destroy Myself For You》</div>
-            <div class="track-artist">Isabel LaRosa</div>
-            <div class="track-use">📌 芙羅拉&利德爾爭執小黑屋</div>
+            <div class="track-title" spellcheck="false">04. 《Destroy Myself For You》</div>
+            <div class="track-artist" spellcheck="false">Isabel LaRosa</div>
+            <div class="track-use" spellcheck="false">📌 芙羅拉&amp;利德爾爭執小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/04_Destroy_Myself_For_You_Isabel_LaRosa.mp3', '《Destroy Myself For You》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1645,9 +1673,9 @@
         </div>
         <div class="track-card card-youquan" data-search="HEARTBEAT Isabel LaRosa 📌 游泉大廳高調換乘坐芙羅拉身邊 第五幕_CP換乘與覺醒 05">
           <div>
-            <div class="track-title">05. 《HEARTBEAT》</div>
-            <div class="track-artist">Isabel LaRosa</div>
-            <div class="track-use">📌 游泉大廳高調換乘坐芙羅拉身邊</div>
+            <div class="track-title" spellcheck="false">05. 《HEARTBEAT》</div>
+            <div class="track-artist" spellcheck="false">Isabel LaRosa</div>
+            <div class="track-use" spellcheck="false">📌 游泉大廳高調換乘坐芙羅拉身邊</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/05_HEARTBEAT_Isabel_LaRosa.mp3', '《HEARTBEAT》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1658,9 +1686,9 @@
         </div>
         <div class="track-card " data-search="Libera Adam Harris 📌 畔覺醒主神喊「我玩夠了」全場變紅燈 第五幕_CP換乘與覺醒 06">
           <div>
-            <div class="track-title">06. 《Libera》</div>
-            <div class="track-artist">Adam Harris</div>
-            <div class="track-use">📌 畔覺醒主神喊「我玩夠了」全場變紅燈</div>
+            <div class="track-title" spellcheck="false">06. 《Libera》</div>
+            <div class="track-artist" spellcheck="false">Adam Harris</div>
+            <div class="track-use" spellcheck="false">📌 畔覺醒主神喊「我玩夠了」全場變紅燈</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/06_Libera_Adam_Harris.mp3', '《Libera》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1671,9 +1699,9 @@
         </div>
         <div class="track-card " data-search="Favorite Color Is Blue Robert Delong 📌 默輸出主神音樂 第五幕_CP換乘與覺醒 07">
           <div>
-            <div class="track-title">07. 《Favorite Color Is Blue》</div>
-            <div class="track-artist">Robert Delong</div>
-            <div class="track-use">📌 默輸出主神音樂</div>
+            <div class="track-title" spellcheck="false">07. 《Favorite Color Is Blue》</div>
+            <div class="track-artist" spellcheck="false">Robert Delong</div>
+            <div class="track-use" spellcheck="false">📌 默輸出主神音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/07_Favorite_Color_Is_Blue_Robert_Delong.mp3', '《Favorite Color Is Blue》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1684,9 +1712,9 @@
         </div>
         <div class="track-card " data-search="Qiu Mansion Position Music 📌 第五幕撕逼爭執音樂 第五幕_CP換乘與覺醒 08">
           <div>
-            <div class="track-title">08. 《Qiu Mansion》</div>
-            <div class="track-artist">Position Music</div>
-            <div class="track-use">📌 第五幕撕逼爭執音樂</div>
+            <div class="track-title" spellcheck="false">08. 《Qiu Mansion》</div>
+            <div class="track-artist" spellcheck="false">Position Music</div>
+            <div class="track-use" spellcheck="false">📌 第五幕撕逼爭執音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/08_Qiu_Mansion_Position_Music.mp3', '《Qiu Mansion》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1697,9 +1725,9 @@
         </div>
         <div class="track-card " data-search="Freak Show Jake Daniels 📌 伽涅大卡輸出芙羅拉音樂 第五幕_CP換乘與覺醒 09">
           <div>
-            <div class="track-title">09. 《Freak Show》</div>
-            <div class="track-artist">Jake Daniels</div>
-            <div class="track-use">📌 伽涅大卡輸出芙羅拉音樂</div>
+            <div class="track-title" spellcheck="false">09. 《Freak Show》</div>
+            <div class="track-artist" spellcheck="false">Jake Daniels</div>
+            <div class="track-use" spellcheck="false">📌 伽涅大卡輸出芙羅拉音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/06_第五幕_CP換乘與覺醒/09_Freak_Show_Jake_Daniels.mp3', '《Freak Show》', '【第五幕_CP換乘與覺醒】', this)">▶ 播放</button>
@@ -1711,13 +1739,13 @@
       </div>
     </div>
     <div class="act-group" data-act="第六幕_告白與自裁">
-      <div class="act-title">【第六幕_告白與自裁】</div>
+      <div class="act-title" spellcheck="false">【第六幕_告白與自裁】</div>
       <div class="track-grid">
         <div class="track-card " data-search="菲尼克斯 吳琳珂 Moske 📌 第六幕讀本背景 第六幕_告白與自裁 01">
           <div>
-            <div class="track-title">01. 《菲尼克斯》</div>
-            <div class="track-artist">吳琳珂 Moske</div>
-            <div class="track-use">📌 第六幕讀本背景</div>
+            <div class="track-title" spellcheck="false">01. 《菲尼克斯》</div>
+            <div class="track-artist" spellcheck="false">吳琳珂 Moske</div>
+            <div class="track-use" spellcheck="false">📌 第六幕讀本背景</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/01_菲尼克斯_吳琳珂_Moske.mp3', '《菲尼克斯》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1726,11 +1754,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="Why Do You Love Me Charlotte Lawrence 📌 游泉&畔第六幕小黑屋真心告白 第六幕_告白與自裁 02">
+        <div class="track-card card-youquan" data-search="Why Do You Love Me Charlotte Lawrence 📌 游泉&amp;畔第六幕小黑屋真心告白 第六幕_告白與自裁 02">
           <div>
-            <div class="track-title">02. 《Why Do You Love Me》</div>
-            <div class="track-artist">Charlotte Lawrence</div>
-            <div class="track-use">📌 游泉&畔第六幕小黑屋真心告白</div>
+            <div class="track-title" spellcheck="false">02. 《Why Do You Love Me》</div>
+            <div class="track-artist" spellcheck="false">Charlotte Lawrence</div>
+            <div class="track-use" spellcheck="false">📌 游泉&amp;畔第六幕小黑屋真心告白</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/02_Why_Do_You_Love_Me_Charlotte_Lawrence.mp3', '《Why Do You Love Me》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1739,11 +1767,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-liddell" data-search="1to2 Elaine 📌 利德爾&芙羅拉第六幕小黑屋 第六幕_告白與自裁 03">
+        <div class="track-card card-liddell" data-search="1to2 Elaine 📌 利德爾&amp;芙羅拉第六幕小黑屋 第六幕_告白與自裁 03">
           <div>
-            <div class="track-title">03. 《1to2》</div>
-            <div class="track-artist">Elaine</div>
-            <div class="track-use">📌 利德爾&芙羅拉第六幕小黑屋</div>
+            <div class="track-title" spellcheck="false">03. 《1to2》</div>
+            <div class="track-artist" spellcheck="false">Elaine</div>
+            <div class="track-use" spellcheck="false">📌 利德爾&amp;芙羅拉第六幕小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/03_1to2_Elaine.mp3', '《1to2》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1752,11 +1780,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card " data-search="Fur Elise Faouzia 📌 梅林&伽涅&艾蕾小黑屋 第六幕_告白與自裁 04">
+        <div class="track-card " data-search="Fur Elise Faouzia 📌 梅林&amp;伽涅&amp;艾蕾小黑屋 第六幕_告白與自裁 04">
           <div>
-            <div class="track-title">04. 《Fur Elise》</div>
-            <div class="track-artist">Faouzia</div>
-            <div class="track-use">📌 梅林&伽涅&艾蕾小黑屋</div>
+            <div class="track-title" spellcheck="false">04. 《Fur Elise》</div>
+            <div class="track-artist" spellcheck="false">Faouzia</div>
+            <div class="track-use" spellcheck="false">📌 梅林&amp;伽涅&amp;艾蕾小黑屋</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/04_Fur_Elise_Faouzia.mp3', '《Fur Elise》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1765,24 +1793,24 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card " data-search="One & Only The Tech Thieves 📌 第六幕開場音樂 第六幕_告白與自裁 05">
+        <div class="track-card " data-search="One &amp; Only The Tech Thieves 📌 第六幕開場音樂 第六幕_告白與自裁 05">
           <div>
-            <div class="track-title">05. 《One & Only》</div>
-            <div class="track-artist">The Tech Thieves</div>
-            <div class="track-use">📌 第六幕開場音樂</div>
+            <div class="track-title" spellcheck="false">05. 《One &amp; Only》</div>
+            <div class="track-artist" spellcheck="false">The Tech Thieves</div>
+            <div class="track-use" spellcheck="false">📌 第六幕開場音樂</div>
           </div>
           <div class="track-actions">
-            <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/05_One_&_Only_The_Tech_Thieves.mp3', '《One & Only》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
-            <button class="btn-loop" onclick="playAudioWithLoop('音樂庫/07_第六幕_告白與自裁/05_One_&_Only_The_Tech_Thieves.mp3', '《One & Only》', '【第六幕_告白與自裁】', this)">🔁 循環</button>
+            <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/05_One_&amp;_Only_The_Tech_Thieves.mp3', '《One &amp; Only》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
+            <button class="btn-loop" onclick="playAudioWithLoop('音樂庫/07_第六幕_告白與自裁/05_One_&amp;_Only_The_Tech_Thieves.mp3', '《One &amp; Only》', '【第六幕_告白與自裁】', this)">🔁 循環</button>
             <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
         <div class="track-card " data-search="紅黑 小星星 Aurora 📌 第六幕艾蕾大卡音樂 第六幕_告白與自裁 06">
           <div>
-            <div class="track-title">06. 《紅黑》</div>
-            <div class="track-artist">小星星 Aurora</div>
-            <div class="track-use">📌 第六幕艾蕾大卡音樂</div>
+            <div class="track-title" spellcheck="false">06. 《紅黑》</div>
+            <div class="track-artist" spellcheck="false">小星星 Aurora</div>
+            <div class="track-use" spellcheck="false">📌 第六幕艾蕾大卡音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/06_紅黑_小星星_Aurora.mp3', '《紅黑》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1793,9 +1821,9 @@
         </div>
         <div class="track-card " data-search="Phoenix 英雄聯盟 📌 第六幕默高光音樂 (已更正指定網易雲 1396151812 英雄聯盟 2019 全球總決賽主題曲) 第六幕_告白與自裁 07">
           <div>
-            <div class="track-title">07. 《Phoenix》</div>
-            <div class="track-artist">英雄聯盟</div>
-            <div class="track-use">📌 第六幕默高光音樂 (已更正指定網易雲 1396151812 英雄聯盟 2019 全球總決賽主題曲)</div>
+            <div class="track-title" spellcheck="false">07. 《Phoenix》</div>
+            <div class="track-artist" spellcheck="false">英雄聯盟</div>
+            <div class="track-use" spellcheck="false">📌 第六幕默高光音樂&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/07_Phoenix_英雄聯盟.mp3', '《Phoenix》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1806,9 +1834,9 @@
         </div>
         <div class="track-card card-youquan" data-search="偏執面 張惠妹_蛋堡 📌 游泉舞台自裁名場面 (00:39阿妹唱完拉小音量，低語「我只想要你愛我」) [已更正對齊網易雲 28754100] 第六幕_告白與自裁 08">
           <div>
-            <div class="track-title">08. 《偏執面》（張惠妹 / 蛋堡）</div>
-            <div class="track-artist">張惠妹_蛋堡</div>
-            <div class="track-use">📌 游泉舞台自裁名場面 (00:39阿妹唱完拉小音量，低語「我只想要你愛我」) [已更正對齊網易雲 28754100]</div>
+            <div class="track-title" spellcheck="false">08. 《偏執面》（張惠妹 / 蛋堡）</div>
+            <div class="track-artist" spellcheck="false">張惠妹_蛋堡</div>
+            <div class="track-use" spellcheck="false">📌 游泉舞台自裁名場面 (00:39唱完後拉小音量，低語「我只想要你愛我」)&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/08_偏執面_張惠妹_蛋堡.mp3', '《偏執面》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1819,9 +1847,9 @@
         </div>
         <div class="track-card card-youquan" data-search="分身 單依純 📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人) 第六幕_告白與自裁 09">
           <div>
-            <div class="track-title">09. 《分身》</div>
-            <div class="track-artist">單依純</div>
-            <div class="track-use">📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人)</div>
+            <div class="track-title" spellcheck="false">09. 《分身》</div>
+            <div class="track-artist" spellcheck="false">單依純</div>
+            <div class="track-use" spellcheck="false">📌 游泉死後小黑屋閃回故事 (寓言：被困在愛裡的人)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/09_分身_單依純.mp3', '《分身》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1830,11 +1858,24 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
+        <div class="track-card " data-search="Large Glass Smash Sound Effects 103 📌 默默羽翼碎裂音效 (梅林喊「伽涅，是時候了」切進伽涅大卡) 第六幕_告白與自裁 09.5">
+          <div>
+            <div class="track-title" spellcheck="false">音效. 《Large Glass……Smash》</div>
+            <div class="track-artist" spellcheck="false">Sound Effects 103</div>
+            <div class="track-use" spellcheck="false">📌 默默高光結束羽翼碎裂音效 (切BGM進伽涅大卡)</div>
+          </div>
+          <div class="track-actions">
+            <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/09.5_Large_Glass_Smash_Sound_Effects_103.mp3', '《Large Glass……Smash》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
+            <button class="btn-loop" onclick="playAudioWithLoop('音樂庫/07_第六幕_告白與自裁/09.5_Large_Glass_Smash_Sound_Effects_103.mp3', '《Large Glass……Smash》', '【第六幕_告白與自裁】', this)">🔁 循環</button>
+            <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
+            <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
+          </div>
+        </div>
         <div class="track-card " data-search="CAROUSEL Neoni 📌 第六幕伽涅搞事音樂 [已更正對齊網易雲 1919713821] 第六幕_告白與自裁 10">
           <div>
-            <div class="track-title">10. 《CAROUSEL》（Neoni / AViVA）</div>
-            <div class="track-artist">Neoni</div>
-            <div class="track-use">📌 第六幕伽涅搞事音樂 [已更正對齊網易雲 1919713821]</div>
+            <div class="track-title" spellcheck="false">10. 《CAROUSEL》（Neoni / AViVA）</div>
+            <div class="track-artist" spellcheck="false">Neoni</div>
+            <div class="track-use" spellcheck="false">📌 第六幕伽涅搞事音樂&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/10_CAROUSEL_Neoni.mp3', '《CAROUSEL》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1845,9 +1886,9 @@
         </div>
         <div class="track-card card-liddell" data-search="門鎖 莫非定律樂團 📌 第六幕利德爾告別演繹 第六幕_告白與自裁 11">
           <div>
-            <div class="track-title">11. 《門鎖》</div>
-            <div class="track-artist">莫非定律樂團</div>
-            <div class="track-use">📌 第六幕利德爾告別演繹</div>
+            <div class="track-title" spellcheck="false">11. 《門鎖》</div>
+            <div class="track-artist" spellcheck="false">莫非定律樂團</div>
+            <div class="track-use" spellcheck="false">📌 第六幕利德爾告別演繹</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/11_門鎖_莫非定律樂團.mp3', '《門鎖》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1858,9 +1899,9 @@
         </div>
         <div class="track-card " data-search="Gaslight 田冰冰 📌 第六幕梅林收尾 [已更正對齊網易雲 2021156345] 第六幕_告白與自裁 12">
           <div>
-            <div class="track-title">12. 《Gaslight》（酩酊之罪 - 田冰冰）</div>
-            <div class="track-artist">田冰冰</div>
-            <div class="track-use">📌 第六幕梅林收尾 [已更正對齊網易雲 2021156345]</div>
+            <div class="track-title" spellcheck="false">12. 《Gaslight》（酩酊之罪 - 田冰冰）</div>
+            <div class="track-artist" spellcheck="false">田冰冰</div>
+            <div class="track-use" spellcheck="false">📌 第六幕梅林收尾&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/12_Gaslight_田冰冰.mp3', '《Gaslight》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
@@ -1872,13 +1913,13 @@
       </div>
     </div>
     <div class="act-group" data-act="結局幕">
-      <div class="act-title">【結局幕】</div>
+      <div class="act-title" spellcheck="false">【結局幕】</div>
       <div class="track-grid">
         <div class="track-card " data-search="巴拉萊卡 門尼 📌 結局幕讀本背景 結局幕 01">
           <div>
-            <div class="track-title">01. 《巴拉萊卡》</div>
-            <div class="track-artist">門尼</div>
-            <div class="track-use">📌 結局幕讀本背景</div>
+            <div class="track-title" spellcheck="false">01. 《巴拉萊卡》</div>
+            <div class="track-artist" spellcheck="false">門尼</div>
+            <div class="track-use" spellcheck="false">📌 結局幕讀本背景</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/01_巴拉萊卡_門尼.mp3', '《巴拉萊卡》', '【結局幕】', this)">▶ 播放</button>
@@ -1889,9 +1930,9 @@
         </div>
         <div class="track-card card-liddell" data-search="門鎖 莫非定律樂團 📌 結局幕利德爾小黑屋獨白 結局幕 02">
           <div>
-            <div class="track-title">02. 《門鎖》</div>
-            <div class="track-artist">莫非定律樂團</div>
-            <div class="track-use">📌 結局幕利德爾小黑屋獨白</div>
+            <div class="track-title" spellcheck="false">02. 《門鎖》</div>
+            <div class="track-artist" spellcheck="false">莫非定律樂團</div>
+            <div class="track-use" spellcheck="false">📌 結局幕利德爾小黑屋獨白</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/02_門鎖_莫非定律樂團.mp3', '《門鎖》', '【結局幕】', this)">▶ 播放</button>
@@ -1902,9 +1943,9 @@
         </div>
         <div class="track-card " data-search="Inspirational Shimmering lumine wave 📌 結局幕流程音樂 結局幕 03">
           <div>
-            <div class="track-title">03. 《Inspirational Shimmering》</div>
-            <div class="track-artist">lumine wave</div>
-            <div class="track-use">📌 結局幕流程音樂</div>
+            <div class="track-title" spellcheck="false">03. 《Inspirational Shimmering》</div>
+            <div class="track-artist" spellcheck="false">lumine wave</div>
+            <div class="track-use" spellcheck="false">📌 結局幕流程音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/03_Inspirational_Shimmering_lumine_wave.mp3', '《Inspirational Shimmering》', '【結局幕】', this)">▶ 播放</button>
@@ -1915,9 +1956,9 @@
         </div>
         <div class="track-card " data-search="Lighthouse The Tech Thieves 📌 結局幕默大卡音樂 結局幕 04">
           <div>
-            <div class="track-title">04. 《Lighthouse》</div>
-            <div class="track-artist">The Tech Thieves</div>
-            <div class="track-use">📌 結局幕默大卡音樂</div>
+            <div class="track-title" spellcheck="false">04. 《Lighthouse》</div>
+            <div class="track-artist" spellcheck="false">The Tech Thieves</div>
+            <div class="track-use" spellcheck="false">📌 結局幕默大卡音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/04_Lighthouse_The_Tech_Thieves.mp3', '《Lighthouse》', '【結局幕】', this)">▶ 播放</button>
@@ -1928,9 +1969,9 @@
         </div>
         <div class="track-card " data-search="Shadow Livingston 📌 結局幕伽涅大卡音樂 (00:32 開燈) 結局幕 05">
           <div>
-            <div class="track-title">05. 《Shadow》</div>
-            <div class="track-artist">Livingston</div>
-            <div class="track-use">📌 結局幕伽涅大卡音樂 (00:32 開燈)</div>
+            <div class="track-title" spellcheck="false">05. 《Shadow》</div>
+            <div class="track-artist" spellcheck="false">Livingston</div>
+            <div class="track-use" spellcheck="false">📌 結局幕伽涅大卡音樂 (00:32 開燈)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/05_Shadow_Livingston.mp3', '《Shadow》', '【結局幕】', this)">▶ 播放</button>
@@ -1941,9 +1982,9 @@
         </div>
         <div class="track-card card-liddell" data-search="倦鳥 胡夏 📌 結局幕利德爾死亡演繹音樂 結局幕 06">
           <div>
-            <div class="track-title">06. 《倦鳥》</div>
-            <div class="track-artist">胡夏</div>
-            <div class="track-use">📌 結局幕利德爾死亡演繹音樂</div>
+            <div class="track-title" spellcheck="false">06. 《倦鳥》</div>
+            <div class="track-artist" spellcheck="false">胡夏</div>
+            <div class="track-use" spellcheck="false">📌 結局幕利德爾死亡演繹音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/06_倦鳥_胡夏.mp3', '《倦鳥》', '【結局幕】', this)">▶ 播放</button>
@@ -1954,9 +1995,9 @@
         </div>
         <div class="track-card " data-search="未必要活在亢奮里 兀兀 📌 結局幕艾蕾大卡音樂 [已更正對齊網易雲 2020593172] 結局幕 07">
           <div>
-            <div class="track-title">07. 《未必要活在振奮里》</div>
-            <div class="track-artist">兀兀</div>
-            <div class="track-use">📌 結局幕艾蕾大卡音樂 [已更正對齊網易雲 2020593172]</div>
+            <div class="track-title" spellcheck="false">07. 《未必要活在振奮里》</div>
+            <div class="track-artist" spellcheck="false">兀兀</div>
+            <div class="track-use" spellcheck="false">📌 結局幕艾蕾大卡音樂&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/07_未必要活在亢奮里_兀兀.mp3', '《未必要活在亢奮里》', '【結局幕】', this)">▶ 播放</button>
@@ -1967,9 +2008,9 @@
         </div>
         <div class="track-card " data-search="DARKSIDE Neoni 📌 明昔結局幕身份反轉音樂 結局幕 08">
           <div>
-            <div class="track-title">08. 《DARKSIDE》</div>
-            <div class="track-artist">Neoni</div>
-            <div class="track-use">📌 明昔結局幕身份反轉音樂</div>
+            <div class="track-title" spellcheck="false">08. 《DARKSIDE》</div>
+            <div class="track-artist" spellcheck="false">Neoni</div>
+            <div class="track-use" spellcheck="false">📌 明昔結局幕身份反轉音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/08_結局幕/08_DARKSIDE_Neoni.mp3', '《DARKSIDE》', '【結局幕】', this)">▶ 播放</button>
@@ -1981,13 +2022,13 @@
       </div>
     </div>
     <div class="act-group" data-act="結局大卡與謝幕">
-      <div class="act-title">【結局大卡與謝幕】</div>
+      <div class="act-title" spellcheck="false">【結局大卡與謝幕】</div>
       <div class="track-grid">
         <div class="track-card " data-search="Funny Mouth Charli xcx 📌 結局大卡前背景音樂 結局大卡與謝幕 01">
           <div>
-            <div class="track-title">01. 《Funny Mouth》</div>
-            <div class="track-artist">Charli xcx</div>
-            <div class="track-use">📌 結局大卡前背景音樂</div>
+            <div class="track-title" spellcheck="false">01. 《Funny Mouth》</div>
+            <div class="track-artist" spellcheck="false">Charli xcx</div>
+            <div class="track-use" spellcheck="false">📌 結局大卡前背景音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/01_Funny_Mouth_Charli_xcx.mp3', '《Funny Mouth》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -1998,9 +2039,9 @@
         </div>
         <div class="track-card " data-search="羅曼蒂克烏托邦 門尼 📌 結局大卡讀本音樂 結局大卡與謝幕 02">
           <div>
-            <div class="track-title">02. 《羅曼蒂克烏托邦》</div>
-            <div class="track-artist">門尼</div>
-            <div class="track-use">📌 結局大卡讀本音樂</div>
+            <div class="track-title" spellcheck="false">02. 《羅曼蒂克烏托邦》</div>
+            <div class="track-artist" spellcheck="false">門尼</div>
+            <div class="track-use" spellcheck="false">📌 結局大卡讀本音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/02_羅曼蒂克烏托邦_門尼.mp3', '《羅曼蒂克烏托邦》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2011,9 +2052,9 @@
         </div>
         <div class="track-card " data-search="Saint 聖女 鹽酸 📌 結局大卡幕流程音樂 結局大卡與謝幕 03">
           <div>
-            <div class="track-title">03. 《Saint 聖女》</div>
-            <div class="track-artist">鹽酸</div>
-            <div class="track-use">📌 結局大卡幕流程音樂</div>
+            <div class="track-title" spellcheck="false">03. 《Saint 聖女》</div>
+            <div class="track-artist" spellcheck="false">鹽酸</div>
+            <div class="track-use" spellcheck="false">📌 結局大卡幕流程音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/03_Saint_聖女_鹽酸.mp3', '《Saint 聖女》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2024,9 +2065,9 @@
         </div>
         <div class="track-card " data-search="Freak Show Jake Daniels 📌 芙羅拉結局大卡幕音樂 結局大卡與謝幕 04">
           <div>
-            <div class="track-title">04. 《Freak Show》</div>
-            <div class="track-artist">Jake Daniels</div>
-            <div class="track-use">📌 芙羅拉結局大卡幕音樂</div>
+            <div class="track-title" spellcheck="false">04. 《Freak Show》</div>
+            <div class="track-artist" spellcheck="false">Jake Daniels</div>
+            <div class="track-use" spellcheck="false">📌 芙羅拉結局大卡幕音樂</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/04_Freak_Show_Jake_Daniels.mp3', '《Freak Show》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2035,11 +2076,11 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
-        <div class="track-card card-youquan" data-search="分身 單依純 📌 畔&游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘) 結局大卡與謝幕 05">
+        <div class="track-card card-youquan" data-search="分身 單依純 📌 畔&amp;游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘) 結局大卡與謝幕 05">
           <div>
-            <div class="track-title">05. 《分身》</div>
-            <div class="track-artist">單依純</div>
-            <div class="track-use">📌 畔&游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘)</div>
+            <div class="track-title" spellcheck="false">05. 《分身》</div>
+            <div class="track-artist" spellcheck="false">單依純</div>
+            <div class="track-use" spellcheck="false">📌 畔&amp;游泉結局大卡幕小黑屋 (展示手機相冊照片 5分鐘)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/05_分身_單依純.mp3', '《分身》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2050,9 +2091,9 @@
         </div>
         <div class="track-card " data-search="一個像秋天一個像夏天 范瑋琪 📌 結局大卡幕艾蕾明昔閨蜜儀式 結局大卡與謝幕 06">
           <div>
-            <div class="track-title">06. 《一個像秋天一個像夏天》</div>
-            <div class="track-artist">范瑋琪</div>
-            <div class="track-use">📌 結局大卡幕艾蕾明昔閨蜜儀式</div>
+            <div class="track-title" spellcheck="false">06. 《一個像秋天一個像夏天》</div>
+            <div class="track-artist" spellcheck="false">范瑋琪</div>
+            <div class="track-use" spellcheck="false">📌 結局大卡幕艾蕾明昔閨蜜儀式</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/06_一個像秋天一個像夏天_范瑋琪.mp3', '《一個像秋天一個像夏天》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2063,9 +2104,9 @@
         </div>
         <div class="track-card card-liddell" data-search="不見高樓 羔羊羔兒 📌 結局大卡幕利德爾反轉音樂前奏 [已更正對齊網易雲 3316564781] 結局大卡與謝幕 07">
           <div>
-            <div class="track-title">07. 《不見高樓》（蒸羊羔兒）</div>
-            <div class="track-artist">羔羊羔兒</div>
-            <div class="track-use">📌 結局大卡幕利德爾反轉音樂前奏 [已更正對齊網易雲 3316564781]</div>
+            <div class="track-title" spellcheck="false">07. 《不見高樓》（蒸羊羔兒）</div>
+            <div class="track-artist" spellcheck="false">羔羊羔兒</div>
+            <div class="track-use" spellcheck="false">📌 結局大卡幕利德爾反轉音樂前奏&nbsp;</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/07_不見高樓_蒸羊羔兒.mp3', '《不見高樓》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2076,9 +2117,9 @@
         </div>
         <div class="track-card card-liddell" data-search="抓蝴蝶 艾怡良 📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈) 結局大卡與謝幕 08">
           <div>
-            <div class="track-title">08. 《抓蝴蝶》</div>
-            <div class="track-artist">艾怡良</div>
-            <div class="track-use">📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈)</div>
+            <div class="track-title" spellcheck="false">08. 《抓蝴蝶》</div>
+            <div class="track-artist" spellcheck="false">艾怡良</div>
+            <div class="track-use" spellcheck="false">📌 利德爾舞台十字架「我不裝了」傲慢大反轉 (掏出紙心 2秒後紅燈)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/08_抓蝴蝶_艾怡良.mp3', '《抓蝴蝶》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2089,9 +2130,9 @@
         </div>
         <div class="track-card " data-search="好日子 宋祖英 📌 默舉行梅林追悼會 (捧相框搞笑流) 結局大卡與謝幕 09">
           <div>
-            <div class="track-title">09. 《好日子》</div>
-            <div class="track-artist">宋祖英</div>
-            <div class="track-use">📌 默舉行梅林追悼會 (捧相框搞笑流)</div>
+            <div class="track-title" spellcheck="false">09. 《好日子》</div>
+            <div class="track-artist" spellcheck="false">宋祖英</div>
+            <div class="track-use" spellcheck="false">📌 默舉行梅林追悼會 (捧相框)</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/09_好日子_宋祖英.mp3', '《好日子》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2102,9 +2143,9 @@
         </div>
         <div class="track-card " data-search="看門狗 門尼 📌 關簾三位 DM 一一登場鞠躬致謝詞 結局大卡與謝幕 10">
           <div>
-            <div class="track-title">10. 《看門狗》</div>
-            <div class="track-artist">門尼</div>
-            <div class="track-use">📌 關簾三位 DM 一一登場鞠躬致謝詞</div>
+            <div class="track-title" spellcheck="false">10. 《看門狗》</div>
+            <div class="track-artist" spellcheck="false">門尼</div>
+            <div class="track-use" spellcheck="false">📌 關簾三位 DM 一一登場鞠躬致謝詞</div>
           </div>
           <div class="track-actions">
             <button class="btn-play" onclick="playAudio('音樂庫/09_結局大卡與謝幕/10_看門狗_門尼.mp3', '《看門狗》', '【結局大卡與謝幕】', this)">▶ 播放</button>
@@ -2118,55 +2159,37 @@
   </div>
 
   <!-- Soundboard Sticky Bar -->
-  <div id="soundboard-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: rgba(9, 14, 20, 0.96); border-top: 2px solid var(--primary-color); box-shadow: 0 -4px 30px rgba(0,0,0,0.8); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; z-index: 1000;">
-    <div class="player-left" style="display: flex; align-items: center; gap: 1rem; width: 28%;">
-      <div class="track-icon-wrapper" style="width: 44px; height: 44px; border-radius: 10px; background: rgba(214, 28, 78, 0.15); border: 1px solid var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--primary-color);">🎵</div>
-      <div class="player-track-info" style="display: flex; flex-direction: column; overflow: hidden;">
-        <div id="sb-track-title" style="font-size: 0.95rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">未在播放音樂</div>
-        <div id="sb-track-act" style="font-size: 0.78rem; color: var(--primary-color); opacity: 0.9;">點擊上方任何音軌即可隨時切歌</div>
-      </div>
-    </div>
+  <div id="soundboard-bar">
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
+      <button id="sb-prev-btn" onclick="playPrev()" title="上一首 (P / ←)" style="
+        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: white; width: 40px; height: 40px;
+        border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      ">⏮</button>
+      
+      <button id="sb-play-btn" onclick="togglePlay()" title="播放/暫停 (Space)" style="
+        background: var(--primary-color); border: none; color: white; width: 48px; height: 48px;
+        border-radius: 50%; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
+      ">▶</button>
+      
+      <button id="sb-stop-btn" onclick="stopAudio()" title="停止" style="
+        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: white; width: 40px; height: 40px;
+        border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      ">⏹</button>
 
-    <div class="player-center" style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 44%;">
-      <div class="player-controls" style="display: flex; align-items: center; gap: 0.8rem;">
-        <button class="ctrl-btn" onclick="playPrev()" title="上一首 (P)">⏮</button>
-        <button class="ctrl-btn" onclick="seekBy(-5)" title="倒退 5 秒 (←)">⏪</button>
-        <button class="ctrl-btn play-main" id="sb-play-btn" onclick="togglePlay()" title="播放/暫停 (Space)">▶</button>
-        <button class="ctrl-btn" onclick="seekBy(5)" title="快進 5 秒 (→)">⏩</button>
-        <button class="ctrl-btn" onclick="playNext()" title="下一首 (N)">⏭</button>
-        <button class="ctrl-btn" id="sb-loop-btn" onclick="toggleLoop()" title="單曲循環 (L)">🔁</button>
-      </div>
+      <button id="sb-next-btn" onclick="playNext()" title="下一首 (N / →)" style="
+        background: var(--primary-color); border: none; color: white; padding: 0.45rem 0.95rem;
+        border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; gap: 0.3rem;
+      ">⏭ 下一首</button>
 
-      <div class="progress-row" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
-        <span class="time-lbl" id="sb-time-cur" style="font-size: 0.75rem; font-family: monospace; color: #94a3b8; min-width: 38px;">0:00</span>
-        <input type="range" id="sb-seek" class="progress-bar" value="0" min="0" max="100" style="flex: 1; height: 8px; accent-color: var(--primary-color); cursor: pointer; border-radius: 4px;">
-        <span class="time-lbl" id="sb-time-tot" style="font-size: 0.75rem; font-family: monospace; color: #94a3b8; min-width: 38px;">0:00</span>
-      </div>
-    </div>
+      <button id="sb-loop-btn" onclick="toggleLoop()" title="開關重複播放 / 單曲循環 (L)" style="
+        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-color);
+        padding: 0.45rem 0.95rem; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
+      ">🔁 重複播放：關</button>
 
-    <div class="player-right" style="display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; width: 28%;">
-      <div class="eq-bars paused" id="eq-visualizer">
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
+      <div style="margin-left: 0.5rem;">
+        <div id="sb-track-title" style="font-weight: bold; font-size: 1.05rem; color: #fff;">未在播放音樂</div>
+        <div id="sb-track-act" style="font-size: 0.8rem; opacity: 0.7; color: var(--accent-color);">點擊上方任何音軌即可隨時切歌</div>
       </div>
-
-      <div class="vol-row" style="display: flex; align-items: center; gap: 0.5rem;">
-        <button class="ctrl-btn" id="sb-mute-btn" onclick="toggleMute()" title="靜音 (M)">🔊</button>
-        <input type="range" id="sb-volume" class="vol-bar" min="0" max="100" value="85" oninput="setVolume(this.value)" style="width: 90px; height: 5px; accent-color: var(--primary-color); cursor: pointer;">
-      </div>
-    </div>
-  </div>
-
-  <div class="shortcuts-hint">
-    <span><span class="kbd">Space</span> 播放 / 暫停</span>
-    <span><span class="kbd">Esc</span> 3秒柔和淡出停止</span>
-    <span><span class="kbd">M</span> 靜音 / 恢復</span>
-    <span><span class="kbd">←</span> / <span class="kbd">→</span> 後退 / 前進 5 秒</span>
-    <span><span class="kbd">N</span> 下一首</span>
-    <span><span class="kbd">P</span> 上一首</span>
-  </div>
     </div>
 
     <div style="display: flex; align-items: center; gap: 1.5rem;">
@@ -2191,51 +2214,26 @@
     let fadeTimer = null;
     let currentTrackIndex = -1;
     let isLoop = false;
-    let isSeeking = false;
-    let isMuted = false;
-    let savedVolume = 0.85;
 
-    const eqVisualizer = document.getElementById('eq-visualizer');
-    const sbSeek = document.getElementById('sb-seek');
-    const sbMuteBtn = document.getElementById('sb-mute-btn');
+    function switchView(mode) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('view-dual').style.display = 'none';
+      document.getElementById('view-youquan').style.display = 'none';
+      document.getElementById('view-liddell').style.display = 'none';
+      document.getElementById('view-all').style.display = 'none';
 
-    if (sbSeek) {
-      sbSeek.addEventListener('mousedown', () => { isSeeking = true; });
-      sbSeek.addEventListener('touchstart', () => { isSeeking = true; });
-      sbSeek.addEventListener('input', (e) => {
-        isSeeking = true;
-        if (player.duration && !isNaN(player.duration)) {
-          const val = parseFloat(e.target.value);
-          const targetTime = (val / 100) * player.duration;
-          document.getElementById('sb-time-cur').innerText = formatTime(targetTime);
-          try { player.currentTime = targetTime; } catch(err) {}
-        }
-      });
-      const applySeek = (val) => {
-        if (player.duration && !isNaN(player.duration)) {
-          const targetTime = (parseFloat(val) / 100) * player.duration;
-          try { player.currentTime = targetTime; } catch(err) {}
-        }
-        setTimeout(() => { isSeeking = false; }, 150);
-      };
-      sbSeek.addEventListener('change', (e) => applySeek(e.target.value));
-      sbSeek.addEventListener('mouseup', (e) => applySeek(e.target.value));
-      sbSeek.addEventListener('touchend', (e) => applySeek(e.target.value));
-    }
-
-    function formatTime(seconds) {
-      if (isNaN(seconds)) return "0:00";
-      const m = Math.floor(seconds / 60);
-      const s = Math.floor(seconds % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-
-    function updatePlayStateUI(isPlaying) {
-      const mainBtn = document.getElementById('sb-play-btn');
-      if (mainBtn) mainBtn.innerText = isPlaying ? "⏸" : "▶";
-      if (eqVisualizer) {
-        if (isPlaying) eqVisualizer.classList.remove('paused');
-        else eqVisualizer.classList.add('paused');
+      if (mode === 'dual') {
+        document.getElementById('view-dual').style.display = 'grid';
+        event.target.classList.add('active');
+      } else if (mode === 'youquan') {
+        document.getElementById('view-youquan').style.display = 'block';
+        event.target.classList.add('active');
+      } else if (mode === 'liddell') {
+        document.getElementById('view-liddell').style.display = 'block';
+        event.target.classList.add('active');
+      } else if (mode === 'all') {
+        document.getElementById('view-all').style.display = 'block';
+        event.target.classList.add('active');
       }
     }
 
@@ -2243,14 +2241,15 @@
       if (fadeTimer) clearInterval(fadeTimer);
 
       player.pause();
-      player.src = encodeURI(src);
+      player.src = src;
       player.loop = isLoop;
-      player.volume = parseFloat(document.getElementById('sb-volume').value) / 100;
+      player.volume = document.getElementById('sb-volume').value / 100;
 
       player.play().then(() => {
-        updatePlayStateUI(true);
+        document.getElementById('sb-play-btn').innerText = "⏸";
       }).catch(err => console.log(err));
 
+      // Update card active styling
       const allCards = Array.from(document.querySelectorAll('.track-card'));
       allCards.forEach(c => c.classList.remove('playing'));
 
@@ -2345,9 +2344,16 @@
       isLoop = !isLoop;
       player.loop = isLoop;
       const loopBtn = document.getElementById('sb-loop-btn');
-      if (loopBtn) {
-        loopBtn.style.color = isLoop ? 'var(--primary-color)' : '#fff';
-        loopBtn.style.borderColor = isLoop ? 'var(--primary-color)' : 'var(--border-color)';
+      if (isLoop) {
+        loopBtn.innerText = "🔂 單曲重複：開";
+        loopBtn.style.background = "var(--primary-color)";
+        loopBtn.style.color = "#fff";
+        loopBtn.style.borderColor = "var(--primary-color)";
+      } else {
+        loopBtn.innerText = "🔁 重複播放：關";
+        loopBtn.style.background = "rgba(255,255,255,0.1)";
+        loopBtn.style.color = "var(--text-color)";
+        loopBtn.style.borderColor = "var(--border-color)";
       }
     }
 
@@ -2355,30 +2361,10 @@
       if (!player.src) return;
       if (player.paused) {
         player.play();
-        updatePlayStateUI(true);
+        document.getElementById('sb-play-btn').innerText = "⏸";
       } else {
         player.pause();
-        updatePlayStateUI(false);
-      }
-    }
-
-    function seekBy(seconds) {
-      if (!player.duration || isNaN(player.duration)) return;
-      player.currentTime = Math.min(Math.max(player.currentTime + seconds, 0), player.duration);
-    }
-
-    function toggleMute() {
-      if (isMuted) {
-        setVolume(savedVolume * 100);
-        document.getElementById('sb-volume').value = savedVolume * 100;
-        isMuted = false;
-        if (sbMuteBtn) sbMuteBtn.innerText = '🔊';
-      } else {
-        savedVolume = player.volume;
-        setVolume(0);
-        document.getElementById('sb-volume').value = 0;
-        isMuted = true;
-        if (sbMuteBtn) sbMuteBtn.innerText = '🔇';
+        document.getElementById('sb-play-btn').innerText = "▶";
       }
     }
 
@@ -2386,7 +2372,7 @@
       if (fadeTimer) clearInterval(fadeTimer);
       player.pause();
       player.currentTime = 0;
-      updatePlayStateUI(false);
+      document.getElementById('sb-play-btn').innerText = "▶";
       document.getElementById('sb-track-title').innerText = "未在播放音樂";
       document.getElementById('sb-track-act').innerText = "點擊任意音軌即可切歌";
       document.querySelectorAll('.track-card').forEach(c => c.classList.remove('playing'));
@@ -2395,7 +2381,7 @@
     function fadeOutAudio(durationSec) {
       if (player.paused) return;
       if (fadeTimer) clearInterval(fadeTimer);
-      let stepTime = 50;
+      let stepTime = 100;
       let steps = (durationSec * 1000) / stepTime;
       let volStep = player.volume / steps;
 
@@ -2406,26 +2392,21 @@
           player.volume = 0;
           player.pause();
           clearInterval(fadeTimer);
-          updatePlayStateUI(false);
-          player.volume = parseFloat(document.getElementById('sb-volume').value) / 100;
+          document.getElementById('sb-play-btn').innerText = "▶";
         }
       }, stepTime);
     }
 
-    function setVolume(v) {
-      const vol = parseFloat(v) / 100;
-      player.volume = vol;
-      isMuted = vol === 0;
-      if (sbMuteBtn) sbMuteBtn.innerText = isMuted ? '🔇' : (vol < 0.5 ? '🔉' : '🔊');
-    }
+    function setVolume(v) { player.volume = v / 100; }
+    function seekAudio(v) { if (player.duration) player.currentTime = (v / 100) * player.duration; }
 
     player.addEventListener('timeupdate', () => {
-      if (player.duration && !isNaN(player.duration)) {
-        if (!isSeeking) {
-          document.getElementById('sb-time-cur').innerText = formatTime(player.currentTime);
-          document.getElementById('sb-seek').value = (player.currentTime / player.duration) * 100;
-        }
-        document.getElementById('sb-time-tot').innerText = formatTime(player.duration);
+      if (player.duration) {
+        let cur = Math.floor(player.currentTime);
+        let tot = Math.floor(player.duration);
+        document.getElementById('sb-time-cur').innerText = String(Math.floor(cur/60)).padStart(2,'0') + ":" + String(cur%60).padStart(2,'0');
+        document.getElementById('sb-time-tot').innerText = String(Math.floor(tot/60)).padStart(2,'0') + ":" + String(tot%60).padStart(2,'0');
+        document.getElementById('sb-seek').value = (player.currentTime / player.duration) * 100;
       }
     });
 
@@ -2477,5 +2458,6 @@
       }
     });
   </script>
-</body>
-</html>
+
+
+</body></html>
