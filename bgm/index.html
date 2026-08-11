@@ -126,6 +126,86 @@
     }
     .btn-fade:hover { background: rgba(255,255,255,0.2); }
 
+    
+    .ctrl-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    .ctrl-btn:hover {
+      background: rgba(214, 28, 78, 0.25);
+      border-color: var(--primary-color);
+    }
+    .ctrl-btn.play-main {
+      width: 44px; height: 44px;
+      background: var(--primary-color) !important;
+      color: #fff !important;
+      font-size: 1.1rem !important;
+      border: none !important;
+      box-shadow: 0 0 15px rgba(214, 28, 78, 0.5) !important;
+    }
+    .ctrl-btn.play-main:hover {
+      background: #f23b6c !important;
+      transform: scale(1.05);
+    }
+
+    .eq-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 18px;
+    }
+    .eq-bar {
+      width: 3px;
+      background: var(--primary-color);
+      border-radius: 2px;
+      animation: bounce 1s ease-in-out infinite alternate;
+    }
+    .eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
+    .eq-bar:nth-child(2) { height: 80%; animation-delay: 0.3s; }
+    .eq-bar:nth-child(3) { height: 100%; animation-delay: 0.2s; }
+    .eq-bar:nth-child(4) { height: 60%; animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0% { height: 20%; }
+      100% { height: 100%; }
+    }
+    .paused .eq-bar {
+      animation: none !important;
+      height: 30% !important;
+    }
+
+    .shortcuts-hint {
+      margin-top: 2rem;
+      margin-bottom: 5rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+      border: 1px dashed var(--border-color);
+      font-size: 0.8rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .kbd {
+      background: rgba(255,255,255,0.1);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: var(--primary-color);
+      font-family: monospace;
+      font-weight: bold;
+    }
+
     /* Sticky Player Bar */
     #soundboard-bar {
       position: fixed; bottom: 0; left: 0; right: 0; height: 75px;
@@ -156,41 +236,9 @@
       background: rgba(214, 28, 78, 0.12); border: 1px solid var(--primary-color);
       padding: 0.6rem 1.2rem; border-radius: 10px; margin-bottom: 1.2rem; flex-wrap: wrap;
     }
-    /* Toast Notification */
-    #toast-container {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      pointer-events: none;
-    }
-    .toast-msg {
-      background: rgba(214, 28, 78, 0.95);
-      color: #fff;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: bold;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-      animation: toastFadeIn 0.3s ease, toastFadeOut 0.3s ease 2.2s forwards;
-    }
-    @keyframes toastFadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes toastFadeOut {
-      from { opacity: 1; transform: translateY(0); }
-      to { opacity: 0; transform: translateY(-20px); }
-    }
   </style>
 </head>
 <body class="">
-
-  <div id="toast-container"></div>
 
   <header>
     <div>
@@ -211,7 +259,12 @@
     <button class="tab-btn" onclick="switchView('all')">📋 10 幕全劇完整流程 (79首)</button>
   </div>
 
-  <input type="text" class="search-box" id="search-input" placeholder="🔍 快速搜尋歌名、歌手、小黑屋或卡點用途..." oninput="filterTracks(this.value)">
+  <div class="controls-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap;">
+    <input type="text" class="search-box" id="search-input" style="flex: 1; min-width: 250px; padding: 0.75rem 1.2rem; border-radius: 10px; border: 1px solid var(--border-color); background: rgba(15, 23, 32, 0.9); color: #fff; font-size: 0.95rem; outline: none; transition: all 0.25s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);" placeholder="🔍 快速搜尋歌名、歌手、小黑屋、游泉、利德爾或卡點用途..." oninput="filterTracks(this.value)">
+    <button class="btn-global-stop" onclick="fadeOutAudio(3)" style="background: rgba(214, 28, 78, 0.2); border: 1px solid var(--primary-color); color: var(--primary-color); padding: 0.75rem 1.2rem; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.4rem;">
+      <span>⏹️</span> 柔和淡出停止 (3秒)
+    </button>
+  </div>
 
   <!-- View 1: Dual Column (Default) -->
   <div id="view-dual" class="dual-container" style="display: grid;">
@@ -1781,6 +1834,19 @@
             <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
           </div>
         </div>
+        <div class="track-card " data-search="Large Glass Smash Sound Effects 103 📌 默默羽翼碎裂音效 (梅林喊「伽涅，是時候了」切進伽涅大卡) 第六幕_告白與自裁 09.5">
+          <div>
+            <div class="track-title" spellcheck="false">音效. 《Large Glass……Smash》</div>
+            <div class="track-artist" spellcheck="false">Sound Effects 103</div>
+            <div class="track-use" spellcheck="false">📌 默默高光結束羽翼碎裂音效 (切BGM進伽涅大卡)</div>
+          </div>
+          <div class="track-actions">
+            <button class="btn-play" onclick="playAudio('音樂庫/07_第六幕_告白與自裁/09.5_Large_Glass_Smash_Sound_Effects_103.mp3', '《Large Glass……Smash》', '【第六幕_告白與自裁】', this)">▶ 播放</button>
+            <button class="btn-loop" onclick="playAudioWithLoop('音樂庫/07_第六幕_告白與自裁/09.5_Large_Glass_Smash_Sound_Effects_103.mp3', '《Large Glass……Smash》', '【第六幕_告白與自裁】', this)">🔁 循環</button>
+            <button class="btn-next" onclick="playNext()">⏭ 下一首</button>
+            <button class="btn-fade" onclick="fadeOutAudio(3)">⏳ 淡出</button>
+          </div>
+        </div>
         <div class="track-card " data-search="CAROUSEL Neoni 📌 第六幕伽涅搞事音樂 [已更正對齊網易雲 1919713821] 第六幕_告白與自裁 10">
           <div>
             <div class="track-title" spellcheck="false">10. 《CAROUSEL》（Neoni / AViVA）</div>
@@ -2069,37 +2135,55 @@
   </div>
 
   <!-- Soundboard Sticky Bar -->
-  <div id="soundboard-bar">
-    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1;">
-      <button id="sb-prev-btn" onclick="playPrev()" title="上一首 (P / ←)" style="
-        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: white; width: 40px; height: 40px;
-        border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
-      ">⏮</button>
-      
-      <button id="sb-play-btn" onclick="togglePlay()" title="播放/暫停 (Space)" style="
-        background: var(--primary-color); border: none; color: white; width: 48px; height: 48px;
-        border-radius: 50%; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center;
-      ">▶</button>
-      
-      <button id="sb-stop-btn" onclick="stopAudio()" title="停止" style="
-        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: white; width: 40px; height: 40px;
-        border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
-      ">⏹</button>
-
-      <button id="sb-next-btn" onclick="playNext()" title="下一首 (N / →)" style="
-        background: var(--primary-color); border: none; color: white; padding: 0.45rem 0.95rem;
-        border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; gap: 0.3rem;
-      ">⏭ 下一首</button>
-
-      <button id="sb-loop-btn" onclick="toggleLoop()" title="開關重複播放 / 單曲循環 (L)" style="
-        background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: var(--text-color);
-        padding: 0.45rem 0.95rem; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: all 0.2s;
-      ">🔁 重複播放：關</button>
-
-      <div style="margin-left: 0.5rem;">
-        <div id="sb-track-title" style="font-weight: bold; font-size: 1.05rem; color: #fff;">未在播放音樂</div>
-        <div id="sb-track-act" style="font-size: 0.8rem; opacity: 0.7; color: var(--accent-color);">點擊上方任何音軌即可隨時切歌</div>
+  <div id="soundboard-bar" style="position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: rgba(9, 14, 20, 0.96); border-top: 2px solid var(--primary-color); box-shadow: 0 -4px 30px rgba(0,0,0,0.8); backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; z-index: 1000;">
+    <div class="player-left" style="display: flex; align-items: center; gap: 1rem; width: 28%;">
+      <div class="track-icon-wrapper" style="width: 44px; height: 44px; border-radius: 10px; background: rgba(214, 28, 78, 0.15); border: 1px solid var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--primary-color);">🎵</div>
+      <div class="player-track-info" style="display: flex; flex-direction: column; overflow: hidden;">
+        <div id="sb-track-title" style="font-size: 0.95rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">未在播放音樂</div>
+        <div id="sb-track-act" style="font-size: 0.78rem; color: var(--primary-color); opacity: 0.9;">點擊上方任何音軌即可隨時切歌</div>
       </div>
+    </div>
+
+    <div class="player-center" style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem; width: 44%;">
+      <div class="player-controls" style="display: flex; align-items: center; gap: 0.8rem;">
+        <button class="ctrl-btn" onclick="playPrev()" title="上一首 (P)">⏮</button>
+        <button class="ctrl-btn" onclick="seekBy(-5)" title="倒退 5 秒 (←)">⏪</button>
+        <button class="ctrl-btn play-main" id="sb-play-btn" onclick="togglePlay()" title="播放/暫停 (Space)">▶</button>
+        <button class="ctrl-btn" onclick="seekBy(5)" title="快進 5 秒 (→)">⏩</button>
+        <button class="ctrl-btn" onclick="playNext()" title="下一首 (N)">⏭</button>
+        <button class="ctrl-btn" id="sb-loop-btn" onclick="toggleLoop()" title="單曲循環 (L)">🔁</button>
+      </div>
+
+      <div class="progress-row" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+        <span class="time-lbl" id="sb-time-cur" style="font-size: 0.75rem; font-family: monospace; color: #94a3b8; min-width: 38px;">0:00</span>
+        <input type="range" id="sb-seek" class="progress-bar" value="0" min="0" max="100" style="flex: 1; height: 8px; accent-color: var(--primary-color); cursor: pointer; border-radius: 4px;">
+        <span class="time-lbl" id="sb-time-tot" style="font-size: 0.75rem; font-family: monospace; color: #94a3b8; min-width: 38px;">0:00</span>
+      </div>
+    </div>
+
+    <div class="player-right" style="display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; width: 28%;">
+      <div class="eq-bars paused" id="eq-visualizer">
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+      </div>
+
+      <div class="vol-row" style="display: flex; align-items: center; gap: 0.5rem;">
+        <button class="ctrl-btn" id="sb-mute-btn" onclick="toggleMute()" title="靜音 (M)">🔊</button>
+        <input type="range" id="sb-volume" class="vol-bar" min="0" max="100" value="85" oninput="setVolume(this.value)" style="width: 90px; height: 5px; accent-color: var(--primary-color); cursor: pointer;">
+      </div>
+    </div>
+  </div>
+
+  <div class="shortcuts-hint">
+    <span><span class="kbd">Space</span> 播放 / 暫停</span>
+    <span><span class="kbd">Esc</span> 3秒柔和淡出停止</span>
+    <span><span class="kbd">M</span> 靜音 / 恢復</span>
+    <span><span class="kbd">←</span> / <span class="kbd">→</span> 後退 / 前進 5 秒</span>
+    <span><span class="kbd">N</span> 下一首</span>
+    <span><span class="kbd">P</span> 上一首</span>
+  </div>
     </div>
 
     <div style="display: flex; align-items: center; gap: 1.5rem;">
@@ -2124,79 +2208,66 @@
     let fadeTimer = null;
     let currentTrackIndex = -1;
     let isLoop = false;
+    let isSeeking = false;
+    let isMuted = false;
+    let savedVolume = 0.85;
 
-    function switchView(mode) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('view-dual').style.display = 'none';
-      document.getElementById('view-youquan').style.display = 'none';
-      document.getElementById('view-liddell').style.display = 'none';
-      document.getElementById('view-all').style.display = 'none';
+    const eqVisualizer = document.getElementById('eq-visualizer');
+    const sbSeek = document.getElementById('sb-seek');
+    const sbMuteBtn = document.getElementById('sb-mute-btn');
 
-      if (mode === 'dual') {
-        document.getElementById('view-dual').style.display = 'grid';
-        event.target.classList.add('active');
-      } else if (mode === 'youquan') {
-        document.getElementById('view-youquan').style.display = 'block';
-        event.target.classList.add('active');
-      } else if (mode === 'liddell') {
-        document.getElementById('view-liddell').style.display = 'block';
-        event.target.classList.add('active');
-      } else if (mode === 'all') {
-        document.getElementById('view-all').style.display = 'block';
-        event.target.classList.add('active');
-      }
+    if (sbSeek) {
+      sbSeek.addEventListener('mousedown', () => { isSeeking = true; });
+      sbSeek.addEventListener('touchstart', () => { isSeeking = true; });
+      sbSeek.addEventListener('input', (e) => {
+        isSeeking = true;
+        if (player.duration && !isNaN(player.duration)) {
+          const val = parseFloat(e.target.value);
+          const targetTime = (val / 100) * player.duration;
+          document.getElementById('sb-time-cur').innerText = formatTime(targetTime);
+          try { player.currentTime = targetTime; } catch(err) {}
+        }
+      });
+      const applySeek = (val) => {
+        if (player.duration && !isNaN(player.duration)) {
+          const targetTime = (parseFloat(val) / 100) * player.duration;
+          try { player.currentTime = targetTime; } catch(err) {}
+        }
+        setTimeout(() => { isSeeking = false; }, 150);
+      };
+      sbSeek.addEventListener('change', (e) => applySeek(e.target.value));
+      sbSeek.addEventListener('mouseup', (e) => applySeek(e.target.value));
+      sbSeek.addEventListener('touchend', (e) => applySeek(e.target.value));
     }
 
-    function showToast(message) {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-      const toast = document.createElement('div');
-      toast.className = 'toast-msg';
-      toast.innerText = message;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.remove();
-      }, 2500);
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "0:00";
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function updatePlayStateUI(isPlaying) {
+      const mainBtn = document.getElementById('sb-play-btn');
+      if (mainBtn) mainBtn.innerText = isPlaying ? "⏸" : "▶";
+      if (eqVisualizer) {
+        if (isPlaying) eqVisualizer.classList.remove('paused');
+        else eqVisualizer.classList.add('paused');
+      }
     }
 
     function playAudio(src, title, act, element) {
       if (fadeTimer) clearInterval(fadeTimer);
 
       player.pause();
-      player.src = src;
+      player.src = encodeURI(src);
       player.loop = isLoop;
-      player.volume = document.getElementById('sb-volume').value / 100;
+      player.volume = parseFloat(document.getElementById('sb-volume').value) / 100;
 
-      if (element) {
-        const originalText = element.innerText;
-        element.innerText = "⏳ 載入中...";
-        element.disabled = true;
-        
-        player.play().then(() => {
-          document.getElementById('sb-play-btn').innerText = "⏸";
-          element.innerText = "▶ 正在播放";
-          showToast(`🎵 正在播放: ${title}`);
-          
-          setTimeout(() => {
-            element.innerText = originalText;
-            element.disabled = false;
-          }, 2500);
-        }).catch(err => {
-          console.log(err);
-          element.innerText = "❌ 播放失敗";
-          setTimeout(() => {
-            element.innerText = originalText;
-            element.disabled = false;
-          }, 2500);
-        });
-      } else {
-        player.play().then(() => {
-          document.getElementById('sb-play-btn').innerText = "⏸";
-          showToast(`🎵 正在播放: ${title}`);
-        }).catch(err => console.log(err));
-      }
+      player.play().then(() => {
+        updatePlayStateUI(true);
+      }).catch(err => console.log(err));
 
-      // Update card active styling
       const allCards = Array.from(document.querySelectorAll('.track-card'));
       allCards.forEach(c => c.classList.remove('playing'));
 
@@ -2291,16 +2362,9 @@
       isLoop = !isLoop;
       player.loop = isLoop;
       const loopBtn = document.getElementById('sb-loop-btn');
-      if (isLoop) {
-        loopBtn.innerText = "🔂 單曲重複：開";
-        loopBtn.style.background = "var(--primary-color)";
-        loopBtn.style.color = "#fff";
-        loopBtn.style.borderColor = "var(--primary-color)";
-      } else {
-        loopBtn.innerText = "🔁 重複播放：關";
-        loopBtn.style.background = "rgba(255,255,255,0.1)";
-        loopBtn.style.color = "var(--text-color)";
-        loopBtn.style.borderColor = "var(--border-color)";
+      if (loopBtn) {
+        loopBtn.style.color = isLoop ? 'var(--primary-color)' : '#fff';
+        loopBtn.style.borderColor = isLoop ? 'var(--primary-color)' : 'var(--border-color)';
       }
     }
 
@@ -2308,10 +2372,30 @@
       if (!player.src) return;
       if (player.paused) {
         player.play();
-        document.getElementById('sb-play-btn').innerText = "⏸";
+        updatePlayStateUI(true);
       } else {
         player.pause();
-        document.getElementById('sb-play-btn').innerText = "▶";
+        updatePlayStateUI(false);
+      }
+    }
+
+    function seekBy(seconds) {
+      if (!player.duration || isNaN(player.duration)) return;
+      player.currentTime = Math.min(Math.max(player.currentTime + seconds, 0), player.duration);
+    }
+
+    function toggleMute() {
+      if (isMuted) {
+        setVolume(savedVolume * 100);
+        document.getElementById('sb-volume').value = savedVolume * 100;
+        isMuted = false;
+        if (sbMuteBtn) sbMuteBtn.innerText = '🔊';
+      } else {
+        savedVolume = player.volume;
+        setVolume(0);
+        document.getElementById('sb-volume').value = 0;
+        isMuted = true;
+        if (sbMuteBtn) sbMuteBtn.innerText = '🔇';
       }
     }
 
@@ -2319,7 +2403,7 @@
       if (fadeTimer) clearInterval(fadeTimer);
       player.pause();
       player.currentTime = 0;
-      document.getElementById('sb-play-btn').innerText = "▶";
+      updatePlayStateUI(false);
       document.getElementById('sb-track-title').innerText = "未在播放音樂";
       document.getElementById('sb-track-act').innerText = "點擊任意音軌即可切歌";
       document.querySelectorAll('.track-card').forEach(c => c.classList.remove('playing'));
@@ -2328,7 +2412,7 @@
     function fadeOutAudio(durationSec) {
       if (player.paused) return;
       if (fadeTimer) clearInterval(fadeTimer);
-      let stepTime = 100;
+      let stepTime = 50;
       let steps = (durationSec * 1000) / stepTime;
       let volStep = player.volume / steps;
 
@@ -2339,21 +2423,26 @@
           player.volume = 0;
           player.pause();
           clearInterval(fadeTimer);
-          document.getElementById('sb-play-btn').innerText = "▶";
+          updatePlayStateUI(false);
+          player.volume = parseFloat(document.getElementById('sb-volume').value) / 100;
         }
       }, stepTime);
     }
 
-    function setVolume(v) { player.volume = v / 100; }
-    function seekAudio(v) { if (player.duration) player.currentTime = (v / 100) * player.duration; }
+    function setVolume(v) {
+      const vol = parseFloat(v) / 100;
+      player.volume = vol;
+      isMuted = vol === 0;
+      if (sbMuteBtn) sbMuteBtn.innerText = isMuted ? '🔇' : (vol < 0.5 ? '🔉' : '🔊');
+    }
 
     player.addEventListener('timeupdate', () => {
-      if (player.duration) {
-        let cur = Math.floor(player.currentTime);
-        let tot = Math.floor(player.duration);
-        document.getElementById('sb-time-cur').innerText = String(Math.floor(cur/60)).padStart(2,'0') + ":" + String(cur%60).padStart(2,'0');
-        document.getElementById('sb-time-tot').innerText = String(Math.floor(tot/60)).padStart(2,'0') + ":" + String(tot%60).padStart(2,'0');
-        document.getElementById('sb-seek').value = (player.currentTime / player.duration) * 100;
+      if (player.duration && !isNaN(player.duration)) {
+        if (!isSeeking) {
+          document.getElementById('sb-time-cur').innerText = formatTime(player.currentTime);
+          document.getElementById('sb-seek').value = (player.currentTime / player.duration) * 100;
+        }
+        document.getElementById('sb-time-tot').innerText = formatTime(player.duration);
       }
     });
 
@@ -2377,210 +2466,32 @@
     }
 
     document.addEventListener('keydown', (e) => {
-      const activeEl = document.activeElement;
-      if (e.target.tagName === 'INPUT' || (activeEl && activeEl.isContentEditable)) return;
+      if (e.target.tagName === 'INPUT') return;
       if (e.code === 'Space') {
         e.preventDefault();
         togglePlay();
-      } else if (e.key === 'n' || e.key === 'N' || e.code === 'ArrowRight') {
+      } else if (e.code === 'Escape') {
+        e.preventDefault();
+        fadeOutAudio(3);
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        seekBy(5);
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        seekBy(-5);
+      } else if (e.key === 'n' || e.key === 'N') {
         e.preventDefault();
         playNext();
-      } else if (e.key === 'p' || e.key === 'P' || e.code === 'ArrowLeft') {
+      } else if (e.key === 'p' || e.key === 'P') {
         e.preventDefault();
         playPrev();
-      } else if (e.key === 'l' || e.key === 'L' || e.key === 'r' || e.key === 'R') {
+      } else if (e.key === 'l' || e.key === 'L') {
         e.preventDefault();
         toggleLoop();
       } else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
-        player.muted = !player.muted;
+        toggleMute();
       }
-    });
-
-    // --- Full DM Text Editing & Persistence Engine ---
-    let isEditingEnabled = true;
-
-    function applyEditableAttributes() {
-      const selectors = [
-        'header h1', 'header p',
-        '.act-title', '.column-header span',
-        '.track-title', '.track-artist', '.track-use',
-        '.track-card > div > div:first-child'
-      ];
-      selectors.forEach(sel => {
-        document.querySelectorAll(sel).forEach(el => {
-          el.contentEditable = isEditingEnabled ? "true" : "false";
-          el.setAttribute('spellcheck', 'false');
-        });
-      });
-      if (isEditingEnabled) {
-        document.body.classList.add('editing-active');
-      } else {
-        document.body.classList.remove('editing-active');
-      }
-    }
-
-    function toggleTextEditing() {
-      isEditingEnabled = !isEditingEnabled;
-      const btn = document.getElementById('btn-toggle-edit');
-      if (isEditingEnabled) {
-        btn.innerText = "✏️ 文字編輯：已開啟 (點擊直接修改)";
-        btn.classList.add('active');
-      } else {
-        btn.innerText = "🔒 文字編輯：已鎖定 (點擊防誤觸)";
-        btn.classList.remove('active');
-      }
-      applyEditableAttributes();
-    }
-
-    function showSaveNotice(msg = "✅ 已儲存至瀏覽器！") {
-      const statusEl = document.getElementById('save-status-msg');
-      if (!statusEl) return;
-      statusEl.innerText = msg;
-      statusEl.style.opacity = "1";
-      setTimeout(() => { statusEl.style.opacity = "0"; }, 2500);
-    }
-
-    function saveTextEdits() {
-      const edits = {};
-      document.querySelectorAll('.track-card').forEach((card, index) => {
-        const title = card.querySelector('.track-title')?.innerHTML || '';
-        const artist = card.querySelector('.track-artist')?.innerHTML || '';
-        const use = card.querySelector('.track-use')?.innerHTML || '';
-        const badge = card.querySelector('div > div:first-child')?.innerHTML || '';
-        edits['card_' + index] = { title, artist, use, badge };
-      });
-
-      const headerEdits = {
-        h1: document.querySelector('header h1')?.innerHTML || '',
-        p: document.querySelector('header p')?.innerHTML || ''
-      };
-
-      const actTitles = [];
-      document.querySelectorAll('.act-title').forEach((el, idx) => {
-        actTitles.push({ idx, html: el.innerHTML });
-      });
-
-      const columnHeaders = [];
-      document.querySelectorAll('.column-header span').forEach((el, idx) => {
-        columnHeaders.push({ idx, html: el.innerHTML });
-      });
-
-      const dataToSave = { cards: edits, header: headerEdits, actTitles, columnHeaders };
-      localStorage.setItem('xiang_sheng_music_console_edits', JSON.stringify(dataToSave));
-      showSaveNotice();
-    }
-
-    function loadTextEdits() {
-      const saved = localStorage.getItem('xiang_sheng_music_console_edits');
-      if (!saved) return;
-      try {
-        const data = JSON.parse(saved);
-        if (data.cards) {
-          document.querySelectorAll('.track-card').forEach((card, index) => {
-            const item = data.cards['card_' + index];
-            if (item) {
-              const titleEl = card.querySelector('.track-title');
-              const artistEl = card.querySelector('.track-artist');
-              const useEl = card.querySelector('.track-use');
-              const badgeEl = card.querySelector('div > div:first-child');
-              if (titleEl && item.title) titleEl.innerHTML = item.title;
-              if (artistEl && item.artist) artistEl.innerHTML = item.artist;
-              if (useEl && item.use) useEl.innerHTML = item.use;
-              if (badgeEl && item.badge) badgeEl.innerHTML = item.badge;
-            }
-          });
-        }
-        if (data.header) {
-          if (data.header.h1 && document.querySelector('header h1')) document.querySelector('header h1').innerHTML = data.header.h1;
-          if (data.header.p && document.querySelector('header p')) document.querySelector('header p').innerHTML = data.header.p;
-        }
-        if (data.actTitles) {
-          const actEls = document.querySelectorAll('.act-title');
-          data.actTitles.forEach(item => {
-            if (actEls[item.idx]) actEls[item.idx].innerHTML = item.html;
-          });
-        }
-        if (data.columnHeaders) {
-          const colEls = document.querySelectorAll('.column-header span');
-          data.columnHeaders.forEach(item => {
-            if (colEls[item.idx]) colEls[item.idx].innerHTML = item.html;
-          });
-        }
-      } catch (e) {
-        console.error("載入文字編輯失敗", e);
-      }
-    }
-
-    function resetTextEdits() {
-      if (confirm("確定要將所有編輯過的文字還原為原廠預設嗎？")) {
-        localStorage.removeItem('xiang_sheng_music_console_edits');
-        location.reload();
-      }
-    }
-
-    function exportHtmlWithEdits() {
-      saveTextEdits();
-      const clone = document.cloneNode(true);
-      clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
-      clone.body.classList.remove('editing-active');
-      const htmlContent = "<!DOCTYPE html>\n" + clone.documentElement.outerHTML;
-      const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "向生而死_DM專用音樂控台_自訂編輯版.html";
-      a.click();
-      URL.revokeObjectURL(a.href);
-      showSaveNotice("📥 HTML 檔案已下載！");
-    }
-
-    // Auto-save on input with debounce
-    let autoSaveTimer = null;
-    document.addEventListener('input', (e) => {
-      if (e.target && e.target.isContentEditable) {
-        clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => {
-          saveTextEdits();
-        }, 1200);
-      }
-    });
-
-    // Sync edited text across cards sharing the same audio source
-    document.addEventListener('focusout', (e) => {
-      if (e.target && e.target.isContentEditable) {
-        const card = e.target.closest('.track-card');
-        if (!card) return;
-        const playBtn = card.querySelector('.btn-play');
-        if (!playBtn) return;
-        const onclickAttr = playBtn.getAttribute('onclick');
-        if (!onclickAttr) return;
-
-        const classList = e.target.classList;
-        let selector = '';
-        if (classList.contains('track-title')) selector = '.track-title';
-        else if (classList.contains('track-artist')) selector = '.track-artist';
-        else if (classList.contains('track-use')) selector = '.track-use';
-
-        if (selector) {
-          const updatedHtml = e.target.innerHTML;
-          document.querySelectorAll('.track-card').forEach(otherCard => {
-            if (otherCard === card) return;
-            const otherBtn = otherCard.querySelector('.btn-play');
-            if (otherBtn && otherBtn.getAttribute('onclick') === onclickAttr) {
-              const targetEl = otherCard.querySelector(selector);
-              if (targetEl) targetEl.innerHTML = updatedHtml;
-            }
-          });
-        }
-        saveTextEdits();
-      }
-    });
-
-    // Initialize editing mode & load saved edits on load
-    window.addEventListener('DOMContentLoaded', () => {
-      loadTextEdits();
-      isEditingEnabled = false;
-      applyEditableAttributes();
     });
   </script>
 
