@@ -1426,7 +1426,7 @@ async function openSecretPanScreen(key, fromAdmin = false) {
                 return `
                 <div class="polaroid-card letter-card"
                      style="--rot: ${rot}deg; left: ${cardLeft}; top: ${cardTop}; z-index: ${cardZIndex}; background: #fdf5e6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-                    <div style="font-size: 50px; cursor: pointer; margin-bottom: 10px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="openPlayerLetterModal('${roomKey}', ${index})">✉️</div>
+                    <div style="font-size: 50px; cursor: pointer; margin-bottom: 10px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="openPlayerLetterModal('${key}', ${index})">✉️</div>
                     <div class="polaroid-note" style="color: var(--gold);">給畔的一封信</div>
                     ${item.reply ? `<div style="font-size:12px;color:green;margin-top:5px;">✅已回信</div>` : ""}
                 </div>
