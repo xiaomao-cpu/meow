@@ -1420,6 +1420,17 @@ async function openSecretPanScreen(key, fromAdmin = false) {
             const cardTop = item.top !== undefined ? item.top : `${top}px`;
             const cardZIndex = item.zIndex !== undefined ? item.zIndex : (index + 1);
 
+            if (item.type === "letter") {
+                return `
+                <div class="polaroid-card letter-card"
+                     style="--rot: ${rot}deg; left: ${cardLeft}; top: ${cardTop}; z-index: ${cardZIndex}; background: #fdf5e6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+                    <div style="font-size: 50px; cursor: pointer; margin-bottom: 10px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="openPlayerLetterModal('${roomKey}', ${index})">✉️</div>
+                    <div class="polaroid-note" style="color: var(--gold);">給畔的一封信</div>
+                    ${item.reply ? `<div style="font-size:12px;color:green;margin-top:5px;">✅已回信</div>` : ""}
+                </div>
+                `;
+            }
+
             return `
                 <div class="polaroid-card"
                      style="--rot: ${rot}deg; left: ${cardLeft}; top: ${cardTop}; z-index: ${cardZIndex};">
@@ -1670,6 +1681,23 @@ function renderAdminSavedList(filterQuery = "") {
         keys.map(k => {
             const cards = allData[k];
             const cardItems = cards.map((card, idx) => {
+                if (card.type === "letter") {
+                    const safeTxt = (card.text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                    const safeReply = (card.reply || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                    return `
+                    <div class="edit-card-item" style="display:flex; flex-direction:column; padding:12px; border:1px dashed var(--gold); background: rgba(197, 160, 89, 0.05); gap:10px;">
+                        <div>
+                            <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; font-size: 14px;">✉️ 給畔的信：</div>
+                            <textarea id="ecm-${k}-${idx}" class="modal-textarea" rows="3" style="font-size:13px;margin:0;">${safeTxt}</textarea>
+                        </div>
+                        ${safeReply ? `<div><div style="font-weight:bold; color:var(--deep); margin-bottom:5px; font-size: 14px;">📝 畔的回信：</div><div style="background:#fff; padding:10px; border-radius:4px; font-size:13px; color:var(--deep); white-space:pre-wrap; border:1px solid rgba(0,0,0,0.1); line-height:1.5;">${safeReply}</div></div>` : `<div style="font-size:12px; color:var(--muted);">(畔尚未回信)</div>`}
+                        <div class="edit-card-actions" style="justify-content: flex-end; margin-top:5px;">
+                            <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除這封信">🗑 刪除信件</button>
+                        </div>
+                    </div>
+                    `;
+                }
+
                 const imgSrc = card.img && card.img.startsWith("data:")
                     ? card.img
                     : sanitizeUrl(card.img);
@@ -2006,10 +2034,12 @@ function saveAdminMemory() {
     const keyInput = document.getElementById("admin-key-input");
     const urlInput = document.getElementById("admin-photo-url");
     const msgInput = document.getElementById("admin-message-input");
+    const letterInput = document.getElementById("admin-letter-input");
 
     const key = (keyInput ? keyInput.value : "").trim().toLowerCase();
     const url = (urlInput ? urlInput.value : "").trim();
     const urlMsg = (msgInput ? msgInput.value : "").trim();
+    const letterMsg = (letterInput ? letterInput.value : "").trim();
 
     if (!key) {
         alert("請輸入玩家專屬密語或房號！");
@@ -2020,6 +2050,13 @@ function saveAdminMemory() {
 
     const allData = getMemoriesData();
     if (!allData[key]) allData[key] = [];
+    
+    // 如果有寫信，存入信件物件
+    if (letterMsg) {
+        // 先檢查是否已經有一封信，如果有可以選擇更新或是疊加，這邊我們選擇直接加入新的信
+        allData[key].push({ type: "letter", text: letterMsg, reply: "", opened: false });
+        if (letterInput) letterInput.value = "";
+    }
 
     if (uploadedBase64Images.length > 0) {
         // 文件上傳模式：讀取每張照片配獨立的留言輸入框
@@ -2035,8 +2072,8 @@ function saveAdminMemory() {
         uploadedBase64Images = [];
         document.getElementById("admin-photo-preview").innerHTML = "";
 
-        alert(`✨ 成功儲存照片與留言給「${key}」！已自動同步至雲端 ☁️`);
-        showToast(`✨ 已成功儲存「${key}」房號的照片並同步至雲端！`);
+        alert(`✨ 成功儲存內容給「${key}」！已自動同步至雲端 ☁️`);
+        showToast(`✨ 已成功儲存「${key}」房號的內容並同步至雲端！`);
     } else if (url) {
         // URL 模式：單張照片 + 留言
         allData[key].push({ img: url, text: urlMsg });
@@ -2049,10 +2086,15 @@ function saveAdminMemory() {
         if (urlMsgLabel) urlMsgLabel.style.display = "none";
         if (urlMsgInputEl) urlMsgInputEl.style.display = "none";
 
-        alert(`✨ 成功儲存 1 張照片給「${key}」！已自動同步至雲端 ☁️`);
-        showToast(`✨ 已成功儲存「${key}」房號的照片並同步至雲端！`);
+        alert(`✨ 成功儲存內容給「${key}」！已自動同步至雲端 ☁️`);
+        showToast(`✨ 已成功儲存「${key}」房號的內容並同步至雲端！`);
+    } else if (letterMsg) {
+        // 單純寫信模式
+        saveMemoriesData(allData);
+        alert(`✨ 成功寄出一封信給「${key}」！已自動同步至雲端 ☁️`);
+        showToast(`✨ 已成功寄信給「${key}」並同步至雲端！`);
     } else {
-        alert("請上傳至少一張圖片，或貼上圖片網址！");
+        alert("請上傳至少一張圖片、貼上圖片網址，或撰寫信件！");
         return;
     }
 
@@ -2434,3 +2476,76 @@ async function generateResultPoster() {
     imgEl.src = canvas.toDataURL("image/png");
     modal.classList.remove("hidden");
 }
+
+// 玩家信件功能邏輯
+let currentOpenedLetterIdx = -1;
+
+window.openPlayerLetterModal = function(roomKey, idx) {
+    const allData = getMemoriesData();
+    if (!allData[roomKey] || !allData[roomKey][idx]) return;
+
+    currentOpenedLetterIdx = idx;
+    const item = allData[roomKey][idx];
+
+    document.getElementById("player-letter-content").textContent = item.text || "";
+    document.getElementById("player-letter-reply").value = item.reply || "";
+    document.getElementById("player-letter-modal").classList.remove("hidden");
+
+    // 若第一次打開，發送通知給後台
+    if (!item.opened) {
+        item.opened = true;
+        saveMemoriesData(allData, true, false);
+        if (CLOUD_SYNC_ENDPOINT) {
+            fetch(CLOUD_SYNC_ENDPOINT, {
+                method: "POST",
+                body: JSON.stringify({ 
+                    _action: "notify_email", 
+                    subject: `【向生而死】畔打開了信件！`, 
+                    message: `房號 [${roomKey}] 的畔，剛剛打開了您寫的信件。` 
+                })
+            }).catch(e => console.error(e));
+        }
+    }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+    const letterClose = document.getElementById("player-letter-close");
+    if (letterClose) {
+        letterClose.addEventListener("click", () => {
+            document.getElementById("player-letter-modal").classList.add("hidden");
+        });
+    }
+
+    const letterSubmit = document.getElementById("player-letter-submit");
+    if (letterSubmit) {
+        letterSubmit.addEventListener("click", () => {
+            const reply = document.getElementById("player-letter-reply").value.trim();
+            if (!reply) {
+                alert("請先填寫回信內容唷！");
+                return;
+            }
+
+            const key = document.getElementById("secret-key-input")?.value?.trim().toLowerCase();
+            const allData = getMemoriesData();
+            if (key && currentOpenedLetterIdx !== -1 && allData[key] && allData[key][currentOpenedLetterIdx]) {
+                allData[key][currentOpenedLetterIdx].reply = reply;
+                saveMemoriesData(allData, true, false);
+                
+                if (CLOUD_SYNC_ENDPOINT) {
+                    fetch(CLOUD_SYNC_ENDPOINT, {
+                        method: "POST",
+                        body: JSON.stringify({ 
+                            _action: "notify_email", 
+                            subject: `【向生而死】畔回信了！`, 
+                            message: `房號 [${key}] 的畔回覆了您的信件！\n\n【回信內容】：\n${reply}` 
+                        })
+                    }).catch(e => console.error(e));
+                }
+                
+                alert("回信已經成功寄出給游泉囉！");
+                document.getElementById("player-letter-modal").classList.add("hidden");
+                openSecretPanScreen(key, true);
+            }
+        });
+    }
+});

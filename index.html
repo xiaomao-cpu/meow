@@ -66,6 +66,22 @@
         </div>
     </div>
 
+    <!-- 玩家收信與回信 Modal -->
+    <div id="player-letter-modal" class="modal-overlay hidden" style="z-index: 10000;">
+        <div class="modal-card letter-card" style="max-width: 500px; background: #fffdf8;">
+            <h3 style="margin-bottom: 15px; color: #5a3d2b;">✉️ 來自游泉的信</h3>
+            <div id="player-letter-content" style="font-size: 15px; color: #333; margin-bottom: 20px; line-height: 1.6; white-space: pre-wrap; text-align: left; background: #f4eee1; padding: 15px; border-radius: 8px;"></div>
+            
+            <h4 style="margin-bottom: 8px; color: #5a3d2b; text-align: left; font-size: 14px;">✍️ 寫回信給游泉：</h4>
+            <textarea id="player-letter-reply" class="modal-textarea" rows="4" placeholder="在這裡寫下給游泉的回信..."></textarea>
+            
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button id="player-letter-submit" class="primary-button" type="button" style="background: var(--gold); border-color: var(--gold); color: #fff;">送出回信</button>
+                <button id="player-letter-close" class="secondary-button" type="button">關閉</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- 結果海報預覽 Modal -->
     <div id="poster-modal" class="modal-overlay hidden" style="z-index: 10000;">
