@@ -1309,6 +1309,12 @@ function initPolaroidDrag(card, cardIndex) {
     function onPointerDown(e) {
         if (e.button !== undefined && e.button !== 0) return;
         playPaperSFX();
+
+        // 只有後台管理員模式才能拖曳，一般玩家只能點擊放大
+        if (!isYouquanAdminMode) {
+            bringPolaroidToFront(card);
+            return;
+        }
         
         isDragging = true;
         hasMoved = false;
