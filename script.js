@@ -1772,7 +1772,7 @@ function renderAdminSavedList(filterQuery = "") {
             }).join("");
 
             return `
-                <details class="edit-key-section" open>
+                <details class="edit-key-section">
                     <summary class="edit-key-title">
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span class="collapse-icon">▼</span>
