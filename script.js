@@ -1735,10 +1735,10 @@ function renderAdminSavedList(filterQuery = "") {
                             <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; font-size: 14px;">✉️ 給畔的信（可編輯）：</div>
                             <textarea id="ecm-${k}-${idx}" class="modal-textarea" rows="3" style="font-size:13px;margin:0;">${safeTxt}</textarea>
                         </div>
-                        <div>
-                            <div style="font-weight:bold; color:var(--deep); margin-bottom:5px; font-size: 14px;">📝 畔的回信（可編輯）：</div>
-                            <textarea id="reply-${k}-${idx}" class="modal-textarea" rows="2" style="font-size:13px;margin:0;" placeholder="畔尚未回信，您也可以在這裡幫忙寫...">${safeReply}</textarea>
-                        </div>
+                        ${safeReply ? `<div>
+                            <div style="font-weight:bold; color:var(--deep); margin-bottom:5px; font-size: 14px;">📝 畔的回信：</div>
+                            <div style="font-size:13px; background:#f4eee1; padding:10px; border-radius:6px; white-space:pre-wrap; line-height:1.5; color:#333;">${safeReply}</div>
+                        </div>` : `<div style="font-size:12px; color:var(--muted); font-style:italic;">💤 畔尚未回信</div>`}
                         <div class="edit-card-actions" style="justify-content: flex-end; margin-top:5px;">
                             <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除這封信">🗑 刪除信件</button>
                         </div>
