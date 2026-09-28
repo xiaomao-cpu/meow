@@ -68,14 +68,17 @@
 
     <!-- 玩家收信與回信 Modal -->
     <div id="player-letter-modal" class="modal-overlay hidden" style="z-index: 10000;">
-        <div class="modal-card letter-card" style="max-width: 500px; background: #fffdf8;">
-            <h3 style="margin-bottom: 15px; color: #5a3d2b;">✉️ 來自游泉的信</h3>
-            <div id="player-letter-content" style="font-size: 15px; color: #333; margin-bottom: 20px; line-height: 1.6; white-space: pre-wrap; text-align: left; background: #f4eee1; padding: 15px; border-radius: 8px;"></div>
+        <div class="modal-card letter-card" style="max-width: 500px; background: #fffdf8; display: flex; flex-direction: column; max-height: 90vh; padding: 20px;">
+            <h3 style="margin-bottom: 12px; color: #5a3d2b; flex-shrink: 0;">✉️ 來自游泉的信</h3>
             
-            <h4 style="margin-bottom: 8px; color: #5a3d2b; text-align: left; font-size: 14px;">✍️ 寫回信給游泉：</h4>
-            <textarea id="player-letter-reply" class="modal-textarea" rows="4" placeholder="在這裡寫下給游泉的回信..."></textarea>
+            <!-- 信件內容（可捲動） -->
+            <div id="player-letter-content" style="font-size: 15px; color: #333; line-height: 1.6; white-space: pre-wrap; text-align: left; background: #f4eee1; padding: 15px; border-radius: 8px; overflow-y: auto; max-height: 35vh; flex-shrink: 0; margin-bottom: 14px;"></div>
             
-            <div class="modal-buttons" style="margin-top: 15px;">
+            <h4 style="margin-bottom: 8px; color: #5a3d2b; text-align: left; font-size: 14px; flex-shrink: 0;">✍️ 寫回信給游泉：</h4>
+            <textarea id="player-letter-reply" class="modal-textarea" rows="3" placeholder="在這裡寫下給游泉的回信..." style="flex-shrink: 0; resize: none;"></textarea>
+            
+            <!-- 按鈕區：固定在 modal 內，不會跑到螢幕外 -->
+            <div class="modal-buttons" style="margin-top: 12px; flex-shrink: 0;">
                 <button id="player-letter-submit" class="primary-button" type="button" style="background: var(--gold); border-color: var(--gold); color: #fff;">送出回信</button>
                 <button id="player-letter-close" class="secondary-button" type="button">關閉</button>
             </div>
@@ -117,6 +120,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260929_024500"></script>
+    <script src="script.js?v=20260929_024700"></script>
 </body>
 </html>
