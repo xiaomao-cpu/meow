@@ -1470,9 +1470,10 @@ async function openSecretPanScreen(key, fromAdmin = false) {
             const rot = Math.round((rotSeed * 28 - 14) * 10) / 10;
             const { left, top } = positions[index];
 
-            const cardLeft = item.left !== undefined ? item.left : (typeof left === "number" ? `${left}%` : `${left}px`);
-            const cardTop = item.top !== undefined ? item.top : `${top}px`;
-            const cardZIndex = item.zIndex !== undefined ? item.zIndex : (index + 1);
+            const isMobile = window.innerWidth <= 768;
+            const cardLeft = (!isMobile && item.left !== undefined) ? item.left : (typeof left === "number" ? `${left}%` : `${left}px`);
+            const cardTop = (!isMobile && item.top !== undefined) ? item.top : `${top}px`;
+            const cardZIndex = (!isMobile && item.zIndex !== undefined) ? item.zIndex : (index + 1);
 
             if (item.type === "letter") {
                 return `
