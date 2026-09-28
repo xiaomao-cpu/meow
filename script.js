@@ -1042,7 +1042,7 @@ const DEFAULT_PAN_MEMORIES = [
     }
 ];
 
-function compressImage(dataUrl, maxSide = 500, quality = 0.6) {
+function compressImage(dataUrl, maxSide = 600, quality = 0.7) {
     return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
@@ -1060,32 +1060,12 @@ function compressImage(dataUrl, maxSide = 500, quality = 0.6) {
             }
 
             const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
             const ctx = canvas.getContext("2d");
-            
-            // Google 試算表單格限制為 50000 字元
-            // 透過迴圈暴力壓圖，保證最後字串長度絕對 < 45000 (100% 存得進去)
-            const MAX_CHARS = 45000;
-            
-            const doCompress = (w, h, q) => {
-                canvas.width = w;
-                canvas.height = h;
-                // 用白色填滿背景，避免 PNG 透明底轉 JPG 變黑
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, w, h);
-                ctx.drawImage(img, 0, 0, w, h);
-                
-                const result = canvas.toDataURL("image/jpeg", q);
-                
-                // 如果成功壓到安全範圍，或是已經壓到極限，就回傳
-                if (result.length <= MAX_CHARS || q <= 0.1) {
-                    return resolve(result);
-                }
-                
-                // 若還是太大，直接等比例縮小尺寸跟品質再來一次
-                doCompress(w * 0.85, h * 0.85, q - 0.1);
-            };
-            
-            doCompress(width, height, quality);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            resolve(canvas.toDataURL("image/jpeg", quality));
         };
         img.onerror = () => resolve(dataUrl);
         img.src = dataUrl;
@@ -1970,57 +1950,52 @@ function handleAdminPhotoUpload(e) {
         `).join("");
     }
 
-    // 並行處理每張圖：極致壓縮 → 上傳 Drive / 雲端同步
+    // 你的專屬 ImgBB API Key
+    const IMGBB_API_KEY = "a4da89e76d7727a739381bee17721baa";
+
+    // 並行處理每張圖：上傳 ImgBB 取得短網址
     files.forEach((file, idx) => {
         const reader = new FileReader();
         reader.onload = async function(evt) {
             const thumbEl = document.getElementById(`photo-thumb-${idx}`);
             const badgeEl = document.getElementById(`photo-badge-${idx}`);
 
-            // 1. 高效壓縮 (限制最大邊長 600px，品質 0.65)
-            const compressed = await compressImage(evt.target.result, 600, 0.65);
-            if (thumbEl) thumbEl.innerHTML = `<img src="${compressed}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />`;
+            // 1. 輕度壓縮 (限制最大邊長 1200px，保持高畫質)
+            const compressedDataUrl = await compressImage(evt.target.result, 1200, 0.85);
+            if (thumbEl) thumbEl.innerHTML = `<img src="${compressedDataUrl}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />`;
 
-            // 2. 上傳至 Google Drive (透過 GAS)
-            if (CLOUD_SYNC_ENDPOINT) {
-                if (badgeEl) { badgeEl.textContent = "☁️ 上傳中"; badgeEl.style.background = "rgba(30,100,200,0.85)"; }
-                try {
-                    const res = await fetch(CLOUD_SYNC_ENDPOINT, {
-                        method: "POST",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ _action: "upload_image", data: compressed, filename: file.name || "photo.jpg" })
-                    });
-                    
-                    let result = null;
-                    try {
-                        result = await res.json();
-                    } catch (e) {
-                        // 若手機瀏覽器攔截 JSON 解析，嘗試文字解析
-                        const text = await res.text();
-                        if (text && text.includes("http")) {
-                            const match = text.match(/https?:\/\/[^\s"']+/);
-                            if (match) result = { ok: true, url: match[0] };
-                        }
-                    }
+            // 提取純 base64 字串
+            const base64Data = compressedDataUrl.split(',')[1];
 
-                    if (result && result.ok && result.url) {
-                        // 成功！使用 Drive 網址
-                        uploadedBase64Images[idx] = result.url;
-                        if (thumbEl) thumbEl.innerHTML = `<img src="${result.url}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;" />`;
-                        if (badgeEl) { badgeEl.textContent = "✅ 已同步"; badgeEl.style.background = "rgba(20,140,60,0.85)"; }
-                    } else {
-                        // 使用壓縮後的輕量小圖儲存，同樣能寫入雲端
-                        uploadedBase64Images[idx] = compressed;
-                        if (badgeEl) { badgeEl.textContent = "☁️ 已輕量備援"; badgeEl.style.background = "rgba(180,100,0,0.85)"; }
-                    }
-                } catch (err) {
-                    console.warn("上傳至 Drive 發生網路異常，啟用輕量雲端備援:", err);
-                    uploadedBase64Images[idx] = compressed;
-                    if (badgeEl) { badgeEl.textContent = "☁️ 已輕量備援"; badgeEl.style.background = "rgba(180,100,0,0.85)"; }
+            if (badgeEl) { badgeEl.textContent = "☁️ 上傳圖床中..."; badgeEl.style.background = "rgba(30,100,200,0.85)"; }
+            
+            try {
+                // 準備上傳資料
+                const formData = new FormData();
+                formData.append("image", base64Data);
+
+                // 2. 呼叫 ImgBB API
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: "POST",
+                    body: formData
+                });
+                
+                const result = await res.json();
+
+                if (result && result.success && result.data && result.data.url) {
+                    // 成功！取得網址
+                    uploadedBase64Images[idx] = result.data.url;
+                    if (badgeEl) { badgeEl.textContent = "✅ 上傳成功"; badgeEl.style.background = "rgba(20,140,60,0.85)"; }
+                } else {
+                    console.error("ImgBB 上傳失敗:", result);
+                    // 若失敗則降級為本地小圖
+                    uploadedBase64Images[idx] = compressedDataUrl;
+                    if (badgeEl) { badgeEl.textContent = "⚠️ 備援模式"; badgeEl.style.background = "rgba(180,100,0,0.85)"; }
                 }
-            } else {
-                uploadedBase64Images[idx] = compressed;
-                if (badgeEl) { badgeEl.textContent = "💾 本機"; badgeEl.style.background = "rgba(100,100,100,0.7)"; }
+            } catch (err) {
+                console.error("ImgBB 網路異常:", err);
+                uploadedBase64Images[idx] = compressedDataUrl;
+                if (badgeEl) { badgeEl.textContent = "⚠️ 備援模式"; badgeEl.style.background = "rgba(180,100,0,0.85)"; }
             }
         };
         reader.readAsDataURL(file);
