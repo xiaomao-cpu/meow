@@ -1228,7 +1228,7 @@ async function syncMemoriesFromCloud(isManual = false) {
     if (!isManual && Date.now() < _syncBackoffUntil) return;
 
     try {
-        const res = await fetch(CLOUD_SYNC_ENDPOINT + "?t=" + Date.now(), { cache: "no-store" });
+        const res = await fetch(CLOUD_SYNC_ENDPOINT + "?_action=get_memories&t=" + Date.now(), { cache: "no-store" });
 
         if (res.status === 429 || res.status === 503) {
             _syncBackoffUntil = Date.now() + 5 * 60 * 1000;
