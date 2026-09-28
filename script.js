@@ -2640,9 +2640,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const key = Object.keys(allData).find(k => k.toLowerCase() === rawKey.toLowerCase()) || rawKey;
 
-            if (key && currentOpenedLetterIdx !== -1 && allData[key] && allData[key][currentOpenedLetterIdx]) {
-                allData[key][currentOpenedLetterIdx].reply = reply;
-                allData[key][currentOpenedLetterIdx].opened = true;
+            const letterObj = (allData[key] || []).find(item => item.type === "letter");
+
+            if (key && letterObj) {
+                letterObj.reply = reply;
+                letterObj.opened = true;
 
                 // 先存本地
                 saveMemoriesData(allData, false);
@@ -2672,7 +2674,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 alert("回信已經成功寄出給游泉囉！");
                 document.getElementById("player-letter-modal").classList.add("hidden");
-                openSecretPanScreen(key, true);
+                openSecretPanScreen(key, isYouquanAdminMode);
             } else {
                 // 詳細錯誤資訊方便除錯
                 console.error("回信失敗 - key:", key, "idx:", currentOpenedLetterIdx, "data:", allData[key]);
