@@ -871,7 +871,7 @@ function renderResult(highestId, scores, targetIds) {
 
         fetch(GOOGLE_SHEETS_WEB_APP_URL, {
             method: "POST",
-            mode: "no-cors",
+
             headers: {
                 "Content-Type": "text/plain;charset=utf-8"
             },
@@ -1209,7 +1209,7 @@ function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
             const action = isOverride ? "override_memories" : "save_memories";
             fetch(CLOUD_SYNC_ENDPOINT, {
                 method: "POST",
-                mode: "no-cors",
+
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ _action: action, data: cloudPayload })
             }).then(res => {
@@ -2589,7 +2589,7 @@ window.openPlayerLetterModal = function(roomKey, idx) {
         if (CLOUD_SYNC_ENDPOINT) {
             fetch(CLOUD_SYNC_ENDPOINT, {
                 method: "POST",
-                mode: "no-cors",
+
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ 
                     _action: "notify_email", 
@@ -2652,7 +2652,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const cloudPayload = stripBase64ForCloud(allData);
                     fetch(CLOUD_SYNC_ENDPOINT, {
                         method: "POST",
-                        mode: "no-cors",
+
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ _action: "override_memories", data: cloudPayload })
                     }).catch(e => console.error("推送失敗", e));
@@ -2660,7 +2660,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // 通知信件
                     fetch(CLOUD_SYNC_ENDPOINT, {
                         method: "POST",
-                        mode: "no-cors",
+
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ 
                             _action: "notify_email", 
