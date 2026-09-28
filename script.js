@@ -2534,6 +2534,8 @@ window.openPlayerLetterModal = function(roomKey, idx) {
         if (CLOUD_SYNC_ENDPOINT) {
             fetch(CLOUD_SYNC_ENDPOINT, {
                 method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ 
                     _action: "notify_email", 
                     subject: `【向生而死】畔打開了信件！`, 
@@ -2568,15 +2570,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 saveMemoriesData(allData, true, false);
                 
                 if (CLOUD_SYNC_ENDPOINT) {
-                    fetch(CLOUD_SYNC_ENDPOINT, {
-                        method: "POST",
-                        body: JSON.stringify({ 
-                            _action: "notify_email", 
-                            subject: `【向生而死】畔回信了！`, 
-                            message: `房號 [${key}] 的畔回覆了您的信件！\n\n【回信內容】：\n${reply}` 
-                        })
-                    }).catch(e => console.error(e));
-                }
+            fetch(CLOUD_SYNC_ENDPOINT, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ 
+                    _action: "notify_email", 
+                    subject: `【向生而死】畔回信了！`, 
+                    message: `房號 [${key}] 的畔回覆了您的信件！\n\n【回信內容】：\n${reply}` 
+                })
+            }).catch(e => console.error(e));
+        }
                 
                 alert("回信已經成功寄出給游泉囉！");
                 document.getElementById("player-letter-modal").classList.add("hidden");
