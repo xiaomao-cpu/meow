@@ -2667,7 +2667,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         mode: "no-cors",
 
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ _action: "override_memories", data: cloudPayload })
+                        body: JSON.stringify({ _action: "save_memories", data: cloudPayload })
                     }).catch(e => console.error("推送失敗", e));
 
                     // 通知信件
