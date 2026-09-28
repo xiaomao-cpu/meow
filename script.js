@@ -647,12 +647,6 @@ function nextIntroQuestion() {
             }
             return;
         }
-
-        if (value.includes("游泉") || value.toLowerCase() === "admin") {
-            userMeta.lineNickname = value;
-            checkAdminAuthAndOpen();
-            return;
-        }
     }
 
     if (question.id === "playDate") {
