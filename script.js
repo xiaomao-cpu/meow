@@ -1744,10 +1744,16 @@ function renderAdminSavedList(filterQuery = "") {
                     <div class="edit-key-content" style="margin-top:10px;">
                         ${cardItems}
                         
-                        <!-- 在特定房號底下追加上傳 -->
-                        <div style="margin-top:10px; padding:8px 10px; background:rgba(182,139,74,0.06); border:1px dashed var(--line); border-radius:6px; display:flex; align-items:center; justify-content:space-between; font-size:12px;">
-                            <span>➕ 追加照片至「${escapeHtml(k)}」：</span>
-                            <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${escapeHtml(k)}', this)" style="font-size:11px; max-width:180px;" />
+                        <!-- 在特定房號底下追加上傳與寫信 -->
+                        <div style="margin-top:10px; padding:10px; background:rgba(182,139,74,0.06); border:1px dashed var(--line); border-radius:6px; display:flex; flex-direction:column; gap:10px; font-size:13px;">
+                            <div style="display:flex; align-items:center; justify-content:space-between;">
+                                <span>➕ 追加照片至「${escapeHtml(k)}」：</span>
+                                <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${escapeHtml(k)}', this)" style="font-size:11px; max-width:180px;" />
+                            </div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px dashed rgba(0,0,0,0.1); padding-top:10px;">
+                                <span>✉️ 追加信件至「${escapeHtml(k)}」：</span>
+                                <button type="button" class="btn-sm" onclick="addLetterToRoomKey('${escapeHtml(k)}')">➕ 新增一封信</button>
+                            </div>
                         </div>
 
                         <div style="margin-top:10px; text-align:center;">
@@ -1832,6 +1838,21 @@ window.saveAllCardsForKey = function(key) {
     alert(`✨ 已成功儲存「${key}」房號的所有變更！已自動同步至雲端 ☁️`);
     showToast(`✨ 成功儲存「${key}」房號的所有變更！`);
     renderAdminSavedList();
+};
+
+window.addLetterToRoomKey = function(key) {
+    const allData = getMemoriesData();
+    if (!allData[key]) allData[key] = [];
+    
+    if (allData[key].some(c => c.type === "letter")) {
+        alert("這個房間已經有一封信囉！請直接在上方編輯信件內容。");
+        return;
+    }
+    
+    allData[key].push({ type: "letter", text: "", reply: "", opened: false });
+    saveMemoriesData(allData);
+    renderAdminSavedList();
+    showToast(`✨ 已在「${key}」新增信件區塊！`);
 };
 
 window.previewAdminKey = function(key) {
