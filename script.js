@@ -1710,6 +1710,15 @@ function renderAdminSavedList(filterQuery = "") {
         return;
     }
 
+    const openRooms = new Set();
+    const existingDetails = listEl.querySelectorAll('details.edit-key-section');
+    existingDetails.forEach(details => {
+        if (details.open) {
+            const strongEl = details.querySelector('summary strong');
+            if (strongEl) openRooms.add(strongEl.textContent.trim());
+        }
+    });
+
     const totalCardsCount = keys.reduce((sum, k) => sum + (allData[k] ? allData[k].length : 0), 0);
 
     const listControlsHtml = `
@@ -1772,7 +1781,7 @@ function renderAdminSavedList(filterQuery = "") {
             }).join("");
 
             return `
-                <details class="edit-key-section">
+                <details class="edit-key-section" ${openRooms.has(k) ? 'open' : ''}>
                     <summary class="edit-key-title">
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span class="collapse-icon">▼</span>
