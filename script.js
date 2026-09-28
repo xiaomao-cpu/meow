@@ -1209,6 +1209,7 @@ function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
             const action = isOverride ? "override_memories" : "save_memories";
             fetch(CLOUD_SYNC_ENDPOINT, {
                 method: "POST",
+                mode: "no-cors",
 
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ _action: action, data: cloudPayload })
@@ -2663,6 +2664,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const cloudPayload = stripBase64ForCloud(allData);
                     fetch(CLOUD_SYNC_ENDPOINT, {
                         method: "POST",
+                        mode: "no-cors",
 
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ _action: "override_memories", data: cloudPayload })
@@ -2671,6 +2673,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // 通知信件
                     fetch(CLOUD_SYNC_ENDPOINT, {
                         method: "POST",
+                        mode: "no-cors",
 
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ 
