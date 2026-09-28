@@ -1149,8 +1149,24 @@ function mergeMemoriesDeep(base, incoming) {
             result[key] = cleanIncoming;
         } else {
             result[key] = result[key].filter(item => !isDefaultSampleCard(item));
-            const existingImgs = new Set(result[key].map(item => item.img));
-            const toAdd = cleanIncoming.filter(item => !existingImgs.has(item.img));
+            
+            // 處理信件合併：如果雲端有信件且有回信，覆蓋本地信件
+            const incomingLetter = cleanIncoming.find(item => item.type === "letter");
+            const localLetterIdx = result[key].findIndex(item => item.type === "letter");
+            
+            if (incomingLetter) {
+                if (localLetterIdx !== -1) {
+                    // 如果雲端有回覆或已讀，更新本地
+                    if (incomingLetter.reply || incomingLetter.opened) {
+                        result[key][localLetterIdx] = incomingLetter;
+                    }
+                } else {
+                    result[key].push(incomingLetter);
+                }
+            }
+
+            const existingImgs = new Set(result[key].filter(i => i.img).map(item => item.img));
+            const toAdd = cleanIncoming.filter(item => item.type !== "letter" && item.img && !existingImgs.has(item.img));
             result[key] = [...result[key], ...toAdd];
         }
     });

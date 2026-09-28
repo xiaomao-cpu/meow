@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: var(--bg-color, #F4F1ED);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <main class="main-container" id="preview-main-container">
+        <section id="secret-pan-screen" class="screen secret-pan-screen" style="min-height: 100vh;">
+            <div id="polaroid-wall" class="polaroid-wall"></div>
+        </section>
+    </main>
+    <script>
+        const wallEl = document.getElementById("polaroid-wall");
+        wallEl.style.minHeight = "400px";
+        wallEl.innerHTML = `
+            <div class="polaroid-card letter-card"
+                 style="--rot: 0deg; left: 50%; top: 100px; z-index: 1; background: #fdf5e6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position:absolute;">
+                <div style="font-size: 50px;">✉️</div>
+                <div class="polaroid-note" style="color: var(--gold);">給畔的一封信</div>
+            </div>
+        `;
+    </script>
+</body>
+</html>
