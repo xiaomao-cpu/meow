@@ -1250,9 +1250,19 @@ async function syncMemoriesFromCloud(isManual = false) {
             const cloudData = await res.json();
             if (cloudData && typeof cloudData === "object" && Object.keys(cloudData).length > 0) {
                 const localData = getMemoriesData();
-                // 逐 key 合併，雲端的 URL 照片補充進本地
+
+                // 1. 合併：以雲端資料為主體，只對雲端有的 key 進行合併
                 const merged = mergeMemoriesDeep(localData, cloudData);
-                // 只有真的有新資料才寫入，避免無意義 IO
+
+                // 2. 刪除同步：把本地有但雲端沒有的 key（後台已刪除的房間）一起移除
+                const cloudKeys = Object.keys(cloudData);
+                Object.keys(merged).forEach(k => {
+                    if (!cloudKeys.includes(k)) {
+                        delete merged[k];
+                    }
+                });
+
+                // 3. 只有真的有差異才寫入，避免無意義 IO
                 if (JSON.stringify(merged) !== JSON.stringify(localData)) {
                     saveMemoriesData(merged, false);
                     if (typeof renderAdminSavedList === "function") renderAdminSavedList();
