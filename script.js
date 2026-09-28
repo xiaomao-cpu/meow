@@ -1846,8 +1846,11 @@ window.saveAllCardsForKey = function(key) {
     const allData = getMemoriesData();
     if (!allData[key]) return;
     
+    // 只拿非預設的卡片，因為畫面渲染是基於這個順序 (idx)
+    let memories = allData[key].filter(item => !isDefaultSampleCard(item));
+    
     let updatedCount = 0;
-    allData[key].forEach((card, idx) => {
+    memories.forEach((card, idx) => {
         const textarea = document.getElementById(`ecm-${key}-${idx}`);
         if (textarea) {
             card.text = textarea.value.trim();
@@ -1861,6 +1864,7 @@ window.saveAllCardsForKey = function(key) {
         }
     });
 
+    allData[key] = memories; // 覆寫回去（順便清除預設卡片）
     saveMemoriesData(allData);
     alert(`✨ 已成功儲存「${key}」房號的所有變更！已自動同步至雲端 ☁️`);
     showToast(`✨ 成功儲存「${key}」房號的所有變更！`);
