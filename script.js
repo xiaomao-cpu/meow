@@ -2545,10 +2545,18 @@ let currentOpenedLetterIdx = -1;
 
 window.openPlayerLetterModal = function(roomKey, idx) {
     const allData = getMemoriesData();
-    if (!allData[roomKey] || !allData[roomKey][idx]) return;
+    if (!allData[roomKey]) return;
 
-    currentOpenedLetterIdx = idx;
-    const item = allData[roomKey][idx];
+    // 因為 idx 是畫面上濾除預設卡片後的順序，需轉回真實索引
+    const filteredMemories = allData[roomKey].filter(item => !isDefaultSampleCard(item));
+    const targetItem = filteredMemories[idx];
+    if (!targetItem) return;
+
+    const realIdx = allData[roomKey].findIndex(item => item.type === targetItem.type && item.text === targetItem.text);
+    if (realIdx === -1) return;
+
+    currentOpenedLetterIdx = realIdx;
+    const item = allData[roomKey][realIdx];
 
     document.getElementById("player-letter-content").textContent = item.text || "";
     document.getElementById("player-letter-reply").value = item.reply || "";
@@ -2590,7 +2598,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const key = document.getElementById("secret-key-input")?.value?.trim().toLowerCase();
+            const key = typeof activeSecretKey !== "undefined" ? activeSecretKey : (document.getElementById("secret-key-input")?.value?.trim().toLowerCase());
             const allData = getMemoriesData();
             if (key && currentOpenedLetterIdx !== -1 && allData[key] && allData[key][currentOpenedLetterIdx]) {
                 allData[key][currentOpenedLetterIdx].reply = reply;
