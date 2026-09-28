@@ -1042,7 +1042,7 @@ const DEFAULT_PAN_MEMORIES = [
     }
 ];
 
-function compressImage(dataUrl, maxSide = 600, quality = 0.7) {
+function compressImage(dataUrl, maxSide = 500, quality = 0.6) {
     return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
@@ -1060,12 +1060,32 @@ function compressImage(dataUrl, maxSide = 600, quality = 0.7) {
             }
 
             const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
             const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
-
-            resolve(canvas.toDataURL("image/jpeg", quality));
+            
+            // Google 試算表單格限制為 50000 字元
+            // 透過迴圈暴力壓圖，保證最後字串長度絕對 < 45000 (100% 存得進去)
+            const MAX_CHARS = 45000;
+            
+            const doCompress = (w, h, q) => {
+                canvas.width = w;
+                canvas.height = h;
+                // 用白色填滿背景，避免 PNG 透明底轉 JPG 變黑
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, w, h);
+                ctx.drawImage(img, 0, 0, w, h);
+                
+                const result = canvas.toDataURL("image/jpeg", q);
+                
+                // 如果成功壓到安全範圍，或是已經壓到極限，就回傳
+                if (result.length <= MAX_CHARS || q <= 0.1) {
+                    return resolve(result);
+                }
+                
+                // 若還是太大，直接等比例縮小尺寸跟品質再來一次
+                doCompress(w * 0.85, h * 0.85, q - 0.1);
+            };
+            
+            doCompress(width, height, quality);
         };
         img.onerror = () => resolve(dataUrl);
         img.src = dataUrl;
