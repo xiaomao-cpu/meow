@@ -2602,28 +2602,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const key = typeof activeSecretKey !== "undefined" ? activeSecretKey : (document.getElementById("secret-key-input")?.value?.trim().toLowerCase());
+            // 小寫轉成小寫後在 allData 裡搜尋匹配的實際 key
+            const rawKey = typeof activeSecretKey !== "undefined" && activeSecretKey
+                ? activeSecretKey
+                : (document.getElementById("secret-key-input")?.value?.trim() || "");
             const allData = getMemoriesData();
+            // 樿模小寫匹配，避免因横线大小寫異導找不到
+            const key = Object.keys(allData).find(k => k.toLowerCase() === rawKey.toLowerCase()) || rawKey;
+
             if (key && currentOpenedLetterIdx !== -1 && allData[key] && allData[key][currentOpenedLetterIdx]) {
                 allData[key][currentOpenedLetterIdx].reply = reply;
                 saveMemoriesData(allData, true, false);
                 
                 if (CLOUD_SYNC_ENDPOINT) {
-            fetch(CLOUD_SYNC_ENDPOINT, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ 
-                    _action: "notify_email", 
-                    subject: `【向生而死】畔回信了！`, 
-                    message: `房號 [${key}] 的畔回覆了您的信件！\n\n【回信內容】：\n${reply}` 
-                })
-            }).catch(e => console.error(e));
-        }
+                    fetch(CLOUD_SYNC_ENDPOINT, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ 
+                            _action: "notify_email", 
+                            subject: `【向生而死】畔回信了！`, 
+                            message: `房號 [${key}] 的畔回覆了您的信件！\n\n【回信內容】：\n${reply}` 
+                        })
+                    }).catch(e => console.error(e));
+                }
                 
                 alert("回信已經成功寄出給游泉囉！");
                 document.getElementById("player-letter-modal").classList.add("hidden");
                 openSecretPanScreen(key, true);
+            } else {
+                // 詳細錯誤資訊方便除錯
+                console.error("回信失敗 - key:", key, "idx:", currentOpenedLetterIdx, "data:", allData[key]);
+                alert("出了點小問題，請尝試關閉信件視窗再重新打開一次！");
             }
         });
     }
