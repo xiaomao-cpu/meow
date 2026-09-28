@@ -1987,8 +1987,14 @@ window.deleteCardItem = function(key, index) {
     const allData = getMemoriesData();
     if (!allData[key]) return;
     allData[key].splice(index, 1);
-    if (allData[key].length === 0) delete allData[key];
-    saveMemoriesData(allData, true, true);
+    if (allData[key].length === 0) {
+        delete allData[key];
+        // 如果這個房間空了，我們需要用 override 才能在雲端徹底刪除該房間
+        saveMemoriesData(allData, true, true);
+    } else {
+        // 如果只是刪除單張照片，用 save_memories 即可，避免覆蓋掉其他設備救回來的房間
+        saveMemoriesData(allData, true, false);
+    }
     renderAdminSavedList();
 };
 
