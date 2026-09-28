@@ -2595,7 +2595,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const letterSubmit = document.getElementById("player-letter-submit");
     if (letterSubmit) {
-        letterSubmit.addEventListener("click", () => {
+        letterSubmit.addEventListener("click", async () => {
             const reply = document.getElementById("player-letter-reply").value.trim();
             if (!reply) {
                 alert("請先填寫回信內容唷！");
@@ -2607,14 +2607,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 ? activeSecretKey
                 : (document.getElementById("secret-key-input")?.value?.trim() || "");
             const allData = getMemoriesData();
-            // 樿模小寫匹配，避免因横线大小寫異導找不到
+
+            // 送出前先從雲端拉最新完整資料，避免用手機舊 localStorage 覆蓋電腦新增內容
+            if (CLOUD_SYNC_ENDPOINT) {
+                try {
+                    const syncRes = await fetch(CLOUD_SYNC_ENDPOINT + "?_action=get_memories&t=" + Date.now(), { cache: "no-store" });
+                    if (syncRes.ok) {
+                        const cloudData = await syncRes.json();
+                        if (cloudData && typeof cloudData === "object" && Object.keys(cloudData).length > 0) {
+                            const merged = mergeMemoriesDeep(allData, cloudData);
+                            Object.assign(allData, merged);
+                        }
+                    }
+                } catch (e) { console.warn("送出前同步失敗，使用本地資料", e); }
+            }
+
             const key = Object.keys(allData).find(k => k.toLowerCase() === rawKey.toLowerCase()) || rawKey;
 
             if (key && currentOpenedLetterIdx !== -1 && allData[key] && allData[key][currentOpenedLetterIdx]) {
                 allData[key][currentOpenedLetterIdx].reply = reply;
-                saveMemoriesData(allData, true, false);
+                allData[key][currentOpenedLetterIdx].opened = true;
+
+                // 先存本地
+                saveMemoriesData(allData, false);
                 
+                // 用 override 強制整包推送到雲端，確保 reply 一定寫入
                 if (CLOUD_SYNC_ENDPOINT) {
+                    const cloudPayload = stripBase64ForCloud(allData);
+                    fetch(CLOUD_SYNC_ENDPOINT, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify({ _action: "override_memories", data: cloudPayload })
+                    }).catch(e => console.error("推送失敗", e));
+
+                    // 通知信件
                     fetch(CLOUD_SYNC_ENDPOINT, {
                         method: "POST",
                         mode: "no-cors",
