@@ -1251,6 +1251,7 @@ async function syncMemoriesFromCloud(isManual = false) {
             const cloudData = await res.json();
             if (cloudData && typeof cloudData === "object" && Object.keys(cloudData).length > 0) {
                 const localData = getMemoriesData();
+                const originalLocalDataStr = JSON.stringify(localData);
 
                 // 1. 合併：以雲端資料為主體，只對雲端有的 key 進行合併
                 const merged = mergeMemoriesDeep(localData, cloudData);
@@ -1264,7 +1265,7 @@ async function syncMemoriesFromCloud(isManual = false) {
                 });
 
                 // 3. 只有真的有差異才寫入，避免無意義 IO
-                if (JSON.stringify(merged) !== JSON.stringify(localData)) {
+                if (JSON.stringify(merged) !== originalLocalDataStr) {
                     saveMemoriesData(merged, false);
                     if (typeof renderAdminSavedList === "function") renderAdminSavedList();
                 }
@@ -2670,18 +2671,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         body: JSON.stringify({ _action: "save_memories", data: cloudPayload })
                     }).catch(e => console.error("推送失敗", e));
 
-                    // 通知信件
-                    fetch(CLOUD_SYNC_ENDPOINT, {
-                        method: "POST",
-                        mode: "no-cors",
-
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify({ 
-                            _action: "notify_email", 
-                            subject: `【向生而死】畔回信了！`, 
-                            message: `房號 [${key}] 的畔回覆了您的信件！\n\n【回信內容】：\n${reply}` 
-                        })
-                    }).catch(e => console.error(e));
+                    // 延遲通知信件，避免跟 save_memories 同時打 API 造成 GAS 發生 race condition 或阻擋
+                    setTimeout(() => {
+                        fetch(CLOUD_SYNC_ENDPOINT, {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "text/plain;charset=utf-8" },
+                            body: JSON.stringify({ 
+                                _action: "notify_email", 
+                                subject: `【向生而死】畔回信了！`, 
+                                message: `房號 [${key}] 的畔回覆了您的信件！\n\n【回信內容】：\n${reply}` 
+                            })
+                        }).catch(e => console.error(e));
+                    }, 1500);
                 }
                 
                 alert("回信已經成功寄出給游泉囉！");
