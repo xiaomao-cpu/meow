@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body>
+<div id="preview-main-container" style="display:none;">
+    <section id="secret-pan-screen" class="screen hidden">
+        <div id="polaroid-wall"></div>
+    </section>
+</div>
+<script>
+    // Simulate memories data
+    const memories = [{ type: "letter", text: "Hello", reply: "", opened: false }];
+    const wallEl = document.getElementById("polaroid-wall");
+    const positions = [{ left: 50, top: 100 }];
+    
+    wallEl.innerHTML = memories.map((item, index) => {
+        const rotSeed = 0.5;
+        const rot = 0;
+        const { left, top } = positions[index];
+
+        const cardLeft = item.left !== undefined ? item.left : (typeof left === "number" ? `${left}%` : `${left}px`);
+        const cardTop = item.top !== undefined ? item.top : `${top}px`;
+        const cardZIndex = item.zIndex !== undefined ? item.zIndex : (index + 1);
+
+        if (item.type === "letter") {
+            return `
+            <div class="polaroid-card letter-card"
+                 style="--rot: ${rot}deg; left: ${cardLeft}; top: ${cardTop}; z-index: ${cardZIndex};">
+                <div>✉️</div>
+            </div>
+            `;
+        }
+        return '';
+    }).join("");
+    console.log(wallEl.innerHTML);
+</script>
+</body>
+</html>
