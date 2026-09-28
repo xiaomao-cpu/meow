@@ -28,24 +28,7 @@
 </head>
 <body>
 
-    <!-- 游泉後台密碼驗證 Modal -->
-    <div id="youquan-admin-auth-modal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <h3>🔐 游泉後台權限驗證</h3>
-            <p>請輸入後台管理密碼：</p>
-            <input id="admin-password-input" type="password" class="modal-input" placeholder="請輸入密碼" autocomplete="off" />
-            <p id="admin-password-error" class="input-error-msg" style="color: #c93b3b; font-size: 15px; margin-top: -8px; margin-bottom: 12px; display: none;"></p>
-            
-            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; font-size: 15px; color: var(--deep);">
-                <input type="checkbox" id="admin-remember-pwd" checked style="width: 16px; height: 16px; cursor: pointer;" />
-                <label for="admin-remember-pwd" style="cursor: pointer; user-select: none;">記住密碼（此裝置下次免輸入）</label>
-            </div>
 
-            <div class="modal-buttons" style="flex-wrap: wrap; gap: 10px;">
-                <button id="admin-auth-submit" class="primary-button" type="button" style="flex: 1;">確認進入</button>
-            </div>
-        </div>
-    </div>
 
     <!-- 游泉秘密管理後台 Modal -->
     <div id="youquan-admin-modal" class="modal-overlay hidden">
@@ -105,9 +88,9 @@
     <script src="script.js?v=20260804_003000"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Check auth immediately on admin page load
+            // 直接開啟後台，不需要密碼驗證
             setTimeout(() => {
-                checkAdminAuthAndOpen();
+                openYouquanAdminModal();
             }, 100);
         });
 
