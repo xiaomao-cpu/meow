@@ -2054,7 +2054,7 @@ function handleAdminPhotoUpload(e) {
                     class="admin-per-photo-msg modal-textarea"
                     data-idx="${i}"
                     rows="2"
-                    placeholder="第 ${i+1} 張照片的悴悴話（可留空）..."
+                    placeholder="第 ${i+1} 張照片的悄悄話（可留空）..."
                     style="flex:1;min-width:0;margin:0;font-size:15px;"
                 ></textarea>
             </div>
