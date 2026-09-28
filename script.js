@@ -1163,11 +1163,11 @@ function mergeMemoriesDeep(base, incoming) {
             
             if (incomingLetter) {
                 if (localLetterIdx !== -1) {
-                    // 同步信件狀態與內文，兩邊互補
+                    // 同步信件狀態與內文，雲端為主體，允許空字串覆蓋
                     const localLetter = result[key][localLetterIdx];
-                    localLetter.text = incomingLetter.text || localLetter.text;
-                    localLetter.reply = incomingLetter.reply || localLetter.reply;
-                    localLetter.opened = incomingLetter.opened || localLetter.opened;
+                    localLetter.text = incomingLetter.text !== undefined ? incomingLetter.text : localLetter.text;
+                    localLetter.reply = incomingLetter.reply !== undefined ? incomingLetter.reply : localLetter.reply;
+                    localLetter.opened = incomingLetter.opened !== undefined ? incomingLetter.opened : localLetter.opened;
                 } else {
                     result[key].push(incomingLetter);
                 }
@@ -1754,10 +1754,10 @@ function renderAdminSavedList(filterQuery = "") {
                             <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; font-size: 14px;">✉️ 給畔的信（可編輯）：</div>
                             <textarea id="ecm-${k}-${idx}" class="modal-textarea" rows="3" style="font-size:13px;margin:0;">${safeTxt}</textarea>
                         </div>
-                        ${safeReply ? `<div>
-                            <div style="font-weight:bold; color:var(--deep); margin-bottom:5px; font-size: 14px;">📝 畔的回信：</div>
-                            <div style="font-size:13px; background:#f4eee1; padding:10px; border-radius:6px; white-space:pre-wrap; line-height:1.5; color:#333;">${safeReply}</div>
-                        </div>` : `<div style="font-size:12px; color:var(--muted); font-style:italic;">💤 畔尚未回信</div>`}
+                        <div>
+                            <div style="font-weight:bold; color:var(--deep); margin-bottom:5px; font-size: 14px;">📝 畔的回信（可編輯/清空）：</div>
+                            <textarea id="reply-${k}-${idx}" class="modal-textarea" rows="2" style="font-size:13px;margin:0;background:#f4eee1;color:#333;" placeholder="尚未回信">${safeReply}</textarea>
+                        </div>
                         <div class="edit-card-actions" style="justify-content: flex-end; margin-top:5px;">
                             <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除這封信">🗑 刪除信件</button>
                         </div>
@@ -1914,7 +1914,11 @@ window.saveAllCardsForKey = function(key) {
         if (card.type === "letter") {
             const replyarea = document.getElementById(`reply-${key}-${idx}`);
             if (replyarea) {
-                card.reply = replyarea.value.trim();
+                const newReply = replyarea.value.trim();
+                card.reply = newReply;
+                if (!newReply) {
+                    card.opened = false; // 如果清空回信，自動重置未讀狀態
+                }
             }
         }
     });
