@@ -1116,6 +1116,13 @@ function removeDeletedKey(key) {
     } catch(e) {}
 }
 
+window.recoverDeletedRoom = function(key) {
+    if (!confirm(`確定要復原「${key}」嗎？這將會把雲端上該房間的照片全部拉回來。`)) return;
+    removeDeletedKey(key);
+    // 強制從雲端拉取最新資料，因為移除了黑名單，所以會自動合併進來
+    syncMemoriesFromCloud(true);
+}
+
 // 判斷是否為系統預設範例卡片
 function isDefaultSampleCard(item) {
     if (!item) return true;
@@ -1817,6 +1824,26 @@ function renderAdminSavedList(filterQuery = "") {
                 </details>
             `;
         }).join("");
+
+    const deletedKeys = getDeletedKeys();
+    let hiddenHtml = "";
+    if (deletedKeys.length > 0) {
+        hiddenHtml = `
+            <div style="margin-top: 30px; padding: 15px; border-top: 2px dashed #ccc;">
+                <div style="font-weight: bold; color: #888; margin-bottom: 10px;">🗑️ 回收站 / 已隱藏的房間</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    ${deletedKeys.map(k => `
+                        <div style="display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; font-size: 13px;">
+                            <span style="color: #666; font-family: monospace;">${escapeHtml(k)}</span>
+                            <button type="button" onclick="recoverDeletedRoom('${escapeHtml(k)}')"\n                                    style="background: transparent; border: none; cursor: pointer; font-size: 14px; padding: 0 4px;" title="復原">♻️</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    listEl.innerHTML += hiddenHtml;
 }
 
 window.addPhotosToRoomKey = async function(key, inputEl) {
