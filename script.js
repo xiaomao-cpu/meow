@@ -1857,6 +1857,10 @@ window.addLetterToRoomKey = function(key) {
 
 window.previewAdminKey = function(key) {
     closeYouquanAdminModal();
+    const previewContainer = document.getElementById('preview-main-container');
+    if (previewContainer) {
+        previewContainer.style.display = 'block';
+    }
     openSecretPanScreen(key, true);
 };
 
