@@ -1118,7 +1118,9 @@ function removeDeletedKey(key) {
 
 // 判斷是否為系統預設範例卡片
 function isDefaultSampleCard(item) {
-    if (!item || !item.img) return true;
+    if (!item) return true;
+    if (item.type === "letter") return false; // 確保信件不會被當成預設卡片刪除
+    if (!item.img) return true;
     const imgStr = String(item.img);
     const txtStr = String(item.text || "");
 
