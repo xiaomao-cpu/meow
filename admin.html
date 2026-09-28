@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@400;600;700;900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260929_042300">
+    <link rel="stylesheet" href="style.css?v=20260929_042500">
     <style>
         body {
             background-color: var(--bg-color, #F4F1ED);
@@ -94,7 +94,7 @@
                 <span>☁️ 雲端自動同步中</span>
                 <div style="display: flex; gap: 8px;">
                     <button type="button" class="btn-sm" onclick="recoverAllHistoryPhotos()" style="font-size:11px; padding:2px 6px;">🚑 救援照片</button>
-                    <button type="button" class="btn-sm" onclick="localStorage.removeItem('MEMORY_DELETED_KEYS'); alert('已解除所有隱藏房間，為您重新整理！'); location.reload();" style="font-size:11px; padding:2px 6px;">👁️ 解除隱藏</button>
+                    <button type="button" class="btn-sm" onclick="localStorage.removeItem('youquan_deleted_room_keys'); alert('已解除所有隱藏房間，為您重新整理！'); location.reload();" style="font-size:11px; padding:2px 6px;">👁️ 解除隱藏</button>
                     <button id="admin-toggle-dm-gender" class="btn-sm" type="button" style="font-size:11px; padding:2px 6px;">切換為 男 GM 模式</button>
                     <button id="admin-lock-button" class="btn-sm btn-sm-danger" type="button" style="font-size:11px; padding:2px 6px;">🔒 鎖定</button>
                 </div>
@@ -119,7 +119,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260929_042300"></script>
+    <script src="script.js?v=20260929_042500"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             // 直接開啟後台，不需要密碼驗證
