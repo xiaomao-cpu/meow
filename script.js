@@ -1156,10 +1156,11 @@ function mergeMemoriesDeep(base, incoming) {
             
             if (incomingLetter) {
                 if (localLetterIdx !== -1) {
-                    // 如果雲端有回覆或已讀，更新本地
-                    if (incomingLetter.reply || incomingLetter.opened) {
-                        result[key][localLetterIdx] = incomingLetter;
-                    }
+                    // 同步信件狀態與內文，兩邊互補
+                    const localLetter = result[key][localLetterIdx];
+                    localLetter.text = incomingLetter.text || localLetter.text;
+                    localLetter.reply = incomingLetter.reply || localLetter.reply;
+                    localLetter.opened = incomingLetter.opened || localLetter.opened;
                 } else {
                     result[key].push(incomingLetter);
                 }
@@ -1208,6 +1209,7 @@ function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
             const action = isOverride ? "override_memories" : "save_memories";
             fetch(CLOUD_SYNC_ENDPOINT, {
                 method: "POST",
+                mode: "no-cors",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ _action: action, data: cloudPayload })
             }).then(res => {
