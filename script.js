@@ -1173,10 +1173,19 @@ function mergeMemoriesDeep(base, incoming) {
     return result;
 }
 
-// 雲端同步輔助：保留所有照片資料（包含網址與上傳圖檔）
+// 雲端同步輔助：強制過濾掉 base64 檔案，只保留網址與文字，避免超過 GAS 的 9KB 限制
 function stripBase64ForCloud(data) {
-    // 不再強制過濾，保留所有已設定的房號照片
-    return data || {};
+    if (!data) return {};
+    const stripped = {};
+    for (const key in data) {
+        stripped[key] = (data[key] || []).filter(item => {
+            if (item.type === "letter") return true; // 保留信件
+            if (!item.img) return true; // 保留沒有圖片的純文字
+            // 濾除 base64 圖片 (以 data:image 開頭)
+            return !String(item.img).startsWith("data:image");
+        });
+    }
+    return stripped;
 }
 
 // 防抖計時器（一秒內多次儲存只推一次）
