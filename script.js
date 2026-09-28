@@ -1689,10 +1689,13 @@ function renderAdminSavedList(filterQuery = "") {
                     return `
                     <div class="edit-card-item" style="display:flex; flex-direction:column; padding:12px; border:1px dashed var(--gold); background: rgba(197, 160, 89, 0.05); gap:10px;">
                         <div>
-                            <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; font-size: 14px;">✉️ 給畔的信：</div>
+                            <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; font-size: 14px;">✉️ 給畔的信（可編輯）：</div>
                             <textarea id="ecm-${k}-${idx}" class="modal-textarea" rows="3" style="font-size:13px;margin:0;">${safeTxt}</textarea>
                         </div>
-                        ${safeReply ? `<div><div style="font-weight:bold; color:var(--deep); margin-bottom:5px; font-size: 14px;">📝 畔的回信：</div><div style="background:#fff; padding:10px; border-radius:4px; font-size:13px; color:var(--deep); white-space:pre-wrap; border:1px solid rgba(0,0,0,0.1); line-height:1.5;">${safeReply}</div></div>` : `<div style="font-size:12px; color:var(--muted);">(畔尚未回信)</div>`}
+                        <div>
+                            <div style="font-weight:bold; color:var(--deep); margin-bottom:5px; font-size: 14px;">📝 畔的回信（可編輯）：</div>
+                            <textarea id="reply-${k}-${idx}" class="modal-textarea" rows="2" style="font-size:13px;margin:0;" placeholder="畔尚未回信，您也可以在這裡幫忙寫...">${safeReply}</textarea>
+                        </div>
                         <div class="edit-card-actions" style="justify-content: flex-end; margin-top:5px;">
                             <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除這封信">🗑 刪除信件</button>
                         </div>
@@ -1817,11 +1820,17 @@ window.saveAllCardsForKey = function(key) {
             card.text = textarea.value.trim();
             updatedCount++;
         }
+        if (card.type === "letter") {
+            const replyarea = document.getElementById(`reply-${key}-${idx}`);
+            if (replyarea) {
+                card.reply = replyarea.value.trim();
+            }
+        }
     });
 
     saveMemoriesData(allData);
-    alert(`✨ 已成功儲存「${key}」房號的所有照片與悄悄話！已自動同步至雲端 ☁️`);
-    showToast(`✨ 成功儲存「${key}」房號的所有照片與悄悄話！`);
+    alert(`✨ 已成功儲存「${key}」房號的所有變更！已自動同步至雲端 ☁️`);
+    showToast(`✨ 成功儲存「${key}」房號的所有變更！`);
     renderAdminSavedList();
 };
 
