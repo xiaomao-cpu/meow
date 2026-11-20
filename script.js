@@ -1859,6 +1859,7 @@ function renderAdminSavedList(filterQuery = "") {
                                 <span>➕ 追加照片至「${escapeHtml(k)}」：</span>
                                 <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${escapeHtml(k)}', this)" style="font-size:11px; max-width:180px;" />
                             </div>
+                            <div id="room-upload-progress-${escapeHtml(k)}" style="display:none; font-size:12px; color:var(--gold); font-weight:bold;"></div>
                             <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px dashed rgba(0,0,0,0.1); padding-top:10px;">
                                 <span>✉️ 追加新信件／回信至「${escapeHtml(k)}」：</span>
                                 <button type="button" class="btn-sm" onclick="addLetterToRoomKey('${escapeHtml(k)}')">➕ 新增一封信</button>
@@ -1894,6 +1895,29 @@ function renderAdminSavedList(filterQuery = "") {
     listEl.innerHTML += hiddenHtml;
 }
 
+const IMGBB_API_KEY = "a4da89e76d7727a739381bee17721baa";
+
+async function uploadImageToImgBB(compressedDataUrl) {
+    const base64Data = String(compressedDataUrl || "").split(",")[1];
+    if (!base64Data) return null;
+    try {
+        const formData = new FormData();
+        formData.append("image", base64Data);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+            method: "POST",
+            body: formData
+        });
+        const result = await res.json();
+        if (result && result.success && result.data && result.data.url) {
+            return result.data.url;
+        }
+        console.error("ImgBB 上傳失敗:", result);
+    } catch (err) {
+        console.error("ImgBB 網路異常:", err);
+    }
+    return null;
+}
+
 window.addPhotosToRoomKey = async function(key, inputEl) {
     const files = Array.from(inputEl.files);
     if (!files.length) return;
@@ -1901,46 +1925,53 @@ window.addPhotosToRoomKey = async function(key, inputEl) {
     const progressEl = document.getElementById(`room-upload-progress-${key}`);
     if (progressEl) {
         progressEl.style.display = "block";
-        progressEl.textContent = `⏳ 正在上傳與處理 ${files.length} 張照片...`;
+        progressEl.textContent = `⏳ 正在上傳與處理 0 / ${files.length} 張照片...`;
     }
 
     const allData = getMemoriesData();
     if (!allData[key]) allData[key] = [];
 
     let successCount = 0;
+    let cloudUploadedCount = 0;
+
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        if (progressEl) {
+            progressEl.textContent = `⏳ 正在上傳第 ${i + 1} / ${files.length} 張照片至圖床...`;
+        }
+
         const compressed = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const img = await compressImage(e.target.result, 600, 0.65);
+                const img = await compressImage(e.target.result, 1200, 0.85);
                 resolve(img);
             };
             reader.readAsDataURL(file);
         });
 
-        let photoUrl = compressed;
-        if (CLOUD_SYNC_ENDPOINT) {
-            try {
-                const res = await fetch(CLOUD_SYNC_ENDPOINT, {
-                    method: "POST",
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ _action: "upload_image", data: compressed, filename: file.name || "photo.jpg" })
-                });
-                let result = null;
-                try { result = await res.json(); } catch(e) {}
-                if (result && result.ok && result.url) {
-                    photoUrl = result.url;
-                }
-            } catch(e) {}
+        // 統一改用 ImgBB 圖床取得公開網址，確保雲端同步與玩家手機端都能正常顯示
+        const uploadedUrl = await uploadImageToImgBB(compressed);
+        let photoUrl = uploadedUrl || compressed;
+        if (uploadedUrl) {
+            cloudUploadedCount++;
         }
 
         allData[key].push({ img: photoUrl, text: "" });
         successCount++;
     }
 
+    if (inputEl) inputEl.value = "";
+    if (progressEl) {
+        progressEl.style.display = "none";
+        progressEl.textContent = "";
+    }
+
     saveMemoriesData(allData);
-    showToast(`✨ 成功新增 ${successCount} 張照片至「${key}」並同步至雲端！`);
+    if (cloudUploadedCount === successCount) {
+        showToast(`✨ 成功上傳並新增 ${successCount} 張照片至「${key}」，已同步至雲端！`);
+    } else {
+        alert(`⚠️ 已新增 ${successCount} 張照片，但有 ${successCount - cloudUploadedCount} 張圖床上傳失敗（僅存於本機，其他裝置可能看不到），建議稍後重新上傳。`);
+    }
     renderAdminSavedList();
 };
 
@@ -2233,6 +2264,10 @@ function saveAdminMemory() {
     }
 
     if (uploadedBase64Images.length > 0) {
+        if (uploadedBase64Images.some(img => img === null)) {
+            alert("⏳ 照片還在陸續上傳至圖床中，請稍等全部顯示「✅ 上傳成功」後再按儲存！");
+            return;
+        }
         // 文件上傳模式：讀取每張照片配獨立的留言輸入框
         const perPhotoItems = document.querySelectorAll(".admin-per-photo-msg");
         uploadedBase64Images.forEach((img, i) => {
