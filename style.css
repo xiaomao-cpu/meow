@@ -97,6 +97,7 @@ button, input, textarea, select {
 }
 
 .home-screen,
+.briefing-screen,
 .quiz-screen,
 .result-screen {
     padding: 52px 36px 42px;
@@ -111,6 +112,7 @@ button, input, textarea, select {
 }
 
 .home-screen::before,
+.briefing-screen::before,
 .quiz-screen::before,
 .result-screen::before {
     content: "";
@@ -127,6 +129,7 @@ button, input, textarea, select {
 }
 
 .home-screen>*,
+.briefing-screen>*,
 .quiz-screen>*,
 .result-screen>* {
     position: relative;
@@ -135,6 +138,38 @@ button, input, textarea, select {
 
 .home-screen {
     padding: 54px 38px 44px;
+}
+
+.briefing-title {
+    margin: 8px 0 24px;
+    text-align: center;
+    font-size: 22px;
+    line-height: 1.9;
+    font-weight: 700;
+    color: var(--deep);
+    letter-spacing: 0.5px;
+    overflow: visible;
+}
+
+.briefing-body {
+    margin: 0 0 28px;
+    padding: 20px 22px;
+    border: 1px solid rgba(23, 18, 15, 0.13);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: 0 8px 18px rgba(18, 10, 6, 0.08);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.85;
+    text-align: left;
+}
+
+.briefing-body p {
+    margin: 0 0 14px;
+}
+
+.briefing-body p:last-child {
+    margin-bottom: 0;
 }
 
 h1 {
@@ -328,6 +363,7 @@ h1 {
     text-align: left;
     font-size: 18px;
     line-height: 1.6;
+    white-space: pre-line;
     border-color: rgba(23, 18, 15, 0.13);
     background: rgba(255, 255, 255, 0.72);
     box-shadow: 0 8px 18px rgba(18, 10, 6, 0.08);
@@ -359,7 +395,21 @@ h1 {
 }
 
 .result-screen {
-    padding: 16px;
+    padding: 52px 36px 42px;
+}
+
+.result-complete-card {
+    padding: 36px 20px 28px;
+    text-align: center;
+}
+
+.result-complete-title {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.7;
+    color: var(--deep);
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 .story-card {
@@ -555,7 +605,9 @@ h1 {
     }
 
     .home-screen,
-    .quiz-screen {
+    .briefing-screen,
+    .quiz-screen,
+    .result-screen {
         padding: 56px 44px 44px;
     }
 }

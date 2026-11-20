@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@400;600;700;900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260929_044100">
+    <link rel="stylesheet" href="style.css?v=20261120_160000">
 </head>
 <body>
     <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">開啟 BGM</button>
@@ -16,6 +16,18 @@
             <h1 id="main-title" style="cursor: pointer; user-select: none;">向生而死</h1>
             <p class="subtitle">「犯下罪孽的你，渴望光明的你，哪個才是真正的你？<br>如若你心中尚存一息善念，那麼你不配踏足於此。」</p>
             <button id="start-button" class="primary-button" type="button" onclick="startQuiz()">開始測驗</button>
+        </section>
+
+        <section id="briefing-screen" class="screen briefing-screen hidden">
+            <h2 class="briefing-title">歡迎來到墮҈̬̫̞̙̪̲̙̯̭̠̝͢落҉̧͚̮̜͙̥̩̮͙͕̞͙̟͉͖̖城̷̤̲͈̣̟̗̩̰̜͍͕̗͖͢.........<br>這裡是充滿信仰的烏托邦。：）</h2>
+            <div class="briefing-body">
+                <p>在踏入這座城邦之前，請先細細讀完以下幾句忠告：</p>
+                <p>在此地，任何荒誕與未知都可能悄然降臨，請懷抱一顆能承接一切的心踏足於此。<br>（您的心緒或許會如雲霄飛車般起起落落落落。）<br>不過別擔心，全程依舊洋溢著快樂的氛圍——應該。</p>
+                <p>本劇本為歡樂、情感、架空題材，並不包含任何催淚橋段。<br>若您是為了前來搭建衛生紙山的玩家，還請慎重斟酌後，再決定是否繼續前行。</p>
+                <p>此外，接下來的心測至關重要，請務必逐字審視後再作答。<br>您的每一個選擇，都關乎接下來的 8 個小時裡，您是否能笑著待到結束。</p>
+                <p>以上，若心存任何疑慮，歡迎隨時前來詢問。</p>
+            </div>
+            <button id="briefing-continue-button" class="primary-button" type="button" onclick="enterIntroFromBriefing()">朕已閱，繼續！</button>
         </section>
 
         <section id="quiz-screen" class="screen quiz-screen hidden">
@@ -34,11 +46,8 @@
         <section id="result-screen" class="screen result-screen hidden">
             <div id="result-content"></div>
             <div class="result-actions" style="flex-wrap: wrap; justify-content: center;">
-                <button id="poster-button" class="primary-button" type="button" style="background: var(--gold); border-color: var(--gold); color: #ffffff;">📸 生成結果海報</button>
-                <button id="copy-button" class="primary-button" type="button">一鍵複製結果</button>
                 <button id="restart-button" class="secondary-button" type="button">重新測驗</button>
             </div>
-            <p id="copy-status" class="copy-status" role="status"></p>
         </section>
 
         <!-- 隱藏彩蛋：游泉與畔 宿命記憶牆 -->
@@ -120,6 +129,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=20260929_044100"></script>
+    <script src="script.js?v=20261120_160000"></script>
 </body>
 </html>

@@ -118,7 +118,7 @@ const introQuestions = [
         label: "LINE 暱稱",
         text: "請輸入你的 LINE 暱稱",
         placeholder: "例如：小貓",
-        hint: "這會顯示在你的測驗結果裡。",
+        hint: "",
         error: "請輸入 LINE 暱稱。"
     },
     {
@@ -148,16 +148,16 @@ const FALLBACK_QUIZ_CONFIG = {
   "questions": [
     { "id": 0, "type": "single", "text": "請選擇您的性別", "options": [{ "val": "M", "text": "我是男生" }, { "val": "F", "text": "我是女生" }] },
     { "id": 1, "type": "single", "text": "您遇到一個可以為之付出一切的愛人，您希望他是什麼樣的人？", "options": [
-      { "val": "A", "text": "A 我希望對方為我付出得更多，但一切的前提都是我們足夠相愛。" },
-      { "val": "B", "text": "B 我從不覺得愛情是在付出，我為你做的一切，也是因為你曾是我生命中無可替代的光。" },
-      { "val": "C", "text": "C 我不會遇到一個愛人，因為在這個世界上我最愛的永遠是我自己，哪怕這個人真的出現了，我愛他的原因，也是因為對方與我是極其相似的人。" },
-      { "val": "D", "text": "D 我從不會真正的愛上某個人，而是我要成為感情中的上位者，成為感情中的獵手。甚至偽裝成楚楚可憐的獵物，這反而會讓我更加興奮。", "femaleOnly": true }
+      { "val": "A", "text": "A 願他是先向我俯身的人，將滿腔偏愛毫無保留地傾注於我。\n而這一切的前提，是我們同樣熾熱地深愛著彼此。" },
+      { "val": "B", "text": "B 愛從來不是一場衡量得失的付出。\n我甘願為你燃盡所有，只因在漫長晦暗的歲月裡，你曾是我生命中無可替代的微光。" },
+      { "val": "C", "text": "C 我本不信世間會有這樣一個人，畢竟我最深愛的永遠是自己。\n可那個人終究會出現，只不過是因為我在他眼底，看見了與我如出一轍的倒影。" },
+      { "val": "D", "text": "D 我從不打算交出真心，我只享受掌控這場情感博弈的愉悅。\n作為暗處的獵手，甚至披上楚楚可憐的皮囊誘他步步淪陷，才最令我沉醉。", "femaleOnly": true }
     ]},
     { "id": 2, "type": "single", "text": "您更想體驗哪種愛情？", "options": [
-      { "val": "A", "text": "A 我們之間，總是在錯過。我們彼此互為對方的白月光、我們「深愛」著彼此，可卻沒有時間和機會去「相愛」過，這是我們一生的遺憾，我們都會去盡力彌補，不讓我們留有遺憾。" },
-      { "val": "B", "text": "B 我們之間，說愛情太過庸俗。我們都深知最愛的人只有我們自己，但我們是彼此的倒影，是這個世界上最瞭解對方的人。我瘋狂地愛著自己，所以我同樣瘋狂地愛著你。" },
-      { "val": "C", "text": "C 我們之間，互為彼此的鐐銬。我們或許都是一個沒有安全感的個體，所以我們用極端的方式將對方留在身邊。即便肉體會被烙印痛苦，但如果這樣我們可以永遠相愛，那也是一件幸福的事。" },
-      { "val": "D", "text": "D 我們之間，不談真心，只談擁有。你曾在我心裡是一個太過於美好的存在，可我就是想要把你拉下神壇，成為跟我一樣壞的人，成為屬於我的存在。", "femaleOnly": true }
+      { "val": "A", "text": "A 命運總讓我們在擦肩的縫隙裡不斷錯過。\n我們彼此互為心底遙不可及的白月光，明明「深愛」入骨，卻始終欠缺一場真正「相愛」的光陰。\n那是刻在餘生裡的遺憾，而我願耗盡所有，去填補這份未竟的圓滿。" },
+      { "val": "B", "text": "B 用「愛情」來定義這段關係，未免太過庸俗。\n世上最值得傾心的終究是自己，可你偏偏是我的鏡中倒影，是塵世裡唯一能看透我本質的人。\n正因我如此瘋狂地迷戀著自己，才同樣無可救藥地沉溺於你。" },
+      { "val": "C", "text": "C 互為彼此最深的鐐銬，才是這場羈絆最真實的模樣。\n兩顆殘缺而惶恐的心，只能以最極端的姿態將對方死死扣留在身旁，即便身軀被刻下疼痛的烙印，只要能換來永恆的相守，於我而言便是極致的幸福。" },
+      { "val": "D", "text": "D 我們不問真心，只談佔有。\n你曾是我仰望過最潔淨無瑕的存在，可我偏想親手將你拉下神壇。\n唯有染上與我同樣的汙濁與罪孽，你才能徹底成為只屬於我的所有物。", "femaleOnly": true }
     ]},
     { "id": 3, "type": "multi", "text": "您絕對不能接受的雷點是？（多選題）", "options": [
       { "val": "A", "text": "A 我無法接受我的 cp 擁有一條姐妹線，占比程度大過於我。即使我與我的 cp 在故事中都沒有把愛情線放在第一位，即便我忙得不可開交有其他的事情要做，我也無法接受。" },
@@ -297,6 +297,7 @@ quizConfig = FALLBACK_QUIZ_CONFIG;
 function bindCoreEvents() {
     try {
         const startBtn = document.getElementById("start-button");
+        const briefingContinueBtn = document.getElementById("briefing-continue-button");
         const restartBtn = document.getElementById("restart-button");
         const copyBtn = document.getElementById("copy-button");
         const prevBtn = document.getElementById("prev-button");
@@ -305,6 +306,9 @@ function bindCoreEvents() {
 
         if (startBtn) {
             startBtn.onclick = startQuiz;
+        }
+        if (briefingContinueBtn) {
+            briefingContinueBtn.onclick = enterIntroFromBriefing;
         }
         if (restartBtn) {
             restartBtn.onclick = restartQuiz;
@@ -402,6 +406,12 @@ function startQuiz() {
     userMeta = { lineNickname: "", playDate: "" };
     historyStack = [];
     multiSelectState = [];
+    isIntroActive = false;
+    currentIntroStep = 0;
+    showScreen("briefing");
+}
+
+function enterIntroFromBriefing() {
     isIntroActive = true;
     currentIntroStep = 0;
     showScreen("quiz");
@@ -409,6 +419,7 @@ function startQuiz() {
 }
 
 window.startQuiz = startQuiz;
+window.enterIntroFromBriefing = enterIntroFromBriefing;
 window.showScreen = showScreen;
 window.restartQuiz = restartQuiz;
 window.nextQuestion = nextQuestion;
@@ -416,6 +427,7 @@ window.prevQuestion = prevQuestion;
 
 function showScreen(name) {
     const homeEl = document.getElementById("home-screen");
+    const briefingEl = document.getElementById("briefing-screen");
     const quizEl = document.getElementById("quiz-screen");
     const resultEl = document.getElementById("result-screen");
     const secretPanScreen = document.getElementById("secret-pan-screen");
@@ -423,6 +435,10 @@ function showScreen(name) {
     if (homeEl) {
         if (name === "home") homeEl.classList.remove("hidden");
         else homeEl.classList.add("hidden");
+    }
+    if (briefingEl) {
+        if (name === "briefing") briefingEl.classList.remove("hidden");
+        else briefingEl.classList.add("hidden");
     }
     if (quizEl) {
         if (name === "quiz") quizEl.classList.remove("hidden");
@@ -478,9 +494,13 @@ function renderQuestion() {
     if (isMulti) {
         multiSelectState = userAnswers[question.id] ? [...userAnswers[question.id]] : [];
     }
+    const totalQuestions = question.id === 0
+        ? Math.max(quizConfig.paths.M.length, quizConfig.paths.F.length)
+        : currentPath.length;
     els.questionText.textContent = question.text;
-    els.questionCount.textContent = `第 ${currentStep + 1} 題 / 共 ${currentPath.length} 題`;
-    els.progress.style.width = `${(currentStep / Math.max(1, currentPath.length - 1)) * 100}%`;
+    els.questionCount.classList.remove("hidden");
+    els.questionCount.textContent = `第 ${currentStep + 1} 題 / 共 ${totalQuestions} 題`;
+    els.progress.style.width = `${(currentStep / Math.max(1, totalQuestions - 1)) * 100}%`;
     els.prev.classList.toggle("hidden", currentStep === 0 && historyStack.length === 0);
     els.next.classList.toggle("hidden", !isMulti);
     els.next.textContent = "下一題";
@@ -525,7 +545,8 @@ function renderIntroQuestion() {
     const question = introQuestions[currentIntroStep];
     const value = userMeta[question.id] || "";
     els.questionText.textContent = question.text;
-    els.questionCount.textContent = `接入資料 ${String(currentIntroStep + 1).padStart(2, "0")} / 02`;
+    els.questionCount.textContent = "";
+    els.questionCount.classList.add("hidden");
     els.progress.style.width = `${(currentIntroStep / introQuestions.length) * 100}%`;
     els.prev.classList.toggle("hidden", currentIntroStep === 0 && historyStack.length === 0);
     els.next.classList.remove("hidden");
@@ -542,7 +563,7 @@ function renderIntroQuestion() {
                 autocomplete="off"
                 ${question.id === "playDate" ? 'inputmode="numeric" maxlength="10"' : 'maxlength="40"'}
             >
-            <p class="input-hint">${question.hint}</p>
+            ${question.hint ? `<p class="input-hint">${question.hint}</p>` : ""}
             <p id="intro-error" class="input-error" aria-live="polite"></p>
         </label>
     `;
@@ -796,29 +817,7 @@ function renderResult(highestId, scores, targetIds) {
         return pctB - pctA;
     });
 
-    const scoreRows = rankedIds.map(id => {
-        const pct = Math.round((scores[id] / quizConfig.maxScores[id]) * 100);
-        const barWidth = Math.min(50, Math.abs(pct) / 2);
-        const direction = pct < 0 ? "negative" : "positive";
-        return `
-            <div class="score-row">
-                <div class="score-head-wrap">
-                    <img class="score-avatar" src="${sanitizeUrl(quizConfig.characters[id].image)}" alt="" loading="lazy">
-                    <div class="score-info">
-                        <div class="score-head">
-                            <span>${escapeHtml(quizConfig.characters[id].name)}</span>
-                            <span>${pct}%</span>
-                        </div>
-                        <div class="score-track">
-                            <div class="score-fill ${direction}" style="width: ${barWidth}%;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join("");
-
-    // 整理其他角色的分數資訊
+    // 整理其他角色的分數資訊（僅供後台試算表紀錄，不顯示給玩家）
     const otherRanked = rankedIds.slice(1);
     const formatScore = (id) => {
         if (!id) return "";
@@ -834,8 +833,9 @@ function renderResult(highestId, scores, targetIds) {
 
     const lineNickname = userMeta.lineNickname || "未填";
     const playDate = userMeta.playDate || "未填";
-    const copyText = `LINE 暱稱：${lineNickname}\n遊玩時間：${playDate}\n\n我在《向生而死》心測中測到了「${character.name}」\n匹配度：${matchPercent}%\n其他角色：${otherScoresStr}\n\n${character.resultText}\n\n你會走向哪一個角色？`;
-    els.copy.dataset.copyText = copyText;
+    if (els.copy) {
+        delete els.copy.dataset.copyText;
+    }
 
     // 取得選項完整中文內容的輔助函數
     function getAnswerText(questionId, val) {
@@ -879,44 +879,25 @@ function renderResult(highestId, scores, targetIds) {
         }).catch(err => console.error("後台傳送失敗:", err));
     }
 
-    // Secret Pan & Youquan Logic
-els.resultContent.innerHTML = `
-        <article class="story-card" style="--result-image: url('${sanitizeUrl(character.image)}');">
-            <div class="story-content">
-                <div class="story-label">最契合角色</div>
-                <h2 class="story-name">${escapeHtml(character.name)}</h2>
-                <div class="story-match">匹配度 ${matchPercent}%</div>
-            </div>
-        </article>
-        <section class="result-panel">
-            <div class="player-meta">
-                <span>LINE 暱稱｜${escapeHtml(lineNickname)}</span>
-                <span>遊玩時間｜${escapeHtml(playDate)}</span>
-            </div>
-            <p class="result-analysis">${escapeHtml(character.resultText)}</p>
-            <h3 class="panel-title">角色相性排行</h3>
-            <div class="score-list">${scoreRows}</div>
+    // 隱藏分角結果，僅顯示完成提示
+    els.resultContent.innerHTML = `
+        <section class="result-complete-card">
+            <h2 class="result-complete-title">測驗已完成，請靜候分角結果。</h2>
         </section>
     `;
 
-    currentResultData = {
-        characterName: character.name,
-        characterImage: character.image,
-        resultText: character.resultText,
-        matchPercent: matchPercent,
-        lineNickname: lineNickname,
-        playDate: playDate
-    };
+    currentResultData = null;
 
     showScreen("result");
 }
 
 async function copyResult() {
+    if (!els.copy) return;
     const text = els.copy.dataset.copyText;
     if (!text) return;
     try {
         await navigator.clipboard.writeText(text);
-        els.copyStatus.textContent = "結果已複製";
+        if (els.copyStatus) els.copyStatus.textContent = "結果已複製";
     } catch (error) {
         const textarea = document.createElement("textarea");
         textarea.value = text;
@@ -926,7 +907,7 @@ async function copyResult() {
         textarea.select();
         document.execCommand("copy");
         textarea.remove();
-        els.copyStatus.textContent = "結果已複製";
+        if (els.copyStatus) els.copyStatus.textContent = "結果已複製";
     }
 }
 
@@ -937,7 +918,7 @@ function restartQuiz() {
     }
     isBgmOn = false;
     updateAudioButton();
-    els.copyStatus.textContent = "";
+    if (els.copyStatus) els.copyStatus.textContent = "";
     showScreen("home");
 }
 
