@@ -148,7 +148,84 @@ button, input, textarea, select {
     font-weight: 700;
     color: var(--deep);
     letter-spacing: 0.5px;
-    overflow: visible;
+    overflow: hidden;
+}
+
+.glitch-word {
+    position: relative;
+    display: inline-block;
+    color: var(--accent);
+    text-shadow:
+        -1.5px 0 rgba(123, 36, 52, 0.55),
+        1.5px 0 rgba(38, 86, 108, 0.48);
+    animation: glitch-jitter 3.2s infinite;
+}
+
+.glitch-word::before,
+.glitch-word::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.glitch-word::before {
+    color: rgba(155, 28, 49, 0.72);
+    transform: translate(-1.5px, -0.5px);
+    clip-path: inset(0 0 54% 0);
+    animation: glitch-slice-top 2.8s infinite linear alternate-reverse;
+}
+
+.glitch-word::after {
+    color: rgba(34, 72, 92, 0.62);
+    transform: translate(1.5px, 0.5px);
+    clip-path: inset(56% 0 0 0);
+    animation: glitch-slice-bottom 2.4s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-jitter {
+    0%, 88%, 100% {
+        transform: translate(0, 0);
+    }
+    90% {
+        transform: translate(-1px, 0.5px);
+    }
+    93% {
+        transform: translate(1.5px, -0.5px);
+    }
+    96% {
+        transform: translate(-0.5px, 0);
+    }
+}
+
+@keyframes glitch-slice-top {
+    0%, 76%, 100% {
+        transform: translate(-1.5px, 0);
+        clip-path: inset(0 0 58% 0);
+    }
+    80% {
+        transform: translate(2.5px, -1px);
+        clip-path: inset(8% 0 46% 0);
+    }
+    84% {
+        transform: translate(-2px, 0.5px);
+        clip-path: inset(16% 0 52% 0);
+    }
+}
+
+@keyframes glitch-slice-bottom {
+    0%, 72%, 100% {
+        transform: translate(1.5px, 0);
+        clip-path: inset(58% 0 0 0);
+    }
+    76% {
+        transform: translate(-2.5px, 1px);
+        clip-path: inset(48% 0 10% 0);
+    }
+    82% {
+        transform: translate(2px, -0.5px);
+        clip-path: inset(64% 0 4% 0);
+    }
 }
 
 .briefing-body {
