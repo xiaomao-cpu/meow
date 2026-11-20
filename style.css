@@ -1064,6 +1064,114 @@ h1 {
     }
 }
 
+/* ── 記憶牆四種排版模式（手機與電腦皆不跑版） ─────────── */
+.polaroid-wall.layout-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 18px;
+    align-items: start;
+    min-height: auto !important;
+    padding: 10px 4px 20px;
+}
+
+.polaroid-wall.layout-grid .polaroid-card {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    width: 100%;
+    cursor: pointer;
+    touch-action: auto;
+}
+
+.polaroid-wall.layout-grid .polaroid-img-wrap,
+.polaroid-wall.layout-single .polaroid-img-wrap,
+.polaroid-wall.layout-scatter .polaroid-img-wrap,
+.polaroid-wall.layout-free .polaroid-img-wrap {
+    height: auto;
+    aspect-ratio: 4 / 3;
+}
+
+.polaroid-wall.layout-single {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    min-height: auto !important;
+    padding: 10px 4px 20px;
+}
+
+.polaroid-wall.layout-single .polaroid-card {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    width: min(100%, 340px);
+    cursor: pointer;
+    touch-action: auto;
+}
+
+.polaroid-wall.layout-scatter {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px 18px;
+    align-items: start;
+    min-height: auto !important;
+    padding: 12px 6px 36px;
+}
+
+.polaroid-wall.layout-scatter .polaroid-card {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    width: 100%;
+    cursor: pointer;
+    touch-action: auto;
+}
+
+.polaroid-wall.layout-scatter .polaroid-card:nth-child(even) {
+    margin-top: 26px;
+}
+
+.polaroid-wall.layout-free {
+    position: relative;
+    width: 100%;
+    min-height: 520px;
+}
+
+.polaroid-wall.layout-free .polaroid-card {
+    position: absolute;
+    width: 44%;
+    max-width: 210px;
+    touch-action: none;
+}
+
+@media (max-width: 420px) {
+    .polaroid-wall.layout-grid,
+    .polaroid-wall.layout-scatter {
+        gap: 18px 12px;
+    }
+    .polaroid-wall.layout-grid .polaroid-card,
+    .polaroid-wall.layout-scatter .polaroid-card {
+        padding: 8px 8px 14px;
+    }
+    .polaroid-wall.layout-grid .polaroid-note,
+    .polaroid-wall.layout-scatter .polaroid-note {
+        font-size: 15px;
+    }
+}
+
+.admin-preview-layout-banner {
+    margin: 0 auto 14px;
+    padding: 10px 14px;
+    max-width: 520px;
+    border-radius: 8px;
+    background: rgba(36, 20, 19, 0.82);
+    color: #fffaf4;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
+    border: 1px solid rgba(182, 139, 74, 0.45);
+}
+
 .secret-actions {
     display: flex;
     justify-content: center;

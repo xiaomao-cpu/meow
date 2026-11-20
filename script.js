@@ -1104,10 +1104,25 @@ window.recoverDeletedRoom = function(key) {
     syncMemoriesFromCloud(true);
 }
 
+const ROOM_LAYOUT_LABELS = {
+    grid: "整齊雙欄相簿",
+    single: "單欄故事牆",
+    scatter: "錯落拍立得牆",
+    free: "自由拖曳模式"
+};
+
+function getRoomLayout(roomCards) {
+    const cfg = (roomCards || []).find(item => item && item.type === "room_config");
+    if (cfg && cfg.layout && ROOM_LAYOUT_LABELS[cfg.layout]) {
+        return cfg.layout;
+    }
+    return "grid"; // 預設整齊雙欄相簿，手機與電腦皆不跑版
+}
+
 // 判斷是否為系統預設範例卡片
 function isDefaultSampleCard(item) {
     if (!item) return true;
-    if (item.type === "letter") return false; // 確保信件不會被當成預設卡片刪除
+    if (item.type === "letter" || item.type === "room_config") return false; // 確保信件與房間排版設定不會被刪除
     if (!item.img) return true;
     const imgStr = String(item.img);
     const txtStr = String(item.text || "");
@@ -1128,7 +1143,7 @@ function createLetterItem(text = "") {
     };
 }
 
-// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重，並支援多封信件完整同步，自動剔除已被刪除的房號
+// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重，並支援多封信件與房間排版設定完整同步，自動剔除已被刪除的房號
 function mergeMemoriesDeep(base, incoming) {
     const result = { ...base };
     const deletedKeys = getDeletedKeys();
@@ -1147,14 +1162,24 @@ function mergeMemoriesDeep(base, incoming) {
             result[key] = cleanIncoming;
         } else {
             const localClean = result[key].filter(item => !isDefaultSampleCard(item));
-            const localPhotos = localClean.filter(item => item.type !== "letter");
+            const localConfig = localClean.find(item => item.type === "room_config");
+            const incomingConfig = cleanIncoming.find(item => item.type === "room_config");
+            const mergedConfig = incomingConfig || localConfig;
+
+            const localPhotos = localClean.filter(item => item.type !== "letter" && item.type !== "room_config");
             const localLetters = localClean.filter(item => item.type === "letter");
+            const incomingPhotos = cleanIncoming.filter(item => item.type !== "letter" && item.type !== "room_config" && item.img);
             const incomingLetters = cleanIncoming.filter(item => item.type === "letter");
 
-            // 照片以 img 去重合併
-            const existingImgs = new Set(localPhotos.filter(i => i.img).map(item => item.img));
-            const toAddPhotos = cleanIncoming.filter(item => item.type !== "letter" && item.img && !existingImgs.has(item.img));
-            const mergedPhotos = [...localPhotos, ...toAddPhotos];
+            // 照片以 img 去重合併，並同步雲端的排版座標 (leftPct / topRatio / zIndex)
+            const localPhotoMap = new Map(localPhotos.filter(i => i.img).map(i => [i.img, i]));
+            const incomingImgSet = new Set(incomingPhotos.map(i => i.img));
+            const syncedPhotos = incomingPhotos.map(inc => {
+                const loc = localPhotoMap.get(inc.img);
+                return loc ? { ...loc, ...inc } : inc;
+            });
+            const extraLocalPhotos = localPhotos.filter(loc => loc.img && !incomingImgSet.has(loc.img));
+            const mergedPhotos = [...syncedPhotos, ...extraLocalPhotos];
 
             // 多封信件合併：雲端為主體，同時保留本機剛新增、尚未完成雲端同步的信件（以 id 區分）
             let mergedLetters = localLetters;
@@ -1179,7 +1204,11 @@ function mergeMemoriesDeep(base, incoming) {
                 }
             }
 
-            result[key] = [...mergedPhotos, ...mergedLetters];
+            result[key] = [
+                ...mergedPhotos,
+                ...mergedLetters,
+                ...(mergedConfig ? [mergedConfig] : [])
+            ];
         }
     });
     return result;
@@ -1191,7 +1220,7 @@ function stripBase64ForCloud(data) {
     const stripped = {};
     for (const key in data) {
         stripped[key] = (data[key] || []).filter(item => {
-            if (item.type === "letter") return true; // 保留信件
+            if (item.type === "letter" || item.type === "room_config") return true; // 保留信件與排版設定
             if (!item.img) return true; // 保留沒有圖片的純文字
             // 濾除 base64 圖片 (以 data:image 開頭)
             return !String(item.img).startsWith("data:image");
@@ -1334,7 +1363,7 @@ function checkUrlSyncMemories() {
 let activeSecretKey = "";
 let maxPolaroidZIndex = 100;
 
-function initPolaroidDrag(card, cardIndex) {
+function initPolaroidDrag(card, cardIndex, layoutMode = "grid") {
     let isDragging = false;
     let hasMoved = false;
     let startX = 0;
@@ -1346,9 +1375,11 @@ function initPolaroidDrag(card, cardIndex) {
         if (e.button !== undefined && e.button !== 0) return;
         playPaperSFX();
 
-        // 只有後台管理員模式才能拖曳，一般玩家只能點擊放大
-        if (!isYouquanAdminMode) {
-            bringPolaroidToFront(card);
+        // 只有在「後台管理員預覽」且為「自由拖曳模式 (free)」時才啟用拖曳；其餘模式或一般玩家點擊皆開啟放大檢視
+        if (!isYouquanAdminMode || layoutMode !== "free") {
+            if (!card.classList.contains("letter-card")) {
+                bringPolaroidToFront(card);
+            }
             return;
         }
         
@@ -1366,6 +1397,8 @@ function initPolaroidDrag(card, cardIndex) {
         initialLeft = card.offsetLeft;
         initialTop = card.offsetTop;
 
+        const wallEl = document.getElementById("polaroid-wall");
+
         const onPointerMove = (evt) => {
             if (!isDragging) return;
 
@@ -1380,8 +1413,13 @@ function initPolaroidDrag(card, cardIndex) {
 
             if (evt.cancelable) evt.preventDefault();
 
-            card.style.left = (initialLeft + deltaX) + "px";
-            card.style.top = (initialTop + deltaY) + "px";
+            const wallW = wallEl ? Math.max(wallEl.clientWidth, 260) : 500;
+            const maxLeftPx = Math.max(0, wallW - card.offsetWidth);
+            const clampedLeft = Math.max(0, Math.min(maxLeftPx, initialLeft + deltaX));
+            const clampedTop = Math.max(0, initialTop + deltaY);
+
+            card.style.left = `${((clampedLeft / wallW) * 100).toFixed(2)}%`;
+            card.style.top = `${Math.round(clampedTop)}px`;
         };
 
         const onPointerUp = () => {
@@ -1391,19 +1429,35 @@ function initPolaroidDrag(card, cardIndex) {
 
             // 若位移距離極小，判定為點擊 -> 觸發照片放大 Modal
             if (!hasMoved) {
-                bringPolaroidToFront(card);
+                if (!card.classList.contains("letter-card")) {
+                    bringPolaroidToFront(card);
+                }
             } else {
-                // 儲存手動調整後的位置與層級
+                // 儲存相對百分比座標（跨手機與電腦等比例鎖定，絕不跑版）
                 if (activeSecretKey && cardIndex !== undefined) {
-                    const allData = getMemoriesData();
-                    if (!allData[activeSecretKey]) {
-                        allData[activeSecretKey] = DEFAULT_PAN_MEMORIES.map(m => ({ ...m }));
+                    const wallW = wallEl ? Math.max(wallEl.clientWidth, 260) : 500;
+                    const maxLeftPct = Math.max(0, 100 - (card.offsetWidth / wallW) * 100);
+                    const leftPct = Math.max(0, Math.min(maxLeftPct, (card.offsetLeft / wallW) * 100));
+                    const topRatio = Math.max(0, card.offsetTop / wallW);
+
+                    card.style.left = `${leftPct.toFixed(2)}%`;
+
+                    // 動態更新牆面高度，避免拖到下方被截斷
+                    if (wallEl) {
+                        const neededH = card.offsetTop + card.offsetHeight + 80;
+                        const curH = parseInt(wallEl.style.minHeight, 10) || 520;
+                        if (neededH > curH) wallEl.style.minHeight = neededH + "px";
                     }
-                    if (allData[activeSecretKey][cardIndex]) {
-                        allData[activeSecretKey][cardIndex].left = card.style.left;
-                        allData[activeSecretKey][cardIndex].top = card.style.top;
-                        allData[activeSecretKey][cardIndex].zIndex = card.style.zIndex;
+
+                    const allData = getMemoriesData();
+                    if (allData[activeSecretKey] && allData[activeSecretKey][cardIndex]) {
+                        allData[activeSecretKey][cardIndex].leftPct = Number(leftPct.toFixed(2));
+                        allData[activeSecretKey][cardIndex].topRatio = Number(topRatio.toFixed(4));
+                        allData[activeSecretKey][cardIndex].zIndex = Number(card.style.zIndex) || 1;
+                        delete allData[activeSecretKey][cardIndex].left;
+                        delete allData[activeSecretKey][cardIndex].top;
                         saveMemoriesData(allData, true);
+                        showToast("✨ 已儲存排版比例並同步至雲端！");
                     }
                 }
             }
@@ -1436,10 +1490,11 @@ async function openSecretPanScreen(key, fromAdmin = false) {
     await syncMemoriesFromCloud();
 
     const allData = getMemoriesData();
-    let memories = allData[activeSecretKey];
+    const rawRoomCards = allData[activeSecretKey] || [];
+    const layoutMode = getRoomLayout(rawRoomCards);
 
-    // 過濾非預設卡片的真正自訂照片
-    memories = (memories || []).filter(item => !isDefaultSampleCard(item));
+    // 過濾非預設卡片與房間設定的真正內容（照片與信件）
+    let memories = rawRoomCards.filter(item => !isDefaultSampleCard(item) && item.type !== "room_config");
 
     if (memories.length === 0) {
         if (!fromAdmin) {
@@ -1454,6 +1509,27 @@ async function openSecretPanScreen(key, fromAdmin = false) {
 
     const wallEl = document.getElementById("polaroid-wall");
     if (wallEl) {
+        // 管理員預覽時顯示排版模式提示條
+        let bannerEl = document.getElementById("admin-preview-layout-banner");
+        if (isYouquanAdminMode) {
+            if (!bannerEl) {
+                bannerEl = document.createElement("div");
+                bannerEl.id = "admin-preview-layout-banner";
+                bannerEl.className = "admin-preview-layout-banner";
+                wallEl.parentNode.insertBefore(bannerEl, wallEl);
+            }
+            bannerEl.style.display = "block";
+            if (layoutMode === "free") {
+                bannerEl.innerHTML = `🖐️ 目前為「<strong>自由拖曳模式</strong>」：直接拖曳照片或信封即可調整位置，放開會自動依比例儲存並同步給玩家（手機與電腦比例一致）`;
+            } else {
+                bannerEl.innerHTML = `📐 目前為「<strong>${ROOM_LAYOUT_LABELS[layoutMode] || "整齊雙欄相簿"}</strong>」（自動適配手機與電腦，不會跑版）；若想手動拖曳位置，請回後台切換為「自由拖曳模式」`;
+            }
+        } else if (bannerEl) {
+            bannerEl.style.display = "none";
+        }
+
+        wallEl.className = `polaroid-wall layout-${layoutMode}`;
+
         const rawList = allData[activeSecretKey] || [];
         const displayItems = [];
         const letterItems = [];
@@ -1475,52 +1551,47 @@ async function openSecretPanScreen(key, fromAdmin = false) {
             displayItems.push({
                 _isEnvelopeBundle: true,
                 _realIdx: firstLetterRealIdx,
-                left: anchorLetter.left,
-                top: anchorLetter.top,
+                leftPct: anchorLetter.leftPct,
+                topRatio: anchorLetter.topRatio,
                 zIndex: anchorLetter.zIndex,
                 letters: letterItems
             });
         }
 
         const n = displayItems.length;
-
-        const CARD_H = 260;
-        const MIN_PEEK = 65;
-        const ROW_H_MAX = CARD_H - 60;
-
-        let rowH;
-        if (n <= 5) {
-            rowH = ROW_H_MAX;
-        } else {
-            rowH = Math.max(MIN_PEEK, ROW_H_MAX - (n - 5) * 30);
-        }
-
+        const wallW = wallEl.clientWidth || Math.min(window.innerWidth - 48, 520);
         const rand = (seed) => (((seed * 1664525 + 1013904223) & 0x7fffffff) / 0x7fffffff);
 
-        const positions = displayItems.map((_, i) => {
-            const isLeft = i % 2 === 0;
-            const r = rand(i * 13 + 7);
-            const leftPct = isLeft
-                ? 2 + r * 20
-                : 50 + r * 16;
-            const topPx = i * rowH + rand(i * 31 + 17) * 20;
-            return { left: leftPct, top: Math.round(topPx) };
-        });
-
-        const totalH = (positions[n - 1]?.top ?? 0) + CARD_H + 80;
-        wallEl.style.minHeight = totalH + "px";
-
+        let maxBottomPx = 420;
         const safeRoomKeyAttr = activeSecretKey.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
         wallEl.innerHTML = displayItems.map((item, index) => {
             const rotSeed = rand(index * 17 + 5);
-            const rot = Math.round((rotSeed * 28 - 14) * 10) / 10;
-            const { left, top } = positions[index];
+            let rot = 0;
+            if (layoutMode === "grid") {
+                rot = index % 2 === 0 ? -1.8 : 1.8;
+            } else if (layoutMode === "single") {
+                rot = index % 2 === 0 ? -1.1 : 1.1;
+            } else if (layoutMode === "scatter") {
+                rot = Math.round((rotSeed * 12 - 6) * 10) / 10;
+            } else {
+                rot = Math.round((rotSeed * 14 - 7) * 10) / 10;
+            }
 
-            const isMobile = window.innerWidth <= 768;
-            const cardLeft = (!isMobile && item.left !== undefined) ? item.left : (typeof left === "number" ? `${left}%` : `${left}px`);
-            const cardTop = (!isMobile && item.top !== undefined) ? item.top : `${top}px`;
-            const cardZIndex = (!isMobile && item.zIndex !== undefined) ? item.zIndex : (index + 1);
+            let posStyle = "";
+            if (layoutMode === "free") {
+                const defaultCol = index % 2;
+                const defaultRow = Math.floor(index / 2);
+                const leftPct = typeof item.leftPct === "number"
+                    ? item.leftPct
+                    : (defaultCol === 0 ? 4 : 52);
+                const topPx = typeof item.topRatio === "number"
+                    ? Math.round(item.topRatio * wallW)
+                    : Math.round(defaultRow * Math.max(220, wallW * 0.52) + (defaultCol === 1 ? 24 : 0));
+                const zIdx = item.zIndex !== undefined ? item.zIndex : (index + 1);
+                if (topPx + 280 > maxBottomPx) maxBottomPx = topPx + 280;
+                posStyle = `left: ${leftPct}%; top: ${topPx}px; z-index: ${zIdx};`;
+            }
 
             if (item._isEnvelopeBundle) {
                 const totalLetters = item.letters.length;
@@ -1539,12 +1610,12 @@ async function openSecretPanScreen(key, fromAdmin = false) {
 
                 return `
                 <div class="polaroid-card letter-card" id="room-envelope-card"
-                     style="--rot: ${rot}deg; left: ${cardLeft}; top: ${cardTop}; z-index: ${cardZIndex}; background: #fdf5e6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+                     style="--rot: ${rot}deg; ${posStyle} background: #fdf5e6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
                     <div class="letter-envelope-wrap" onclick="event.stopPropagation(); openPlayerLetterModal('${safeRoomKeyAttr}')">
                         <span>✉️</span>
                         ${unreadCount > 0 ? `<span class="letter-unread-dot">${unreadCount}</span>` : ""}
                     </div>
-                    <div class="polaroid-note" style="color: var(--gold); cursor: pointer;" onclick="event.stopPropagation(); openPlayerLetterModal('${safeRoomKeyAttr}')">${titleText}</div>
+                    <div class="polaroid-note" style="color: var(--gold); cursor: pointer; text-align: center;" onclick="event.stopPropagation(); openPlayerLetterModal('${safeRoomKeyAttr}')">${titleText}</div>
                     <div id="room-envelope-status">${statusHtml}</div>
                 </div>
                 `;
@@ -1552,7 +1623,7 @@ async function openSecretPanScreen(key, fromAdmin = false) {
 
             return `
                 <div class="polaroid-card"
-                     style="--rot: ${rot}deg; left: ${cardLeft}; top: ${cardTop}; z-index: ${cardZIndex};">
+                     style="--rot: ${rot}deg; ${posStyle}">
                     <div class="polaroid-tape"></div>
                     <div class="polaroid-img-wrap">
                         <img src="${sanitizeUrl(item.img)}" alt="memory" loading="lazy" />
@@ -1562,9 +1633,11 @@ async function openSecretPanScreen(key, fromAdmin = false) {
             `;
         }).join("");
 
+        wallEl.style.minHeight = layoutMode === "free" ? (maxBottomPx + 60) + "px" : "";
+
         wallEl.querySelectorAll(".polaroid-card").forEach((card, idx) => {
             const realIdx = displayItems[idx]?._realIdx;
-            initPolaroidDrag(card, realIdx !== undefined && realIdx !== -1 ? realIdx : idx);
+            initPolaroidDrag(card, realIdx !== undefined && realIdx !== -1 ? realIdx : idx, layoutMode);
         });
     }
 
@@ -1812,13 +1885,16 @@ function renderAdminSavedList(filterQuery = "") {
         keys.map(k => {
             const cards = allData[k];
             let letterSeq = 0;
-            const photoCount = cards.filter(c => c.type !== "letter").length;
+            const currentLayout = getRoomLayout(cards);
+            const safeKeyJs = escapeHtml(k).replace(/'/g, "\\'");
+            const photoCount = cards.filter(c => c.type !== "letter" && c.type !== "room_config").length;
             const letterCount = cards.filter(c => c.type === "letter").length;
             const summaryBadge = letterCount > 0
                 ? `(${photoCount}張照片 / ${letterCount}封信)`
                 : `(${photoCount}張)`;
 
             const cardItems = cards.map((card, idx) => {
+                if (card.type === "room_config") return "";
                 if (card.type === "letter") {
                     letterSeq += 1;
                     const safeTxt = (card.text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -1842,7 +1918,7 @@ function renderAdminSavedList(filterQuery = "") {
                             <textarea id="reply-${k}-${idx}" class="modal-textarea" rows="2" style="font-size:13px;margin:0;background:#f4eee1;color:#333;" placeholder="尚未回信">${safeReply}</textarea>
                         </div>
                         <div class="edit-card-actions" style="justify-content: flex-end; margin-top:5px;">
-                            <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除這封信">🗑 刪除第 ${letterSeq} 封信</button>
+                            <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${safeKeyJs}',${idx})" title="刪除這封信">🗑 刪除第 ${letterSeq} 封信</button>
                         </div>
                     </div>
                     `;
@@ -1864,9 +1940,9 @@ function renderAdminSavedList(filterQuery = "") {
                                 style="font-size:13px;margin:0;"
                             >${safeTxt}</textarea>
                             <div class="edit-card-actions">
-                                <button type="button" class="btn-sm" onclick="moveCardItem('${k}',${idx},-1)" ${idx === 0 ? 'disabled' : ''} title="向上排序">⬆️</button>
-                                <button type="button" class="btn-sm" onclick="moveCardItem('${k}',${idx},1)" ${idx === cards.length - 1 ? 'disabled' : ''} title="向下排序">⬇️</button>
-                                <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除此照片">🗑</button>
+                                <button type="button" class="btn-sm" onclick="moveCardItem('${safeKeyJs}',${idx},-1)" ${idx === 0 ? 'disabled' : ''} title="向上排序">⬆️</button>
+                                <button type="button" class="btn-sm" onclick="moveCardItem('${safeKeyJs}',${idx},1)" ${idx === cards.length - 1 ? 'disabled' : ''} title="向下排序">⬇️</button>
+                                <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${safeKeyJs}',${idx})" title="刪除此照片">🗑</button>
                             </div>
                         </div>
                     </div>
@@ -1882,28 +1958,42 @@ function renderAdminSavedList(filterQuery = "") {
                             <span style="font-size:12px;font-weight:400;color:var(--muted);">${summaryBadge}</span>
                         </div>
                         <div style="display:flex; gap:6px;">
-                            <button type="button" class="btn-sm" onclick="event.stopPropagation(); previewAdminKey('${escapeHtml(k)}')">👁️ 預覽</button>
-                            <button type="button" class="btn-sm btn-sm-danger" onclick="event.stopPropagation(); deleteAdminKey('${escapeHtml(k)}')">清空</button>
+                            <button type="button" class="btn-sm" onclick="event.stopPropagation(); previewAdminKey('${safeKeyJs}')">👁️ 預覽</button>
+                            <button type="button" class="btn-sm btn-sm-danger" onclick="event.stopPropagation(); deleteAdminKey('${safeKeyJs}')">清空</button>
                         </div>
                     </summary>
                     <div class="edit-key-content" style="margin-top:10px;">
+                        <!-- 房間排版樣式控制列 -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px; padding:8px 10px; background:rgba(123,36,52,0.06); border:1px solid rgba(123,36,52,0.18); border-radius:6px; font-size:13px;">
+                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <span style="font-weight:bold; color:var(--deep);">🖼️ 排版樣式：</span>
+                                <select onchange="setRoomLayout('${safeKeyJs}', this.value)" style="padding:4px 8px; border-radius:5px; border:1px solid var(--line); background:#fff; font-size:13px; color:var(--ink);">
+                                    <option value="grid" ${currentLayout === "grid" ? "selected" : ""}>整齊雙欄相簿（推薦・不重疊）</option>
+                                    <option value="single" ${currentLayout === "single" ? "selected" : ""}>單欄故事牆（置中大圖）</option>
+                                    <option value="scatter" ${currentLayout === "scatter" ? "selected" : ""}>錯落拍立得牆（安全間距）</option>
+                                    <option value="free" ${currentLayout === "free" ? "selected" : ""}>自由拖曳模式（預覽內拖曳鎖定比例）</option>
+                                </select>
+                            </div>
+                            ${currentLayout === "free" ? `<button type="button" class="btn-sm" onclick="resetRoomLayoutPositions('${safeKeyJs}')" title="清除手動拖曳位置，恢復預設排法">🔄 重置位置</button>` : ""}
+                        </div>
+
                         ${cardItems}
                         
                         <!-- 在特定房號底下追加上傳與寫信 -->
                         <div style="margin-top:10px; padding:10px; background:rgba(182,139,74,0.06); border:1px dashed var(--line); border-radius:6px; display:flex; flex-direction:column; gap:10px; font-size:13px;">
                             <div style="display:flex; align-items:center; justify-content:space-between;">
                                 <span>➕ 追加照片至「${escapeHtml(k)}」：</span>
-                                <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${escapeHtml(k)}', this)" style="font-size:11px; max-width:180px;" />
+                                <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${safeKeyJs}', this)" style="font-size:11px; max-width:180px;" />
                             </div>
                             <div id="room-upload-progress-${escapeHtml(k)}" style="display:none; font-size:12px; color:var(--gold); font-weight:bold;"></div>
                             <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px dashed rgba(0,0,0,0.1); padding-top:10px;">
                                 <span>✉️ 追加新信件／回信至「${escapeHtml(k)}」：</span>
-                                <button type="button" class="btn-sm" onclick="event.stopPropagation(); addLetterToRoomKey('${escapeHtml(k).replace(/'/g, "\\'")}')">➕ 新增一封信</button>
+                                <button type="button" class="btn-sm" onclick="event.stopPropagation(); addLetterToRoomKey('${safeKeyJs}')">➕ 新增一封信</button>
                             </div>
                         </div>
 
                         <div style="margin-top:10px; text-align:center;">
-                            <button type="button" class="primary-button" style="width:100%; padding:8px; font-size:13px; background:var(--accent); border-color:var(--accent); color:#fff;" onclick="saveAllCardsForKey('${escapeHtml(k)}')">💾 儲存「${escapeHtml(k)}」所有變更</button>
+                            <button type="button" class="primary-button" style="width:100%; padding:8px; font-size:13px; background:var(--accent); border-color:var(--accent); color:#fff;" onclick="saveAllCardsForKey('${safeKeyJs}')">💾 儲存「${escapeHtml(k)}」所有變更</button>
                         </div>
                     </div>
                 </details>
@@ -2091,16 +2181,56 @@ window.previewAdminKey = function(key) {
     openSecretPanScreen(key, true);
 };
 
+window.setRoomLayout = function(key, layout) {
+    if (!ROOM_LAYOUT_LABELS[layout]) return;
+    const allData = getMemoriesData();
+    if (!allData[key]) return;
+
+    const existingCfg = allData[key].find(item => item && item.type === "room_config");
+    if (existingCfg) {
+        existingCfg.layout = layout;
+    } else {
+        allData[key].push({ type: "room_config", layout: layout });
+    }
+
+    saveMemoriesData(allData, true, false);
+    const searchInput = document.getElementById("admin-search-input");
+    renderAdminSavedList(searchInput ? searchInput.value.trim() : "");
+    showToast(`🖼️ 「${key}」已切換為「${ROOM_LAYOUT_LABELS[layout]}」並同步雲端！`);
+};
+
+window.resetRoomLayoutPositions = function(key) {
+    if (!confirm(`確定要重置「${key}」的手動拖曳位置，恢復預設排版嗎？`)) return;
+    const allData = getMemoriesData();
+    if (!allData[key]) return;
+
+    allData[key].forEach(item => {
+        if (!item) return;
+        delete item.leftPct;
+        delete item.topRatio;
+        delete item.left;
+        delete item.top;
+        delete item.zIndex;
+    });
+
+    saveMemoriesData(allData, true, false);
+    showToast(`🔄 已重置「${key}」的自由拖曳位置並同步雲端！`);
+};
+
 window.moveCardItem = function(key, index, direction) {
     const allData = getMemoriesData();
     if (!allData[key]) return;
-    const targetIdx = index + direction;
+    let targetIdx = index + direction;
+    while (targetIdx >= 0 && targetIdx < allData[key].length && allData[key][targetIdx]?.type === "room_config") {
+        targetIdx += direction;
+    }
     if (targetIdx < 0 || targetIdx >= allData[key].length) return;
     const temp = allData[key][index];
     allData[key][index] = allData[key][targetIdx];
     allData[key][targetIdx] = temp;
     saveMemoriesData(allData);
-    renderAdminSavedList();
+    const searchInput = document.getElementById("admin-search-input");
+    renderAdminSavedList(searchInput ? searchInput.value.trim() : "");
 };
 
 window.toggleAllRoomDetails = function(openState) {
