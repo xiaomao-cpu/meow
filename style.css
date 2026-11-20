@@ -154,11 +154,32 @@ button, input, textarea, select {
 .glitch-word {
     position: relative;
     display: inline-block;
-    color: var(--accent);
+    padding: 0 6px;
+    letter-spacing: -3px;
+    color: rgba(36, 20, 19, 0.45);
+    filter: blur(1.6px) contrast(1.5);
     text-shadow:
-        -1.5px 0 rgba(123, 36, 52, 0.55),
-        1.5px 0 rgba(38, 86, 108, 0.48);
-    animation: glitch-jitter 3.2s infinite;
+        -3px -1px 1px rgba(123, 36, 52, 0.85),
+        3px 1px 1px rgba(23, 18, 15, 0.8),
+        0 0 6px rgba(23, 18, 15, 0.75);
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            transparent 2px,
+            rgba(23, 18, 15, 0.52) 2px,
+            rgba(23, 18, 15, 0.52) 4px
+        ),
+        repeating-linear-gradient(
+            -25deg,
+            transparent 0px,
+            transparent 5px,
+            rgba(123, 36, 52, 0.28) 5px,
+            rgba(123, 36, 52, 0.28) 7px
+        );
+    border-radius: 3px;
+    animation: glitch-jitter 1.6s infinite;
+    user-select: none;
 }
 
 .glitch-word::before,
@@ -166,65 +187,91 @@ button, input, textarea, select {
     content: attr(data-text);
     position: absolute;
     inset: 0;
+    padding: 0 6px;
+    letter-spacing: -3px;
     pointer-events: none;
 }
 
 .glitch-word::before {
-    color: rgba(155, 28, 49, 0.72);
-    transform: translate(-1.5px, -0.5px);
-    clip-path: inset(0 0 54% 0);
-    animation: glitch-slice-top 2.8s infinite linear alternate-reverse;
+    color: rgba(123, 36, 52, 0.88);
+    transform: translate(-5px, -1px) skewX(-16deg);
+    clip-path: inset(0 0 42% 0);
+    animation: glitch-slice-top 1.3s infinite steps(2, end);
 }
 
 .glitch-word::after {
-    color: rgba(34, 72, 92, 0.62);
-    transform: translate(1.5px, 0.5px);
-    clip-path: inset(56% 0 0 0);
-    animation: glitch-slice-bottom 2.4s infinite linear alternate-reverse;
+    color: rgba(23, 18, 15, 0.85);
+    transform: translate(5px, 1px) skewX(18deg);
+    clip-path: inset(46% 0 0 0);
+    animation: glitch-slice-bottom 1.1s infinite steps(2, end);
 }
 
 @keyframes glitch-jitter {
-    0%, 88%, 100% {
-        transform: translate(0, 0);
+    0%, 100% {
+        transform: translate(0, 0) skewX(0deg);
+        filter: blur(1.7px) contrast(1.5);
     }
-    90% {
-        transform: translate(-1px, 0.5px);
+    20% {
+        transform: translate(-2px, 1px) skewX(-8deg);
+        filter: blur(2.2px) contrast(1.7);
     }
-    93% {
-        transform: translate(1.5px, -0.5px);
+    40% {
+        transform: translate(2.5px, -1px) skewX(10deg);
+        filter: blur(1.1px) contrast(1.6);
     }
-    96% {
-        transform: translate(-0.5px, 0);
+    60% {
+        transform: translate(-1.5px, 0.5px) skewX(-6deg);
+        filter: blur(2px) contrast(1.8);
+    }
+    80% {
+        transform: translate(1.5px, -0.5px) skewX(6deg);
+        filter: blur(1.5px) contrast(1.5);
     }
 }
 
 @keyframes glitch-slice-top {
-    0%, 76%, 100% {
-        transform: translate(-1.5px, 0);
-        clip-path: inset(0 0 58% 0);
+    0% {
+        transform: translate(-6px, -1px) skewX(-18deg);
+        clip-path: inset(4% 0 52% 0);
     }
-    80% {
-        transform: translate(2.5px, -1px);
-        clip-path: inset(8% 0 46% 0);
+    25% {
+        transform: translate(5px, 1px) skewX(14deg);
+        clip-path: inset(18% 0 34% 0);
     }
-    84% {
-        transform: translate(-2px, 0.5px);
-        clip-path: inset(16% 0 52% 0);
+    50% {
+        transform: translate(-4px, 0) skewX(-12deg);
+        clip-path: inset(0% 0 60% 0);
+    }
+    75% {
+        transform: translate(6px, -1px) skewX(20deg);
+        clip-path: inset(28% 0 24% 0);
+    }
+    100% {
+        transform: translate(-5px, 1px) skewX(-16deg);
+        clip-path: inset(10% 0 44% 0);
     }
 }
 
 @keyframes glitch-slice-bottom {
-    0%, 72%, 100% {
-        transform: translate(1.5px, 0);
-        clip-path: inset(58% 0 0 0);
+    0% {
+        transform: translate(6px, 1px) skewX(18deg);
+        clip-path: inset(52% 0 4% 0);
     }
-    76% {
-        transform: translate(-2.5px, 1px);
-        clip-path: inset(48% 0 10% 0);
+    25% {
+        transform: translate(-5px, -1px) skewX(-16deg);
+        clip-path: inset(38% 0 18% 0);
     }
-    82% {
-        transform: translate(2px, -0.5px);
-        clip-path: inset(64% 0 4% 0);
+    50% {
+        transform: translate(4px, 0) skewX(12deg);
+        clip-path: inset(62% 0 0% 0);
+    }
+    75% {
+        transform: translate(-6px, 1px) skewX(-20deg);
+        clip-path: inset(44% 0 12% 0);
+    }
+    100% {
+        transform: translate(5px, -1px) skewX(16deg);
+        clip-path: inset(56% 0 8% 0);
     }
 }
 
