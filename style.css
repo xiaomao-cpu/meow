@@ -698,14 +698,15 @@ h1 {
 .result-actions {
     width: min(100%, 430px);
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    justify-content: center;
     gap: 10px;
 }
 
 .result-actions .primary-button,
 .result-actions .secondary-button {
-    width: 100%;
+    width: auto;
+    min-width: 180px;
 }
 
 .copy-status {
