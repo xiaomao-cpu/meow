@@ -1418,7 +1418,35 @@ async function openSecretPanScreen(key, fromAdmin = false) {
 
     const wallEl = document.getElementById("polaroid-wall");
     if (wallEl) {
-        const n = memories.length;
+        const rawList = allData[activeSecretKey] || [];
+        const displayItems = [];
+        const letterItems = [];
+        let firstLetterRealIdx = -1;
+
+        memories.forEach((item) => {
+            const realIdx = rawList.indexOf(item);
+            if (item.type === "letter") {
+                if (firstLetterRealIdx === -1) firstLetterRealIdx = realIdx;
+                letterItems.push(item);
+            } else {
+                displayItems.push({ ...item, _realIdx: realIdx });
+            }
+        });
+
+        // 將同房號的所有信件統一整合為牆上的一封信封
+        if (letterItems.length > 0) {
+            const anchorLetter = letterItems[0];
+            displayItems.push({
+                _isEnvelopeBundle: true,
+                _realIdx: firstLetterRealIdx,
+                left: anchorLetter.left,
+                top: anchorLetter.top,
+                zIndex: anchorLetter.zIndex,
+                letters: letterItems
+            });
+        }
+
+        const n = displayItems.length;
 
         const CARD_H = 260;
         const MIN_PEEK = 65;
@@ -1433,7 +1461,7 @@ async function openSecretPanScreen(key, fromAdmin = false) {
 
         const rand = (seed) => (((seed * 1664525 + 1013904223) & 0x7fffffff) / 0x7fffffff);
 
-        const positions = memories.map((_, i) => {
+        const positions = displayItems.map((_, i) => {
             const isLeft = i % 2 === 0;
             const r = rand(i * 13 + 7);
             const leftPct = isLeft
@@ -1446,7 +1474,9 @@ async function openSecretPanScreen(key, fromAdmin = false) {
         const totalH = (positions[n - 1]?.top ?? 0) + CARD_H + 80;
         wallEl.style.minHeight = totalH + "px";
 
-        wallEl.innerHTML = memories.map((item, index) => {
+        const safeRoomKeyAttr = activeSecretKey.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+
+        wallEl.innerHTML = displayItems.map((item, index) => {
             const rotSeed = rand(index * 17 + 5);
             const rot = Math.round((rotSeed * 28 - 14) * 10) / 10;
             const { left, top } = positions[index];
@@ -1456,13 +1486,30 @@ async function openSecretPanScreen(key, fromAdmin = false) {
             const cardTop = (!isMobile && item.top !== undefined) ? item.top : `${top}px`;
             const cardZIndex = (!isMobile && item.zIndex !== undefined) ? item.zIndex : (index + 1);
 
-            if (item.type === "letter") {
+            if (item._isEnvelopeBundle) {
+                const totalLetters = item.letters.length;
+                const unreadCount = item.letters.filter(l => !l.opened).length;
+                const repliedCount = item.letters.filter(l => (l.reply || "").trim().length > 0).length;
+                const titleText = totalLetters > 1 ? `給畔的信件（共 ${totalLetters} 封）` : "給畔的一封信";
+
+                let statusHtml = "";
+                if (unreadCount > 0) {
+                    statusHtml = `<div class="letter-status-new">🔴 有 ${unreadCount} 封未讀新信</div>`;
+                } else if (repliedCount === totalLetters) {
+                    statusHtml = `<div style="font-size:12px;color:green;margin-top:5px;">✅ ${totalLetters > 1 ? "全部已回信" : "已回信"}</div>`;
+                } else if (repliedCount > 0) {
+                    statusHtml = `<div style="font-size:12px;color:green;margin-top:5px;">✅ 已回信 ${repliedCount}/${totalLetters} 封</div>`;
+                }
+
                 return `
-                <div class="polaroid-card letter-card"
+                <div class="polaroid-card letter-card" id="room-envelope-card"
                      style="--rot: ${rot}deg; left: ${cardLeft}; top: ${cardTop}; z-index: ${cardZIndex}; background: #fdf5e6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
-                    <div style="font-size: 50px; cursor: pointer; margin-bottom: 10px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="openPlayerLetterModal('${key}', ${index})">✉️</div>
-                    <div class="polaroid-note" style="color: var(--gold);">給畔的一封信</div>
-                    ${item.reply ? `<div style="font-size:12px;color:green;margin-top:5px;">✅已回信</div>` : ""}
+                    <div class="letter-envelope-wrap" onclick="event.stopPropagation(); openPlayerLetterModal('${safeRoomKeyAttr}')">
+                        <span>✉️</span>
+                        ${unreadCount > 0 ? `<span class="letter-unread-dot">${unreadCount}</span>` : ""}
+                    </div>
+                    <div class="polaroid-note" style="color: var(--gold); cursor: pointer;" onclick="event.stopPropagation(); openPlayerLetterModal('${safeRoomKeyAttr}')">${titleText}</div>
+                    <div id="room-envelope-status">${statusHtml}</div>
                 </div>
                 `;
             }
@@ -1479,7 +1526,10 @@ async function openSecretPanScreen(key, fromAdmin = false) {
             `;
         }).join("");
 
-        wallEl.querySelectorAll(".polaroid-card").forEach((card, idx) => initPolaroidDrag(card, idx));
+        wallEl.querySelectorAll(".polaroid-card").forEach((card, idx) => {
+            const realIdx = displayItems[idx]?._realIdx;
+            initPolaroidDrag(card, realIdx !== undefined && realIdx !== -1 ? realIdx : idx);
+        });
     }
 
     playUnlockSFX();
@@ -1725,22 +1775,38 @@ function renderAdminSavedList(filterQuery = "") {
     listEl.innerHTML = listControlsHtml +
         keys.map(k => {
             const cards = allData[k];
+            let letterSeq = 0;
+            const photoCount = cards.filter(c => c.type !== "letter").length;
+            const letterCount = cards.filter(c => c.type === "letter").length;
+            const summaryBadge = letterCount > 0
+                ? `(${photoCount}張照片 / ${letterCount}封信)`
+                : `(${photoCount}張)`;
+
             const cardItems = cards.map((card, idx) => {
                 if (card.type === "letter") {
+                    letterSeq += 1;
                     const safeTxt = (card.text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
                     const safeReply = (card.reply || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                    const statusTag = !card.opened
+                        ? `<span style="font-size:11px; color:#c82333; font-weight:bold;">🔴 畔尚未閱讀（會有紅點提示）</span>`
+                        : (card.reply
+                            ? `<span style="font-size:11px; color:#2e7d32; font-weight:bold;">✅ 畔已回信</span>`
+                            : `<span style="font-size:11px; color:#777;">👀 畔已讀（未回信）</span>`);
                     return `
                     <div class="edit-card-item" style="display:flex; flex-direction:column; padding:12px; border:1px dashed var(--gold); background: rgba(197, 160, 89, 0.05); gap:10px;">
                         <div>
-                            <div style="font-weight:bold; color:var(--gold); margin-bottom:5px; font-size: 14px;">✉️ 給畔的信（可編輯）：</div>
-                            <textarea id="ecm-${k}-${idx}" class="modal-textarea" rows="3" style="font-size:13px;margin:0;">${safeTxt}</textarea>
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:5px;">
+                                <span style="font-weight:bold; color:var(--gold); font-size: 14px;">✉️ 第 ${letterSeq} 封信（給畔的信，可編輯）：</span>
+                                ${statusTag}
+                            </div>
+                            <textarea id="ecm-${k}-${idx}" class="modal-textarea" rows="3" style="font-size:13px;margin:0;" placeholder="在此撰寫第 ${letterSeq} 封信給畔...">${safeTxt}</textarea>
                         </div>
                         <div>
                             <div style="font-weight:bold; color:var(--deep); margin-bottom:5px; font-size: 14px;">📝 畔的回信（可編輯/清空）：</div>
                             <textarea id="reply-${k}-${idx}" class="modal-textarea" rows="2" style="font-size:13px;margin:0;background:#f4eee1;color:#333;" placeholder="尚未回信">${safeReply}</textarea>
                         </div>
                         <div class="edit-card-actions" style="justify-content: flex-end; margin-top:5px;">
-                            <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除這封信">🗑 刪除信件</button>
+                            <button type="button" class="btn-sm btn-sm-danger" onclick="deleteCardItem('${k}',${idx})" title="刪除這封信">🗑 刪除第 ${letterSeq} 封信</button>
                         </div>
                     </div>
                     `;
@@ -1777,7 +1843,7 @@ function renderAdminSavedList(filterQuery = "") {
                         <div style="display:flex; align-items:center; gap:6px;">
                             <span class="collapse-icon">▼</span>
                             <span>🔑 房號：<strong>${escapeHtml(k)}</strong></span>
-                            <span style="font-size:12px;font-weight:400;color:var(--muted);">(${cards.length}張)</span>
+                            <span style="font-size:12px;font-weight:400;color:var(--muted);">${summaryBadge}</span>
                         </div>
                         <div style="display:flex; gap:6px;">
                             <button type="button" class="btn-sm" onclick="event.stopPropagation(); previewAdminKey('${escapeHtml(k)}')">👁️ 預覽</button>
@@ -1794,7 +1860,7 @@ function renderAdminSavedList(filterQuery = "") {
                                 <input type="file" accept="image/*" multiple onchange="addPhotosToRoomKey('${escapeHtml(k)}', this)" style="font-size:11px; max-width:180px;" />
                             </div>
                             <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px dashed rgba(0,0,0,0.1); padding-top:10px;">
-                                <span>✉️ 追加信件至「${escapeHtml(k)}」：</span>
+                                <span>✉️ 追加新信件／回信至「${escapeHtml(k)}」：</span>
                                 <button type="button" class="btn-sm" onclick="addLetterToRoomKey('${escapeHtml(k)}')">➕ 新增一封信</button>
                             </div>
                         </div>
@@ -1914,16 +1980,12 @@ window.saveAllCardsForKey = function(key) {
 window.addLetterToRoomKey = function(key) {
     const allData = getMemoriesData();
     if (!allData[key]) allData[key] = [];
-    
-    if (allData[key].some(c => c.type === "letter")) {
-        alert("這個房間已經有一封信囉！請直接在上方編輯信件內容。");
-        return;
-    }
-    
-    allData[key].push({ type: "letter", text: "", reply: "", opened: false });
+
+    const existingCount = allData[key].filter(c => c.type === "letter").length;
+    allData[key].push(createLetterItem(""));
     saveMemoriesData(allData);
     renderAdminSavedList();
-    showToast(`✨ 已在「${key}」新增信件區塊！`);
+    showToast(`✨ 已在「${key}」新增第 ${existingCount + 1} 封信！編輯後請記得按儲存變更。`);
 };
 
 window.previewAdminKey = function(key) {
@@ -2164,10 +2226,9 @@ function saveAdminMemory() {
     const allData = getMemoriesData();
     if (!allData[key]) allData[key] = [];
     
-    // 如果有寫信，存入信件物件
+    // 如果有寫信，存入新的信件物件（支援同房號多封信）
     if (letterMsg) {
-        // 先檢查是否已經有一封信，如果有可以選擇更新或是疊加，這邊我們選擇直接加入新的信
-        allData[key].push({ type: "letter", text: letterMsg, reply: "", opened: false });
+        allData[key].push(createLetterItem(letterMsg));
         if (letterInput) letterInput.value = "";
     }
 
@@ -2590,45 +2651,142 @@ async function generateResultPoster() {
     modal.classList.remove("hidden");
 }
 
-// 玩家信件功能邏輯
-let currentOpenedLetterIdx = -1;
+// 玩家信件功能邏輯（支援同房號多封信統一收納於一封信封，點開切換閱讀與回信）
+let currentOpenedLetterRoomKey = "";
+let currentOpenedLetterOrder = 0; // 在該房號所有信件中的第幾封 (0-based)
+let currentOpenedLetterId = null;
 
-window.openPlayerLetterModal = function(roomKey, idx) {
+function getRoomLetters(allData, roomKey) {
+    const list = allData[roomKey] || [];
+    return list.filter(item => !isDefaultSampleCard(item) && item.type === "letter");
+}
+
+function refreshEnvelopeCardBadge(roomKey) {
+    const envelopeCard = document.getElementById("room-envelope-card");
+    if (!envelopeCard) return;
     const allData = getMemoriesData();
-    if (!allData[roomKey]) return;
+    const letters = getRoomLetters(allData, roomKey);
+    const totalLetters = letters.length;
+    const unreadCount = letters.filter(l => !l.opened).length;
+    const repliedCount = letters.filter(l => (l.reply || "").trim().length > 0).length;
 
-    // 因為 idx 是畫面上濾除預設卡片後的順序，需轉回真實索引
-    const filteredMemories = allData[roomKey].filter(item => !isDefaultSampleCard(item));
-    const targetItem = filteredMemories[idx];
-    if (!targetItem) return;
+    const wrap = envelopeCard.querySelector(".letter-envelope-wrap");
+    if (wrap) {
+        const existingDot = wrap.querySelector(".letter-unread-dot");
+        if (unreadCount > 0) {
+            if (existingDot) {
+                existingDot.textContent = String(unreadCount);
+            } else {
+                const dot = document.createElement("span");
+                dot.className = "letter-unread-dot";
+                dot.textContent = String(unreadCount);
+                wrap.appendChild(dot);
+            }
+        } else if (existingDot) {
+            existingDot.remove();
+        }
+    }
 
-    const realIdx = allData[roomKey].findIndex(item => item.type === targetItem.type && item.text === targetItem.text);
-    if (realIdx === -1) return;
+    const statusEl = document.getElementById("room-envelope-status");
+    if (statusEl) {
+        if (unreadCount > 0) {
+            statusEl.innerHTML = `<div class="letter-status-new">🔴 有 ${unreadCount} 封未讀新信</div>`;
+        } else if (repliedCount === totalLetters && totalLetters > 0) {
+            statusEl.innerHTML = `<div style="font-size:12px;color:green;margin-top:5px;">✅ ${totalLetters > 1 ? "全部已回信" : "已回信"}</div>`;
+        } else if (repliedCount > 0) {
+            statusEl.innerHTML = `<div style="font-size:12px;color:green;margin-top:5px;">✅ 已回信 ${repliedCount}/${totalLetters} 封</div>`;
+        } else {
+            statusEl.innerHTML = "";
+        }
+    }
+}
 
-    currentOpenedLetterIdx = realIdx;
-    const item = allData[roomKey][realIdx];
+function renderPlayerLetterTabs(roomKey, letters, activeOrder) {
+    const tabsEl = document.getElementById("player-letter-tabs");
+    if (!tabsEl) return;
+
+    if (letters.length <= 1) {
+        tabsEl.classList.add("hidden");
+        tabsEl.innerHTML = "";
+        return;
+    }
+
+    tabsEl.classList.remove("hidden");
+    tabsEl.innerHTML = letters.map((letter, idx) => {
+        const isActive = idx === activeOrder;
+        const isUnread = !letter.opened;
+        const hasReply = (letter.reply || "").trim().length > 0;
+        return `
+            <button type="button"
+                    class="letter-tab-btn ${isActive ? "active" : ""}"
+                    onclick="selectPlayerLetter(${idx})">
+                <span>第 ${idx + 1} 封</span>
+                ${isUnread ? `<span class="letter-tab-dot" title="未讀新信"></span>` : ""}
+                ${hasReply ? `<span class="letter-tab-replied" title="已回信">✓</span>` : ""}
+            </button>
+        `;
+    }).join("");
+}
+
+window.selectPlayerLetter = function(orderIdx) {
+    const roomKey = currentOpenedLetterRoomKey;
+    if (!roomKey) return;
+    const allData = getMemoriesData();
+    const letters = getRoomLetters(allData, roomKey);
+    if (!letters.length) return;
+
+    const safeIdx = Math.max(0, Math.min(orderIdx, letters.length - 1));
+    const item = letters[safeIdx];
+    currentOpenedLetterOrder = safeIdx;
+    currentOpenedLetterId = item.id || null;
 
     document.getElementById("player-letter-content").textContent = item.text || "";
     document.getElementById("player-letter-reply").value = item.reply || "";
-    document.getElementById("player-letter-modal").classList.remove("hidden");
 
-    // 若第一次打開，發送通知給後台
-    if (!item.opened) {
+    // 若是普通玩家（非後台預覽）第一次打開這封信，標記已讀並通知游泉
+    if (!item.opened && !isYouquanAdminMode) {
         item.opened = true;
         saveMemoriesData(allData, true, false);
+        refreshEnvelopeCardBadge(roomKey);
+
         if (CLOUD_SYNC_ENDPOINT) {
             fetch(CLOUD_SYNC_ENDPOINT, {
                 method: "POST",
-
+                mode: "no-cors",
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ 
-                    _action: "notify_email", 
-                    subject: `【向生而死】畔打開了信件！`, 
-                    message: `房號 [${roomKey}] 的畔，剛剛打開了您寫的信件。` 
+                body: JSON.stringify({
+                    _action: "notify_email",
+                    subject: `【向生而死】畔打開了第 ${safeIdx + 1} 封信！`,
+                    message: `房號 [${roomKey}] 的畔，剛剛打開了您寫的第 ${safeIdx + 1} 封信。`
                 })
             }).catch(e => console.error(e));
         }
     }
+
+    renderPlayerLetterTabs(roomKey, letters, safeIdx);
+};
+
+window.openPlayerLetterModal = function(roomKey, preferredOrder) {
+    const allData = getMemoriesData();
+    const resolvedKey = allData[roomKey]
+        ? roomKey
+        : Object.keys(allData).find(k => k.toLowerCase() === String(roomKey || "").toLowerCase());
+    if (!resolvedKey) return;
+
+    const letters = getRoomLetters(allData, resolvedKey);
+    if (!letters.length) return;
+
+    currentOpenedLetterRoomKey = resolvedKey;
+
+    // 預設選中第一封「未讀」的新信；若全部已讀，則選中最新一封
+    let targetOrder = typeof preferredOrder === "number" ? preferredOrder : -1;
+    if (targetOrder < 0 || targetOrder >= letters.length) {
+        const firstUnread = letters.findIndex(l => !l.opened);
+        targetOrder = firstUnread !== -1 ? firstUnread : letters.length - 1;
+    }
+
+    document.getElementById("player-letter-modal").classList.remove("hidden");
+    window.selectPlayerLetter(targetOrder);
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -2636,6 +2794,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (letterClose) {
         letterClose.addEventListener("click", () => {
             document.getElementById("player-letter-modal").classList.add("hidden");
+            if (currentOpenedLetterRoomKey) {
+                refreshEnvelopeCardBadge(currentOpenedLetterRoomKey);
+            }
         });
     }
 
@@ -2649,9 +2810,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // 小寫轉成小寫後在 allData 裡搜尋匹配的實際 key
-            const rawKey = typeof activeSecretKey !== "undefined" && activeSecretKey
-                ? activeSecretKey
-                : (document.getElementById("secret-key-input")?.value?.trim() || "");
+            const rawKey = currentOpenedLetterRoomKey
+                || (typeof activeSecretKey !== "undefined" && activeSecretKey ? activeSecretKey : "")
+                || (document.getElementById("secret-key-input")?.value?.trim() || "");
             const allData = getMemoriesData();
 
             // 送出前先從雲端拉最新完整資料，避免用手機舊 localStorage 覆蓋電腦新增內容
@@ -2669,8 +2830,16 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const key = Object.keys(allData).find(k => k.toLowerCase() === rawKey.toLowerCase()) || rawKey;
+            const letters = getRoomLetters(allData, key);
 
-            const letterObj = (allData[key] || []).find(item => item.type === "letter");
+            let letterObj = currentOpenedLetterId
+                ? letters.find(item => item.id === currentOpenedLetterId)
+                : null;
+            if (!letterObj) {
+                letterObj = letters[currentOpenedLetterOrder] || letters[0];
+            }
+
+            const letterNum = letterObj ? (letters.indexOf(letterObj) + 1) : 1;
 
             if (key && letterObj) {
                 letterObj.reply = reply;
@@ -2678,14 +2847,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // 先存本地
                 saveMemoriesData(allData, false);
-                
-                // 用 override 強制整包推送到雲端，確保 reply 一定寫入
+
+                // 推送到雲端，確保 reply 寫入對應的那封信
                 if (CLOUD_SYNC_ENDPOINT) {
                     const cloudPayload = stripBase64ForCloud(allData);
                     fetch(CLOUD_SYNC_ENDPOINT, {
                         method: "POST",
                         mode: "no-cors",
-
                         headers: { "Content-Type": "text/plain;charset=utf-8" },
                         body: JSON.stringify({ _action: "save_memories", data: cloudPayload })
                     }).catch(e => console.error("推送失敗", e));
@@ -2696,22 +2864,22 @@ document.addEventListener("DOMContentLoaded", () => {
                             method: "POST",
                             mode: "no-cors",
                             headers: { "Content-Type": "text/plain;charset=utf-8" },
-                            body: JSON.stringify({ 
-                                _action: "notify_email", 
-                                subject: `【向生而死】畔回信了！`, 
-                                message: `房號 [${key}] 的畔回覆了您的信件！\n\n【回信內容】：\n${reply}` 
+                            body: JSON.stringify({
+                                _action: "notify_email",
+                                subject: `【向生而死】畔回覆了第 ${letterNum} 封信！`,
+                                message: `房號 [${key}] 的畔回覆了您的第 ${letterNum} 封信！\n\n【回信內容】：\n${reply}`
                             })
                         }).catch(e => console.error(e));
                     }, 1500);
                 }
-                
-                alert("回信已經成功寄出給游泉囉！");
+
+                alert(`第 ${letterNum} 封信的回信已經成功寄出給游泉囉！`);
+                renderPlayerLetterTabs(key, letters, letterNum - 1);
+                refreshEnvelopeCardBadge(key);
                 document.getElementById("player-letter-modal").classList.add("hidden");
-                openSecretPanScreen(key, isYouquanAdminMode);
             } else {
-                // 詳細錯誤資訊方便除錯
-                console.error("回信失敗 - key:", key, "idx:", currentOpenedLetterIdx, "data:", allData[key]);
-                alert("出了點小問題，請尝試關閉信件視窗再重新打開一次！");
+                console.error("回信失敗 - key:", key, "order:", currentOpenedLetterOrder, "data:", allData[key]);
+                alert("出了點小問題，請嘗試關閉信件視窗再重新打開一次！");
             }
         });
     }

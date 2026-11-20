@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@400;600;700;900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261120_161600">
+    <link rel="stylesheet" href="style.css?v=20261120_163800">
 </head>
 <body>
     <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">開啟 BGM</button>
@@ -78,8 +78,11 @@
     <!-- 玩家收信與回信 Modal -->
     <div id="player-letter-modal" class="modal-overlay hidden" style="z-index: 10000;">
         <div class="modal-card letter-card" style="max-width: 500px; background: #fffdf8; display: flex; flex-direction: column; max-height: 90vh; padding: 20px;">
-            <h3 style="margin-bottom: 12px; color: #5a3d2b; flex-shrink: 0;">✉️ 來自游泉的信</h3>
-            
+            <h3 style="margin-bottom: 10px; color: #5a3d2b; flex-shrink: 0;">✉️ 來自游泉的信</h3>
+
+            <!-- 多封信件選擇分頁 -->
+            <div id="player-letter-tabs" class="letter-tabs hidden" style="flex-shrink: 0;"></div>
+
             <!-- 信件內容（可捲動） -->
             <div id="player-letter-content" style="font-size: 15px; color: #333; line-height: 1.6; white-space: pre-wrap; text-align: left; background: #f4eee1; padding: 15px; border-radius: 8px; overflow-y: auto; max-height: 35vh; flex-shrink: 0; margin-bottom: 14px;"></div>
             
@@ -129,6 +132,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=20261120_160900"></script>
+    <script src="script.js?v=20261120_163800"></script>
 </body>
 </html>

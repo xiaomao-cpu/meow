@@ -709,6 +709,115 @@ h1 {
     min-width: 180px;
 }
 
+/* ── 多封信件紅點通知與分頁選單 ─────────────────── */
+.letter-envelope-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: transform 0.2s ease;
+}
+
+.letter-envelope-wrap:hover {
+    transform: scale(1.1);
+}
+
+.letter-unread-dot {
+    position: absolute;
+    top: -4px;
+    right: -10px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #d92b3a;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 22px;
+    text-align: center;
+    border: 2px solid #fdf5e6;
+    box-shadow: 0 2px 8px rgba(217, 43, 58, 0.55);
+    animation: letter-dot-pulse 1.8s infinite;
+    pointer-events: none;
+}
+
+@keyframes letter-dot-pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(217, 43, 58, 0.65);
+    }
+    50% {
+        transform: scale(1.12);
+        box-shadow: 0 0 0 7px rgba(217, 43, 58, 0);
+    }
+}
+
+.letter-status-new {
+    font-size: 12px;
+    font-weight: 800;
+    color: #c82333;
+    margin-top: 6px;
+}
+
+.letter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+    max-height: 82px;
+    overflow-y: auto;
+    padding-bottom: 4px;
+}
+
+.letter-tab-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border: 1px solid rgba(182, 139, 74, 0.45);
+    border-radius: 999px;
+    background: #f8f2e6;
+    color: #5a3d2b;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.16s ease;
+}
+
+.letter-tab-btn:hover {
+    background: #efe4cf;
+}
+
+.letter-tab-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(182, 139, 74, 0.35);
+}
+
+.letter-tab-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #d92b3a;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.letter-tab-btn.active .letter-tab-dot {
+    background: #ffe082;
+}
+
+.letter-tab-replied {
+    font-size: 11px;
+    opacity: 0.85;
+}
+
 .copy-status {
     min-height: 22px;
     margin: 10px auto 0;
