@@ -2085,69 +2085,64 @@ window.deleteAdminKey = function(key) {
     renderAdminSavedList();
 };
 
-window.recoverAllHistoryPhotos = function() {
-    let recoveredPhotos = [];
-    try {
-        // 掃描本地所有 localStorage key
-        for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            const val = localStorage.getItem(k);
-            if (!val) continue;
+window.recoverAllHistoryPhotos = async function() {
+    const allData = getMemoriesData();
+    const targets = [];
 
-            // 尋找 Base64 圖片或 JSON 物件
-            if (val.includes("data:image") || val.includes("http")) {
-                try {
-                    const parsed = JSON.parse(val);
-                    if (typeof parsed === "object") {
-                        Object.keys(parsed).forEach(rk => {
-                            if (Array.isArray(parsed[rk])) {
-                                parsed[rk].forEach(item => {
-                                    if (item && item.img && !isDefaultSampleCard(item)) {
-                                        recoveredPhotos.push(item);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                } catch(e) {}
+    Object.keys(allData).forEach(rk => {
+        if (!Array.isArray(allData[rk])) return;
+        allData[rk].forEach((item, idx) => {
+            if (item && item.type !== "letter" && !isDefaultSampleCard(item) && item.img && String(item.img).startsWith("data:image")) {
+                targets.push({ key: rk, idx, item });
             }
-        }
-    } catch(e) {}
+        });
+    });
 
-    if (recoveredPhotos.length === 0) {
-        alert("未在此裝置的瀏覽器快取中找到其他歷史照片。請重新在手機點選「選擇照片」一次上傳即可！");
+    if (targets.length === 0) {
+        alert("✅ 目前這台裝置上所有房間的照片都已經是雲端圖床網址，沒有需要補傳的本機照片囉！");
         return;
     }
 
-    // 去重
-    const uniqueImgs = new Set();
-    const cleanList = [];
-    recoveredPhotos.forEach(p => {
-        if (!uniqueImgs.has(p.img)) {
-            uniqueImgs.add(p.img);
-            cleanList.push(p);
+    if (!confirm(`偵測到 ${targets.length} 張尚未上傳到雲端圖床的本機照片。\n確定要一鍵補傳並同步至雲端嗎？（原房號與悄悄話皆會完整保留）`)) {
+        return;
+    }
+
+    const btn = document.getElementById("admin-repair-photos-btn");
+    const origText = btn ? btn.textContent : "";
+    if (btn) btn.disabled = true;
+
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (let i = 0; i < targets.length; i++) {
+        const { key, idx, item } = targets[i];
+        if (btn) btn.textContent = `⏳ 補傳中 ${i + 1}/${targets.length}...`;
+        showToast(`⏳ 正在補傳第 ${i + 1} / ${targets.length} 張照片（房號：${key}）...`);
+
+        const uploadedUrl = await uploadImageToImgBB(item.img);
+        if (uploadedUrl) {
+            allData[key][idx].img = uploadedUrl;
+            successCount++;
+        } else {
+            failedCount++;
         }
-    });
+    }
 
-    const targetKey = "0318";
-    removeDeletedKey(targetKey);
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = origText || "☁️ 補傳本機照片";
+    }
 
-    const allData = getMemoriesData();
-    if (!allData[targetKey]) allData[targetKey] = [];
-    
-    // 合併救援到的照片
-    const existingImgs = new Set(allData[targetKey].map(i => i.img));
-    let addedCount = 0;
-    cleanList.forEach(p => {
-        if (!existingImgs.has(p.img)) {
-            allData[targetKey].push(p);
-            addedCount++;
-        }
-    });
+    if (successCount > 0) {
+        saveMemoriesData(allData, true, false);
+        renderAdminSavedList();
+    }
 
-    saveMemoriesData(allData, true, true);
-    alert(`🚑 成功救援並復原 ${addedCount} 張歷史照片至房號「${targetKey}」！已同步至雲端 ☁️`);
-    renderAdminSavedList();
+    if (failedCount === 0) {
+        alert(`✨ 已成功將全部 ${successCount} 張本機照片補傳至圖床並同步到雲端！\n原本的房號與悄悄話皆已完整保留，玩家現在都看得到了。`);
+    } else {
+        alert(`⚠️ 已補傳 ${successCount} / ${targets.length} 張照片，另有 ${failedCount} 張上傳失敗，建議稍後再按一次重試。`);
+    }
 };
 
 let uploadedBase64Images = [];
