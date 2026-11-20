@@ -1118,7 +1118,17 @@ function isDefaultSampleCard(item) {
     return false;
 }
 
-// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重，並自動剔除已被刪除的房號
+function createLetterItem(text = "") {
+    return {
+        type: "letter",
+        id: "letter_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        text: text,
+        reply: "",
+        opened: false
+    };
+}
+
+// 深度合併兩份記憶資料：相同 key 的陣列合併，以 img 去重，並支援多封信件完整同步，自動剔除已被刪除的房號
 function mergeMemoriesDeep(base, incoming) {
     const result = { ...base };
     const deletedKeys = getDeletedKeys();
@@ -1136,27 +1146,40 @@ function mergeMemoriesDeep(base, incoming) {
         if (!result[key]) {
             result[key] = cleanIncoming;
         } else {
-            result[key] = result[key].filter(item => !isDefaultSampleCard(item));
-            
-            // 處理信件合併：如果雲端有信件且有回信，覆蓋本地信件
-            const incomingLetter = cleanIncoming.find(item => item.type === "letter");
-            const localLetterIdx = result[key].findIndex(item => item.type === "letter");
-            
-            if (incomingLetter) {
-                if (localLetterIdx !== -1) {
-                    // 同步信件狀態與內文，雲端為主體，允許空字串覆蓋
-                    const localLetter = result[key][localLetterIdx];
-                    localLetter.text = incomingLetter.text !== undefined ? incomingLetter.text : localLetter.text;
-                    localLetter.reply = incomingLetter.reply !== undefined ? incomingLetter.reply : localLetter.reply;
-                    localLetter.opened = incomingLetter.opened !== undefined ? incomingLetter.opened : localLetter.opened;
-                } else {
-                    result[key].push(incomingLetter);
+            const localClean = result[key].filter(item => !isDefaultSampleCard(item));
+            const localPhotos = localClean.filter(item => item.type !== "letter");
+            const localLetters = localClean.filter(item => item.type === "letter");
+            const incomingLetters = cleanIncoming.filter(item => item.type === "letter");
+
+            // 照片以 img 去重合併
+            const existingImgs = new Set(localPhotos.filter(i => i.img).map(item => item.img));
+            const toAddPhotos = cleanIncoming.filter(item => item.type !== "letter" && item.img && !existingImgs.has(item.img));
+            const mergedPhotos = [...localPhotos, ...toAddPhotos];
+
+            // 多封信件合併：雲端為主體，同時保留本機剛新增、尚未完成雲端同步的信件（以 id 區分）
+            let mergedLetters = localLetters;
+            if (incomingLetters.length > 0) {
+                const incomingIds = new Set(incomingLetters.filter(l => l.id).map(l => l.id));
+                mergedLetters = incomingLetters.map((incLetter, idx) => {
+                    const matchedLocal = incLetter.id
+                        ? localLetters.find(l => l.id === incLetter.id)
+                        : localLetters[idx];
+                    return {
+                        ...(matchedLocal || {}),
+                        ...incLetter,
+                        type: "letter",
+                        text: incLetter.text !== undefined ? incLetter.text : (matchedLocal?.text || ""),
+                        reply: incLetter.reply !== undefined ? incLetter.reply : (matchedLocal?.reply || ""),
+                        opened: incLetter.opened !== undefined ? incLetter.opened : Boolean(matchedLocal?.opened)
+                    };
+                });
+                const unsyncedLocalLetters = localLetters.filter(l => l.id && !incomingIds.has(l.id));
+                if (unsyncedLocalLetters.length > 0) {
+                    mergedLetters = [...mergedLetters, ...unsyncedLocalLetters];
                 }
             }
 
-            const existingImgs = new Set(result[key].filter(i => i.img).map(item => item.img));
-            const toAdd = cleanIncoming.filter(item => item.type !== "letter" && item.img && !existingImgs.has(item.img));
-            result[key] = [...result[key], ...toAdd];
+            result[key] = [...mergedPhotos, ...mergedLetters];
         }
     });
     return result;
@@ -1177,8 +1200,9 @@ function stripBase64ForCloud(data) {
     return stripped;
 }
 
-// 防抖計時器（一秒內多次儲存只推一次）
+// 防抖計時器（一秒內多次儲存只推一次）與最近本機儲存時間（避免 10 秒輪詢蓋掉剛新增內容）
 let _cloudPushTimer = null;
+let _lastLocalSaveAt = 0;
 
 function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
     try {
@@ -1187,6 +1211,10 @@ function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
         console.error("記憶牆儲存失敗", e);
         alert("⚠️ 儲存空間已滿！瀏覽器本地容量上限約 5MB。\n請刪除部分過期房號照片，或改貼圖片網址 (Image URL)！");
         return false;
+    }
+
+    if (shouldPushToCloud) {
+        _lastLocalSaveAt = Date.now();
     }
 
     if (shouldPushToCloud && CLOUD_SYNC_ENDPOINT) {
@@ -1217,6 +1245,14 @@ async function syncMemoriesFromCloud(isManual = false) {
     if (!CLOUD_SYNC_ENDPOINT) return;
     // 退遯期間靜默跳過（手動同步不受影響）
     if (!isManual && Date.now() < _syncBackoffUntil) return;
+    // 本機剛儲存後 12 秒內，或管理員正在輸入文字時，跳過背景自動輪詢以免覆蓋編輯中內容
+    if (!isManual && Date.now() - _lastLocalSaveAt < 12000) return;
+    if (!isManual) {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.closest && activeEl.closest("#admin-saved-list") && (activeEl.tagName === "TEXTAREA" || activeEl.tagName === "INPUT")) {
+            return;
+        }
+    }
 
     try {
         const res = await fetch(CLOUD_SYNC_ENDPOINT + "?_action=get_memories&t=" + Date.now(), { cache: "no-store" });
@@ -1862,7 +1898,7 @@ function renderAdminSavedList(filterQuery = "") {
                             <div id="room-upload-progress-${escapeHtml(k)}" style="display:none; font-size:12px; color:var(--gold); font-weight:bold;"></div>
                             <div style="display:flex; align-items:center; justify-content:space-between; border-top:1px dashed rgba(0,0,0,0.1); padding-top:10px;">
                                 <span>✉️ 追加新信件／回信至「${escapeHtml(k)}」：</span>
-                                <button type="button" class="btn-sm" onclick="addLetterToRoomKey('${escapeHtml(k)}')">➕ 新增一封信</button>
+                                <button type="button" class="btn-sm" onclick="event.stopPropagation(); addLetterToRoomKey('${escapeHtml(k).replace(/'/g, "\\'")}')">➕ 新增一封信</button>
                             </div>
                         </div>
 
@@ -2010,13 +2046,40 @@ window.saveAllCardsForKey = function(key) {
 
 window.addLetterToRoomKey = function(key) {
     const allData = getMemoriesData();
-    if (!allData[key]) allData[key] = [];
+    const resolvedKey = allData[key]
+        ? key
+        : Object.keys(allData).find(k => k.toLowerCase() === String(key || "").toLowerCase()) || key;
+    if (!allData[resolvedKey]) allData[resolvedKey] = [];
 
-    const existingCount = allData[key].filter(c => c.type === "letter").length;
-    allData[key].push(createLetterItem(""));
+    // 先保留該房間目前畫面上尚未儲存的輸入框文字，避免重繪遺失
+    allData[resolvedKey].forEach((card, idx) => {
+        const txtEl = document.getElementById(`ecm-${resolvedKey}-${idx}`);
+        if (txtEl) card.text = txtEl.value;
+        if (card.type === "letter") {
+            const replyEl = document.getElementById(`reply-${resolvedKey}-${idx}`);
+            if (replyEl) card.reply = replyEl.value;
+        }
+    });
+
+    const existingCount = allData[resolvedKey].filter(c => c.type === "letter").length;
+    const newIdx = allData[resolvedKey].length;
+    allData[resolvedKey].push(createLetterItem(""));
     saveMemoriesData(allData);
-    renderAdminSavedList();
-    showToast(`✨ 已在「${key}」新增第 ${existingCount + 1} 封信！編輯後請記得按儲存變更。`);
+
+    const searchInput = document.getElementById("admin-search-input");
+    const currentFilter = searchInput ? searchInput.value.trim() : "";
+    renderAdminSavedList(currentFilter);
+
+    // 確保該房間維持展開，並直接捲動＋聚焦到新信件輸入框
+    const newTextarea = document.getElementById(`ecm-${resolvedKey}-${newIdx}`);
+    if (newTextarea) {
+        const detailsEl = newTextarea.closest("details.edit-key-section");
+        if (detailsEl) detailsEl.open = true;
+        newTextarea.scrollIntoView({ behavior: "smooth", block: "center" });
+        newTextarea.focus();
+    }
+
+    showToast(`✨ 已在「${resolvedKey}」新增第 ${existingCount + 1} 封信！編輯後請記得按儲存變更。`);
 };
 
 window.previewAdminKey = function(key) {
