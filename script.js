@@ -14,6 +14,12 @@ let isBgmOn = false;
 let isIntroActive = false;
 let currentIntroStep = 0;
 let dmGender = "F"; // 預設游泉為女 DM
+let dmGenderUpdatedAt = 0;
+let hasExplicitUrlDmParam = false;
+let initialCloudSyncPromise = null;
+let hasCompletedInitialCloudSync = false;
+const SYSTEM_CONFIG_KEY = "__system_config__";
+const DM_GENDER_UPDATED_AT_KEY = "youquan_dm_gender_updated_at";
 
 const els = {
     home: document.getElementById("home-screen"),
@@ -349,28 +355,60 @@ async function init() {
         console.info("使用內建題目資料。", error);
     }
 
-    // 跨裝置同步解析
-    checkUrlSyncMemories();
-    syncMemoriesFromCloud();
-
     // 1. 優先讀取網址參數 (例如 ?dm=F 或 ?dm=M)
     const urlParams = new URLSearchParams(window.location.search);
     const dmParam = urlParams.get("dm");
     if (dmParam && (dmParam.toUpperCase() === "F" || dmParam.toUpperCase() === "FEMALE")) {
-        setDmGender("F");
+        hasExplicitUrlDmParam = true;
+        setDmGender("F", { persistToCloud: false });
     } else if (dmParam && (dmParam.toUpperCase() === "M" || dmParam.toUpperCase() === "MALE")) {
-        setDmGender("M");
+        hasExplicitUrlDmParam = true;
+        setDmGender("M", { persistToCloud: false });
     } else {
-        // 2. 若無網址參數，讀取裝置記憶體 (localStorage)
+        // 2. 若無網址參數，先讀取裝置快取，待雲端同步完成後自動更新為最新設定
         try {
             const savedDm = localStorage.getItem("youquan_dm_gender");
+            const savedAt = Number(localStorage.getItem(DM_GENDER_UPDATED_AT_KEY) || 0);
             if (savedDm === "F" || savedDm === "M") {
-                setDmGender(savedDm);
+                setDmGender(savedDm, { persistToCloud: false, updatedAt: Number.isFinite(savedAt) ? savedAt : 0 });
             }
         } catch (e) {}
     }
 
+    // 跨裝置同步解析（含主持人性別雲端同步）
+    checkUrlSyncMemories();
+    initialCloudSyncPromise = syncMemoriesFromCloud(false).finally(() => {
+        hasCompletedInitialCloudSync = true;
+    });
+
     // 首頁標題切換 DM 模式功能已移除，改由後台切換
+}
+
+function updateAdminDmGenderUI() {
+    const adminToggleDmGenderBtn = document.getElementById("admin-toggle-dm-gender");
+    if (adminToggleDmGenderBtn) {
+        adminToggleDmGenderBtn.textContent = dmGender === "M" ? "切換為 女 GM 模式" : "切換為 男 GM 模式";
+    }
+    const statusEl = document.getElementById("admin-dm-gender-status");
+    if (statusEl) {
+        statusEl.textContent = dmGender === "M"
+            ? "男 GM ♂（男玩家避開「畔」，女玩家可測「畔」）"
+            : "女 GM ♀（女玩家避開「畔」，男玩家可測「畔」）";
+    }
+}
+
+function applySystemConfigFromData(data) {
+    if (!data || !Array.isArray(data[SYSTEM_CONFIG_KEY])) return false;
+    const cfg = data[SYSTEM_CONFIG_KEY].find(item => item && item.type === "system_config");
+    if (!cfg || (cfg.dmGender !== "F" && cfg.dmGender !== "M")) return false;
+    const incomingUpdatedAt = Number(cfg.updatedAt || 0);
+    if (hasExplicitUrlDmParam) return false;
+    if (incomingUpdatedAt >= dmGenderUpdatedAt || dmGenderUpdatedAt === 0) {
+        const changed = dmGender !== cfg.dmGender || incomingUpdatedAt > dmGenderUpdatedAt;
+        setDmGender(cfg.dmGender, { persistToCloud: false, updatedAt: incomingUpdatedAt });
+        return changed;
+    }
+    return false;
 }
 
 let toastTimer = null;
@@ -390,11 +428,29 @@ function showToast(message) {
     }, 2800);
 }
 
-function setDmGender(g) {
+function setDmGender(g, options = {}) {
+    if (g !== "F" && g !== "M") return;
+    const { persistToCloud = false, updatedAt = null } = options;
+    const ts = updatedAt !== null ? Number(updatedAt) : (persistToCloud ? Date.now() : dmGenderUpdatedAt);
     dmGender = g;
+    if (Number.isFinite(ts) && ts >= 0) {
+        dmGenderUpdatedAt = ts;
+    }
     try {
         localStorage.setItem("youquan_dm_gender", g);
+        localStorage.setItem(DM_GENDER_UPDATED_AT_KEY, String(dmGenderUpdatedAt));
     } catch (e) {}
+
+    if (persistToCloud) {
+        const allData = getMemoriesData();
+        allData[SYSTEM_CONFIG_KEY] = [{
+            type: "system_config",
+            dmGender: g,
+            updatedAt: dmGenderUpdatedAt
+        }];
+        saveMemoriesData(allData, true, false, true);
+    }
+    updateAdminDmGenderUI();
 }
 
 function startQuiz() {
@@ -596,12 +652,21 @@ function saveState() {
     });
 }
 
-function handleSingleChoice(questionId, value) {
+async function handleSingleChoice(questionId, value) {
     saveState();
     userAnswers[questionId] = value;
     if (questionId === 0) {
         gender = value;
         currentPath = quizConfig.paths[gender].map(getQuestion);
+        // 確保在顯示第 1 題前，已同步雲端最新的主持人性別設定（最多等待 3 秒避免離線卡住）
+        if (!hasExplicitUrlDmParam && !hasCompletedInitialCloudSync && initialCloudSyncPromise) {
+            try {
+                await Promise.race([
+                    initialCloudSyncPromise,
+                    new Promise(resolve => setTimeout(resolve, 3000))
+                ]);
+            } catch (e) {}
+        }
     }
     advance();
 }
@@ -1122,7 +1187,7 @@ function getRoomLayout(roomCards) {
 // 判斷是否為系統預設範例卡片
 function isDefaultSampleCard(item) {
     if (!item) return true;
-    if (item.type === "letter" || item.type === "room_config") return false; // 確保信件與房間排版設定不會被刪除
+    if (item.type === "letter" || item.type === "room_config" || item.type === "system_config") return false; // 確保信件、房間排版與系統設定不會被刪除
     if (!item.img) return true;
     const imgStr = String(item.img);
     const txtStr = String(item.text || "");
@@ -1148,12 +1213,24 @@ function mergeMemoriesDeep(base, incoming) {
     const result = { ...base };
     const deletedKeys = getDeletedKeys();
 
-    // 先過濾掉已被記錄刪除的房號
+    // 先過濾掉已被記錄刪除的房號（系統設定 key 永不刪除）
     deletedKeys.forEach(dk => {
+        if (dk === SYSTEM_CONFIG_KEY) return;
         delete result[dk];
     });
 
     Object.keys(incoming).forEach(key => {
+        // 系統全域設定（如主持人性別）：依 updatedAt 取最新值
+        if (key === SYSTEM_CONFIG_KEY) {
+            const localCfg = Array.isArray(result[key]) ? result[key].find(i => i && i.type === "system_config") : null;
+            const incCfg = Array.isArray(incoming[key]) ? incoming[key].find(i => i && i.type === "system_config") : null;
+            if (incCfg && (!localCfg || Number(incCfg.updatedAt || 0) >= Number(localCfg.updatedAt || 0))) {
+                result[key] = [incCfg];
+            } else if (localCfg) {
+                result[key] = [localCfg];
+            }
+            return;
+        }
         // 如果這個房號在刪除名單中，跳過不合併！
         if (deletedKeys.includes(key)) return;
 
@@ -1220,7 +1297,7 @@ function stripBase64ForCloud(data) {
     const stripped = {};
     for (const key in data) {
         stripped[key] = (data[key] || []).filter(item => {
-            if (item.type === "letter" || item.type === "room_config") return true; // 保留信件與排版設定
+            if (item.type === "letter" || item.type === "room_config" || item.type === "system_config") return true; // 保留信件、排版與系統設定
             if (!item.img) return true; // 保留沒有圖片的純文字
             // 濾除 base64 圖片 (以 data:image 開頭)
             return !String(item.img).startsWith("data:image");
@@ -1233,7 +1310,7 @@ function stripBase64ForCloud(data) {
 let _cloudPushTimer = null;
 let _lastLocalSaveAt = 0;
 
-function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
+function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false, immediate = false) {
     try {
         localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(data));
     } catch (e) {
@@ -1247,9 +1324,7 @@ function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
     }
 
     if (shouldPushToCloud && CLOUD_SYNC_ENDPOINT) {
-        // 防抖 800ms：避免同一秒內發送多次請求
-        clearTimeout(_cloudPushTimer);
-        _cloudPushTimer = setTimeout(() => {
+        const pushNow = () => {
             const cloudPayload = stripBase64ForCloud(data);
             const action = isOverride ? "override_memories" : "save_memories";
             fetch(CLOUD_SYNC_ENDPOINT, {
@@ -1262,7 +1337,15 @@ function saveMemoriesData(data, shouldPushToCloud = true, isOverride = false) {
                 if (!res.ok) console.warn("雲端推送回應異常:", res.status);
                 else console.info("雲端同步成功 (" + action + ")");
             }).catch(err => console.error("雲端自動推播失敗:", err));
-        }, 800);
+        };
+
+        clearTimeout(_cloudPushTimer);
+        if (immediate) {
+            pushNow();
+        } else {
+            // 防抖 800ms：避免同一秒內發送多次請求
+            _cloudPushTimer = setTimeout(pushNow, 800);
+        }
     }
     return true;
 }
@@ -1309,13 +1392,17 @@ async function syncMemoriesFromCloud(isManual = false) {
                 // 1. 合併：以雲端資料為主體，只對雲端有的 key 進行合併
                 const merged = mergeMemoriesDeep(localData, cloudData);
 
-                // 2. 刪除同步：把本地有但雲端沒有的 key（後台已刪除的房間）一起移除
+                // 2. 刪除同步：把本地有但雲端沒有的 key（後台已刪除的房間）一起移除（保留系統設定 key）
                 const cloudKeys = Object.keys(cloudData);
                 Object.keys(merged).forEach(k => {
+                    if (k === SYSTEM_CONFIG_KEY) return;
                     if (!cloudKeys.includes(k)) {
                         delete merged[k];
                     }
                 });
+
+                // 套用雲端同步的主持人性別設定
+                applySystemConfigFromData(merged);
 
                 // 3. 只有真的有差異才寫入，避免無意義 IO
                 if (JSON.stringify(merged) !== originalLocalDataStr) {
@@ -1336,8 +1423,7 @@ async function syncMemoriesFromCloud(isManual = false) {
     }
 }
 
-// 頁面載入時拉一次，之後每 10 秒自動同步最新照片
-syncMemoriesFromCloud(false);
+// 頁面載入後每 10 秒自動同步最新照片與主持人設定（首次同步由 init() 啟動）
 setInterval(() => syncMemoriesFromCloud(false), 10000);
 
 function checkUrlSyncMemories() {
@@ -1485,6 +1571,12 @@ async function openSecretPanScreen(key, fromAdmin = false) {
         isYouquanAdminMode = true;
     }
     activeSecretKey = (key || "").trim().toLowerCase();
+    if (activeSecretKey === SYSTEM_CONFIG_KEY) {
+        if (!fromAdmin) {
+            alert("噠噠❌！密碼錯啦！小笨蛋！");
+        }
+        return;
+    }
     
     // 進入時自動先從雲端拉取最新照片
     await syncMemoriesFromCloud();
@@ -1829,9 +1921,10 @@ function renderAdminSavedList(filterQuery = "") {
     if (!listEl) return;
     const allData = getMemoriesData();
 
-    // 自動清理舊有的預設範例卡片
+    // 自動清理舊有的預設範例卡片（略過系統全域設定 key）
     let hasCleaned = false;
     Object.keys(allData).forEach(k => {
+        if (k === SYSTEM_CONFIG_KEY) return;
         const origLen = allData[k] ? allData[k].length : 0;
         allData[k] = (allData[k] || []).filter(item => !isDefaultSampleCard(item));
         if (allData[k].length !== origLen) hasCleaned = true;
@@ -1842,7 +1935,7 @@ function renderAdminSavedList(filterQuery = "") {
         saveMemoriesData(allData, true, true);
     }
 
-    let keys = Object.keys(allData);
+    let keys = Object.keys(allData).filter(k => k !== SYSTEM_CONFIG_KEY);
 
     const query = String(filterQuery || "").trim().toLowerCase();
     if (query) {
@@ -2546,16 +2639,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminToggleDmGenderBtn = document.getElementById("admin-toggle-dm-gender");
     if (adminToggleDmGenderBtn) {
         // 初始狀態顯示
-        adminToggleDmGenderBtn.textContent = dmGender === "M" ? "切換為 女 GM 模式" : "切換為 男 GM 模式";
+        updateAdminDmGenderUI();
         adminToggleDmGenderBtn.addEventListener("click", () => {
             const nextDm = dmGender === "M" ? "F" : "M";
-            setDmGender(nextDm);
+            setDmGender(nextDm, { persistToCloud: true });
             if (nextDm === "F") {
-                showToast("✨ 已切換為：女 DM 模式 ♀（女玩家自動避開「畔」）");
-                adminToggleDmGenderBtn.textContent = "切換為 男 GM 模式";
+                showToast("✨ 已切換並同步雲端：女 DM 模式 ♀（女玩家自動避開「畔」）");
             } else {
-                showToast("✨ 已切換為：男 DM 模式 ♂（男玩家自動避開「畔」）");
-                adminToggleDmGenderBtn.textContent = "切換為 女 GM 模式";
+                showToast("✨ 已切換並同步雲端：男 DM 模式 ♂（男玩家自動避開「畔」）");
+            }
+        });
+    }
+
+    const adminCopyQuizLinkBtn = document.getElementById("admin-copy-quiz-link");
+    if (adminCopyQuizLinkBtn) {
+        adminCopyQuizLinkBtn.addEventListener("click", async () => {
+            const baseUrl = new URL("index.html", window.location.href).href.replace(/index\.html$/, "");
+            const quizUrl = `${baseUrl}?dm=${dmGender}`;
+            const modeLabel = dmGender === "M" ? "男 GM 模式（女畔）" : "女 GM 模式（男畔）";
+            try {
+                await navigator.clipboard.writeText(quizUrl);
+                showToast(`🔗 已複製 ${modeLabel} 專屬心測連結！`);
+            } catch (e) {
+                const ta = document.createElement("textarea");
+                ta.value = quizUrl;
+                ta.style.position = "fixed";
+                ta.style.left = "-9999px";
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                ta.remove();
+                showToast(`🔗 已複製 ${modeLabel} 專屬心測連結！`);
             }
         });
     }

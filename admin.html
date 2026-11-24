@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@400;600;700;900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261120_171200">
+    <link rel="stylesheet" href="style.css?v=20261124_151000">
     <style>
         body {
             background-color: var(--bg-color, #F4F1ED);
@@ -90,13 +90,20 @@
                 </div>
             </div>
 
+            <!-- 主持人性別同步狀態列 -->
+            <div style="margin-top: 10px; padding: 8px 10px; background: rgba(180, 140, 80, 0.08); border: 1px solid var(--line); border-radius: 8px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; font-size: 12px;">
+                <div>🎭 目前主持：<strong id="admin-dm-gender-status">女 GM ♀（女玩家避開「畔」，男玩家可測「畔」）</strong></div>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button id="admin-toggle-dm-gender" class="btn-sm" type="button" style="font-size:11px; padding:3px 8px;">切換為 男 GM 模式</button>
+                    <button id="admin-copy-quiz-link" class="btn-sm" type="button" style="font-size:11px; padding:3px 8px;">🔗 複製本場心測連結</button>
+                </div>
+            </div>
+
             <!-- 高級工具列（折疊或次要） -->
-            <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted);">
+            <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted);">
                 <span>☁️ 雲端自動同步中</span>
                 <div style="display: flex; gap: 8px;">
                     <button id="admin-repair-photos-btn" type="button" class="btn-sm" onclick="recoverAllHistoryPhotos()" style="font-size:11px; padding:2px 6px;">☁️ 補傳本機照片</button>
-
-                    <button id="admin-toggle-dm-gender" class="btn-sm" type="button" style="font-size:11px; padding:2px 6px;">切換為 男 GM 模式</button>
                     <button id="admin-lock-button" class="btn-sm btn-sm-danger" type="button" style="font-size:11px; padding:2px 6px;">🔒 鎖定</button>
                 </div>
             </div>
@@ -120,7 +127,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=20261120_171200"></script>
+    <script src="script.js?v=20261124_151000"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             // 直接開啟後台，不需要密碼驗證
