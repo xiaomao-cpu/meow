@@ -13,13 +13,18 @@ let multiSelectState = [];
 let isBgmOn = false;
 let isIntroActive = false;
 let currentIntroStep = 0;
-let dmGender = "F"; // 預設游泉為女 DM
-let dmGenderUpdatedAt = 0;
-let hasExplicitUrlDmParam = false;
-let initialCloudSyncPromise = null;
-let hasCompletedInitialCloudSync = false;
+function resolveDmGender() {
+    if (window.QUIZ_DM_GENDER === "F" || window.QUIZ_DM_GENDER === "M") {
+        return window.QUIZ_DM_GENDER;
+    }
+    const dmParam = new URLSearchParams(window.location.search).get("dm");
+    if (dmParam && (dmParam.toUpperCase() === "M" || dmParam.toUpperCase() === "MALE")) {
+        return "M";
+    }
+    return "F"; // 預設 3男3女版（女游泉／男畔）
+}
+let dmGender = resolveDmGender();
 const SYSTEM_CONFIG_KEY = "__system_config__";
-const DM_GENDER_UPDATED_AT_KEY = "youquan_dm_gender_updated_at";
 
 const els = {
     home: document.getElementById("home-screen"),
@@ -355,60 +360,12 @@ async function init() {
         console.info("使用內建題目資料。", error);
     }
 
-    // 1. 優先讀取網址參數 (例如 ?dm=F 或 ?dm=M)
-    const urlParams = new URLSearchParams(window.location.search);
-    const dmParam = urlParams.get("dm");
-    if (dmParam && (dmParam.toUpperCase() === "F" || dmParam.toUpperCase() === "FEMALE")) {
-        hasExplicitUrlDmParam = true;
-        setDmGender("F", { persistToCloud: false });
-    } else if (dmParam && (dmParam.toUpperCase() === "M" || dmParam.toUpperCase() === "MALE")) {
-        hasExplicitUrlDmParam = true;
-        setDmGender("M", { persistToCloud: false });
-    } else {
-        // 2. 若無網址參數，先讀取裝置快取，待雲端同步完成後自動更新為最新設定
-        try {
-            const savedDm = localStorage.getItem("youquan_dm_gender");
-            const savedAt = Number(localStorage.getItem(DM_GENDER_UPDATED_AT_KEY) || 0);
-            if (savedDm === "F" || savedDm === "M") {
-                setDmGender(savedDm, { persistToCloud: false, updatedAt: Number.isFinite(savedAt) ? savedAt : 0 });
-            }
-        } catch (e) {}
-    }
+    // 依各版本頁面鎖定對應游泉性別（3m3f.html = F，2m4f.html = M）
+    dmGender = resolveDmGender();
 
-    // 跨裝置同步解析（含主持人性別雲端同步）
+    // 跨裝置同步解析（記憶牆與信件）
     checkUrlSyncMemories();
-    initialCloudSyncPromise = syncMemoriesFromCloud(false).finally(() => {
-        hasCompletedInitialCloudSync = true;
-    });
-
-    // 首頁標題切換 DM 模式功能已移除，改由後台切換
-}
-
-function updateAdminDmGenderUI() {
-    const adminToggleDmGenderBtn = document.getElementById("admin-toggle-dm-gender");
-    if (adminToggleDmGenderBtn) {
-        adminToggleDmGenderBtn.textContent = dmGender === "M" ? "切換為 女 GM 模式" : "切換為 男 GM 模式";
-    }
-    const statusEl = document.getElementById("admin-dm-gender-status");
-    if (statusEl) {
-        statusEl.textContent = dmGender === "M"
-            ? "男 GM ♂（男玩家避開「畔」，女玩家可測「畔」）"
-            : "女 GM ♀（女玩家避開「畔」，男玩家可測「畔」）";
-    }
-}
-
-function applySystemConfigFromData(data) {
-    if (!data || !Array.isArray(data[SYSTEM_CONFIG_KEY])) return false;
-    const cfg = data[SYSTEM_CONFIG_KEY].find(item => item && item.type === "system_config");
-    if (!cfg || (cfg.dmGender !== "F" && cfg.dmGender !== "M")) return false;
-    const incomingUpdatedAt = Number(cfg.updatedAt || 0);
-    if (hasExplicitUrlDmParam) return false;
-    if (incomingUpdatedAt >= dmGenderUpdatedAt || dmGenderUpdatedAt === 0) {
-        const changed = dmGender !== cfg.dmGender || incomingUpdatedAt > dmGenderUpdatedAt;
-        setDmGender(cfg.dmGender, { persistToCloud: false, updatedAt: incomingUpdatedAt });
-        return changed;
-    }
-    return false;
+    syncMemoriesFromCloud(false);
 }
 
 let toastTimer = null;
@@ -426,31 +383,6 @@ function showToast(message) {
     toastTimer = setTimeout(() => {
         toastEl.classList.remove("show");
     }, 2800);
-}
-
-function setDmGender(g, options = {}) {
-    if (g !== "F" && g !== "M") return;
-    const { persistToCloud = false, updatedAt = null } = options;
-    const ts = updatedAt !== null ? Number(updatedAt) : (persistToCloud ? Date.now() : dmGenderUpdatedAt);
-    dmGender = g;
-    if (Number.isFinite(ts) && ts >= 0) {
-        dmGenderUpdatedAt = ts;
-    }
-    try {
-        localStorage.setItem("youquan_dm_gender", g);
-        localStorage.setItem(DM_GENDER_UPDATED_AT_KEY, String(dmGenderUpdatedAt));
-    } catch (e) {}
-
-    if (persistToCloud) {
-        const allData = getMemoriesData();
-        allData[SYSTEM_CONFIG_KEY] = [{
-            type: "system_config",
-            dmGender: g,
-            updatedAt: dmGenderUpdatedAt
-        }];
-        saveMemoriesData(allData, true, false, true);
-    }
-    updateAdminDmGenderUI();
 }
 
 function startQuiz() {
@@ -652,21 +584,12 @@ function saveState() {
     });
 }
 
-async function handleSingleChoice(questionId, value) {
+function handleSingleChoice(questionId, value) {
     saveState();
     userAnswers[questionId] = value;
     if (questionId === 0) {
         gender = value;
         currentPath = quizConfig.paths[gender].map(getQuestion);
-        // 確保在顯示第 1 題前，已同步雲端最新的主持人性別設定（最多等待 3 秒避免離線卡住）
-        if (!hasExplicitUrlDmParam && !hasCompletedInitialCloudSync && initialCloudSyncPromise) {
-            try {
-                await Promise.race([
-                    initialCloudSyncPromise,
-                    new Promise(resolve => setTimeout(resolve, 3000))
-                ]);
-            } catch (e) {}
-        }
     }
     advance();
 }
@@ -1400,9 +1323,6 @@ async function syncMemoriesFromCloud(isManual = false) {
                         delete merged[k];
                     }
                 });
-
-                // 套用雲端同步的主持人性別設定
-                applySystemConfigFromData(merged);
 
                 // 3. 只有真的有差異才寫入，避免無意義 IO
                 if (JSON.stringify(merged) !== originalLocalDataStr) {
@@ -2636,42 +2556,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const adminToggleDmGenderBtn = document.getElementById("admin-toggle-dm-gender");
-    if (adminToggleDmGenderBtn) {
-        // 初始狀態顯示
-        updateAdminDmGenderUI();
-        adminToggleDmGenderBtn.addEventListener("click", () => {
-            const nextDm = dmGender === "M" ? "F" : "M";
-            setDmGender(nextDm, { persistToCloud: true });
-            if (nextDm === "F") {
-                showToast("✨ 已切換並同步雲端：女 DM 模式 ♀（女玩家自動避開「畔」）");
-            } else {
-                showToast("✨ 已切換並同步雲端：男 DM 模式 ♂（男玩家自動避開「畔」）");
-            }
-        });
+    const copyQuizVersionLink = async (filename, label) => {
+        const quizUrl = new URL(filename, window.location.href).href;
+        try {
+            await navigator.clipboard.writeText(quizUrl);
+            showToast(`🔗 已複製「${label}」心測連結！`);
+        } catch (e) {
+            const ta = document.createElement("textarea");
+            ta.value = quizUrl;
+            ta.style.position = "fixed";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand("copy");
+            ta.remove();
+            showToast(`🔗 已複製「${label}」心測連結！`);
+        }
+    };
+
+    const adminCopy3m3fBtn = document.getElementById("admin-copy-3m3f-link");
+    if (adminCopy3m3fBtn) {
+        adminCopy3m3fBtn.addEventListener("click", () => copyQuizVersionLink("3m3f.html", "3男3女版"));
     }
 
-    const adminCopyQuizLinkBtn = document.getElementById("admin-copy-quiz-link");
-    if (adminCopyQuizLinkBtn) {
-        adminCopyQuizLinkBtn.addEventListener("click", async () => {
-            const baseUrl = new URL("index.html", window.location.href).href.replace(/index\.html$/, "");
-            const quizUrl = `${baseUrl}?dm=${dmGender}`;
-            const modeLabel = dmGender === "M" ? "男 GM 模式（女畔）" : "女 GM 模式（男畔）";
-            try {
-                await navigator.clipboard.writeText(quizUrl);
-                showToast(`🔗 已複製 ${modeLabel} 專屬心測連結！`);
-            } catch (e) {
-                const ta = document.createElement("textarea");
-                ta.value = quizUrl;
-                ta.style.position = "fixed";
-                ta.style.left = "-9999px";
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand("copy");
-                ta.remove();
-                showToast(`🔗 已複製 ${modeLabel} 專屬心測連結！`);
-            }
-        });
+    const adminCopy2m4fBtn = document.getElementById("admin-copy-2m4f-link");
+    if (adminCopy2m4fBtn) {
+        adminCopy2m4fBtn.addEventListener("click", () => copyQuizVersionLink("2m4f.html", "2男4女版"));
     }
 
     const adminLockButton = document.getElementById("admin-lock-button");

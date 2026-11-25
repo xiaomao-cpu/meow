@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>向生而死｜角色心測（3男3女版）</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=LXGW+WenKai+TC:wght@300;400;700&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Noto+Serif+TC:wght@400;600;700;900&family=Zhi+Mang+Xing&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=20261125_142000">
+</head>
+<body>
+    <button id="audio-toggle" class="audio-toggle" type="button" aria-pressed="false">開啟 BGM</button>
+
+    <main id="app" class="app-shell">
+        <section id="home-screen" class="screen home-screen">
+            <h1 id="main-title" style="cursor: pointer; user-select: none;">向生而死</h1>
+            <p class="subtitle">「犯下罪孽的你，渴望光明的你，哪個才是真正的你？<br>如若你心中尚存一息善念，那麼你不配踏足於此。」</p>
+            <button id="start-button" class="primary-button" type="button" onclick="startQuiz()">開始測驗</button>
+        </section>
+
+        <section id="briefing-screen" class="screen briefing-screen hidden">
+            <h2 class="briefing-title">歡迎來到<span class="glitch-word" data-text="墮落城">墮落城</span>.........<br>這裡是充滿信仰的烏托邦。：）</h2>
+            <div class="briefing-body">
+                <p>在踏入這座城邦之前，請先細細讀完以下幾句忠告：</p>
+                <p>在此地，任何荒誕與未知都可能悄然降臨，請懷抱一顆能承接一切的心踏足於此。<br>（您的心緒或許會如雲霄飛車般起起落落落落。）<br>不過別擔心，全程依舊洋溢著快樂的氛圍——應該。</p>
+                <p>本劇本為歡樂、情感、架空題材，並不包含任何催淚橋段。<br>若您是為了前來搭建衛生紙山的玩家，還請慎重斟酌後，再決定是否繼續前行。</p>
+                <p>此外，接下來的心測至關重要，請務必逐字審視後再作答。<br>您的每一個選擇，都關乎接下來的 8 個小時裡，您是否能笑著待到結束。</p>
+                <p>以上，若心存任何疑慮，歡迎隨時前來詢問。</p>
+            </div>
+            <button id="briefing-continue-button" class="primary-button" type="button" onclick="enterIntroFromBriefing()">朕已閱，繼續！</button>
+        </section>
+
+        <section id="quiz-screen" class="screen quiz-screen hidden">
+            <div class="progress-wrap" aria-hidden="true">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div id="question-count" class="question-count"></div>
+            <h2 id="question-text" class="question-text"></h2>
+            <div id="options" class="options"></div>
+            <div class="nav-row">
+                <button id="prev-button" class="secondary-button" type="button">上一題</button>
+                <button id="next-button" class="secondary-button hidden" type="button">下一題</button>
+            </div>
+        </section>
+
+        <section id="result-screen" class="screen result-screen hidden">
+            <div id="result-content"></div>
+            <div class="result-actions" style="flex-wrap: wrap; justify-content: center;">
+                <button id="restart-button" class="secondary-button" type="button">重新測驗</button>
+            </div>
+        </section>
+
+        <!-- 隱藏彩蛋：游泉與畔 宿命記憶牆 -->
+        <section id="secret-pan-screen" class="screen secret-pan-screen hidden">
+            <div class="secret-header">
+                <h2 id="secret-admin-trigger" style="cursor: pointer;" title="管理員後台入口">歡迎回到我們的秘密基地：）</h2>
+            </div>
+            <div id="polaroid-wall" class="polaroid-wall"></div>
+            <div class="secret-actions" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button id="secret-back-button" class="secondary-button" type="button">返回首頁</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- 密語解鎖彈窗 -->
+    <div id="secret-key-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3>歡迎回家，畔。</h3>
+            <p>請輸入只有你和游泉知道的那串密語</p>
+            <input id="secret-key-input" type="text" class="modal-input" placeholder="提示：小紙條＾＾" autocomplete="off" />
+            <div class="modal-buttons">
+                <button id="secret-key-submit" class="primary-button" type="button">進入小黑屋</button>
+                <button id="secret-key-cancel" class="secondary-button" type="button">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 玩家收信與回信 Modal -->
+    <div id="player-letter-modal" class="modal-overlay hidden" style="z-index: 10000;">
+        <div class="modal-card letter-card" style="max-width: 500px; background: #fffdf8; display: flex; flex-direction: column; max-height: 90vh; padding: 20px;">
+            <h3 style="margin-bottom: 10px; color: #5a3d2b; flex-shrink: 0;">✉️ 來自游泉的信</h3>
+
+            <!-- 多封信件選擇分頁 -->
+            <div id="player-letter-tabs" class="letter-tabs hidden" style="flex-shrink: 0;"></div>
+
+            <!-- 信件內容（可捲動） -->
+            <div id="player-letter-content" style="font-size: 15px; color: #333; line-height: 1.6; white-space: pre-wrap; text-align: left; background: #f4eee1; padding: 15px; border-radius: 8px; overflow-y: auto; max-height: 35vh; flex-shrink: 0; margin-bottom: 14px;"></div>
+            
+            <h4 style="margin-bottom: 8px; color: #5a3d2b; text-align: left; font-size: 14px; flex-shrink: 0;">✍️ 寫回信給游泉：</h4>
+            <textarea id="player-letter-reply" class="modal-textarea" rows="3" placeholder="在這裡寫下給游泉的回信..." style="flex-shrink: 0; resize: none;"></textarea>
+            
+            <!-- 按鈕區：固定在 modal 內，不會跑到螢幕外 -->
+            <div class="modal-buttons" style="margin-top: 12px; flex-shrink: 0;">
+                <button id="player-letter-submit" class="primary-button" type="button" style="background: var(--gold); border-color: var(--gold); color: #fff;">送出回信</button>
+                <button id="player-letter-close" class="secondary-button" type="button">關閉</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 結果海報預覽 Modal -->
+    <div id="poster-modal" class="modal-overlay hidden" style="z-index: 10000;">
+        <div class="modal-card" style="max-width: 480px; text-align: center; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto;">
+            <h3 style="margin: 0 0 8px 0;">✨ 你的專屬測驗結果海報</h3>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">長按或點擊「下載」即可儲存圖片，分享至 IG / LINE！</p>
+            <div id="poster-canvas-wrap" style="max-width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.3); margin-bottom: 14px;">
+                <canvas id="poster-canvas" style="display: none;"></canvas>
+                <img id="poster-img" src="" alt="測驗海報" style="max-width: 100%; max-height: 60vh; display: block; border-radius: 8px;" />
+            </div>
+            <div class="modal-buttons" style="width: 100%; gap: 10px; margin-top: 0;">
+                <button id="poster-download-btn" class="primary-button" type="button" style="flex: 1; background: var(--gold); border-color: var(--gold); color: #fff;">💾 下載海報圖片</button>
+                <button id="poster-close-btn" class="secondary-button" type="button" style="flex: 1;">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 進入記憶牆的歡迎問候彈窗 -->
+    <div id="greeting-modal" class="modal-overlay hidden">
+        <div class="modal-card greeting-card">
+            <p class="greeting-text">你來啦！<br>親愛的，想我了嗎？＾＾</p>
+        </div>
+    </div>
+
+    <!-- 照片放大瀏覽 Modal -->
+    <div id="photo-lightbox-modal" class="modal-overlay hidden" style="z-index: 10000; cursor: pointer;">
+        <div class="lightbox-card" onclick="event.stopPropagation()">
+            <button id="lightbox-close" class="lightbox-close-btn" type="button" aria-label="關閉">&times;</button>
+            <div class="lightbox-img-wrap">
+                <img id="lightbox-img" src="" alt="放大相片" />
+            </div>
+            <div id="lightbox-note" class="polaroid-note lightbox-note"></div>
+        </div>
+    </div>
+
+    <script>window.QUIZ_DM_GENDER = "F";</script>
+    <script src="script.js?v=20261125_142000"></script>
+</body>
+</html>
