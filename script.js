@@ -472,6 +472,7 @@ function toggleAudio() {
 }
 
 function updateAudioButton() {
+    if (!els.audio) return;
     els.audio.textContent = isBgmOn ? "關閉 BGM" : "開啟 BGM";
     els.audio.setAttribute("aria-pressed", isBgmOn ? "true" : "false");
 }
@@ -981,7 +982,7 @@ function createFeatherPhotonEffect(e) {
             const rotVal = (f % 2 === 0 ? 1 : -1) * (20 + Math.random() * 20) + "deg";
 
             feather.style.left = (x + fxOffset) + "px";
-            feather.style.top = (y + pyOffset) + "px";
+            feather.style.top = (y + fyOffset) + "px";
             feather.style.setProperty("--rot", rotVal);
             document.body.appendChild(feather);
 
